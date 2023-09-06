@@ -14,16 +14,16 @@ Tested with different versions of Python3: 3.7, 3.8, 3.9 and 3.10.
 ### Creation of a virtualenv is recommanded:
 
 ```bash
-$ python3 -m pip install virtualenv
-$ python3 -m venv <path/to/venv/venv_name>
-$ source <path/to/venv/venv_name>/bin/activate
-$ pip install --upgrade pip
+python3 -m pip install virtualenv
+python3 -m venv <path/to/venv/venv_name>
+source <path/to/venv/venv_name>/bin/activate
+pip install --upgrade pip
 ```
 
 ### Installation from Pypi
 
 ```bash
-(venv_name)$ pip install kartezio           * install kartezio python package
+(venv_name)$ pip install kartezio
 ```
 
 ### Local installation using pip
@@ -31,7 +31,7 @@ $ pip install --upgrade pip
 ```bash
 (venv_name)$ git clone [TODO] 
 (venv_name)$ cd kartezio
-(venv_name)$ python -m pip install -e .     * install kartezio python package
+(venv_name)$ python -m pip install -e .
 ```
 ## First steps
 [TODO]
