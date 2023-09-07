@@ -2,15 +2,15 @@ License
 
 Information about the Software's Licensor:
 
-This license is granted by Inserm Transfert SA, a limited company (sociÈtÈ anonyme ‡ directoire et conseil de surveillance) organized under the laws 
-of France, with share capital of Ä9,573,470, whose registered headquarters are located at 7 rue Watt, 75013 Paris, France, 
+This license is granted by Inserm Transfert SA, a limited company (soci√©t√© anonyme √† directoire et conseil de surveillance) organized under the laws 
+of France, with share capital of ‚Ç¨9,573,470, whose registered headquarters are located at 7 rue Watt, 75013 Paris, France, 
 SIRET No. 434 033 619 00025 business (APE) code 7219Z, Paris Trade and Companies Registry No. B 434 033 619, 
-represented by its Chairman of the Executive Management Board (PrÈsidente du Directoire), Mrs. Pascale AugÈ;
+represented by its Chairman of the Executive Management Board (Pr√©sidente du Directoire), Mrs. Pascale Aug√©;
 Inserm Transfert SA is acting in the names and on behalf of the French public entities that co-own the Software and the Patent:
-Acting as delegatee of the French National Institute of Health and Medical Research (Institut National de la SantÈ et de la Recherche MÈdicale ñ hereinafter ìInsermî),
+Acting as delegatee of the French National Institute of Health and Medical Research (Institut National de la Sant√© et de la Recherche M√©dicale ‚Äì hereinafter ‚ÄúInserm‚Äù),
 a public scientific and technological institute, having its registered headquarters at 101 rue de Tolbiac, 75013 Paris, France, and
 Acting in the names and on behalf of the following public entities for the purposes of this agreement: 
-CNRS, and UniversitÈ Paul Sabatier Toulouse III, as Mandataire Unique or ìSingle Representativeî under French law, decree n∞ 2020-24 of 13 January 2020. 
+CNRS, and Universit√© Paul Sabatier Toulouse III, as Mandataire Unique or ‚ÄúSingle Representative‚Äù under French law, decree n¬∞ 2020-24 of 13 January 2020. 
 
 PREAMBLE
 
@@ -18,12 +18,12 @@ This license is binding between the Licensor and any user that downloads and exe
 By exercising the Licensed IP Rights, You expressly accept and agree to be bound by the terms and conditions of this license agreement. 
 The Licensed IP Rights are only granted to You by the Licensor in consideration of Your acceptance of the terms and conditions hereinafter set out.
 
-ARTICLE 1 ñ DEFINITIONS
+ARTICLE 1 - DEFINITIONS
 
 In this license agreement, and unless the context clearly indicates otherwise, the terms starting with a capital letter are defined as follows, 
 it being understood that words in plural may be understood in singular and vice versa.
 "Code": Source code and/or Object code.
-"Co-owners": the following French public entities: Inserm, CNRS, and UniversitÈ Paul Sabatier Toulouse III.
+"Co-owners": the following French public entities: Inserm, CNRS, and Universit√© Paul Sabatier Toulouse III.
 "Contribution(s)": any work made by a Licensee that includes or is based on the Licensed IP Rights in a manner that permission of the Licensor is needed 
 for use or disclosure of the such work.
 "Contributors": any person that releases a Contribution.
@@ -32,27 +32,28 @@ for use or disclosure of the such work.
 "Licensee" or "You"/"Your": refers to any user of the Software.
 "Licensor": Inserm Transfert in the names and on the behalf of the Co-owners and any Contributor disclosing their Contribution(s).
 "Non-Commercial Research": use for research purposes only and not for the purpose of obtaining any commercial advantage or financial compensation. 
-The following acts are not considered Non-Commercial Research:
+The following acts are not considered Non-Commercial Research notably:
       - use in clinical trials,
+      - use for diagnostic and therapeutic purposes,
       - use for rendering a research service for a fee, even if the said fee is merely reimbursement of the costs of rendering the service,
       - use in a product or as part of a product to be sell,
       - use for developing, creating and marketing or improving a product or process for commercial and/or industrial purposes.
-"Object code": or the ìBinary codeî, shall mean the binary files originating from the compilation of the Source Code.
-"Patent": patent request EP23 305 172.1, of 09-02-2023, title†: "Method for determining at least one physical value in data and associated products" and 
+"Object code": or the ‚ÄúBinary code‚Äù, shall mean the binary files originating from the compilation of the Source Code.
+"Patent": patent request EP23 305 172.1, of 09-02-2023, title¬†: "Method for determining at least one physical value in data and associated products" and 
 any foreign patent application corresponding thereto, and any divisional, additions, continuations, continuations in part, or re-examination application, 
 and each patent that issues or reissues from any of these patent applications.
 "Software": the Kartezio software, including the Object Code, the Source Code, any Code generated by deep-learning processing, the user interface, 
-the graphical interface, the libraries and the related documentation (ìDocumentationî). 
+the graphical interface, the libraries and the related documentation (‚ÄúDocumentation‚Äù). 
 "Source Code": all the Software's instructions and program lines to which access is required so as to modify the Software.
 "Territory": worldwide.
 
-ARTICLE 2 ñ PURPOSE
+ARTICLE 2 - PURPOSE
 
 The purpose of this license is to set out the terms and conditions under which the Licensor grants any Licensee a worldwide, non-exclusive and royalty-free 
 license to reproduce, use, study the Software, and generate and disclose Contributions, for performing Non-Commercial Research only.
 If You wish to be granted a license for other purposes than Non-Commercial Research, you may contact the Licensor.
 
-ARTICLE 3 ñ SCOPE OF RIGHTS GRANTED
+ARTICLE 3 - SCOPE OF RIGHTS GRANTED
 
 3.1. Software - Rights of use 
 The Licensor grants to the Licensee the rights to :
@@ -76,7 +77,7 @@ agreement to be agreed upon between your entity and Inserm Transfert.
 Any use of the Software by the Licensee that exceeds the scope of the granted rights constitutes a breach of the License that will cause the License to be 
 immediately and automatically terminated. 
 
-ARTICLE 4. Distribution
+ARTICLE 4 - Distribution
 
 The Licensee is authorized to distribute copies of the Software in Source Code or Object Code form.
 When the Licensee creates a Contribution, such Contribution must be distributed under the terms and condition of this License.
@@ -86,13 +87,13 @@ In any case of distribution, the Software and/or Contributions must:
       (iii) in their Source Code, retain all copyright, patent, and attribution notices from the
       original Source Code.
 
-ARTICLE 5. Names of the authors/Trademark
+ARTICLE 5 - Names of the authors/Trademark
 This License does not grant You permission to use the names, trademarks, service marks, or product names of the Licensor, except as required for reasonable 
 and customary use in describing the origin of the Software and reproducing the content of this License, README and Notice files.
 
 ARTICLE 6. No warranties 
 Unless required by applicable law or agreed to in writing, the Licensor provides the Work (and each Contributor provides its Contributions) on 
-an ìAS ISî BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of 
+an ‚ÄúAS IS‚Äù BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of 
 title, non-infringement, or fitness for a particular purpose.
 Any Licensee is solely responsible for determining the appropriateness of using the Software and redistributing its Contribution, and assumes any risk 
 associated with the said use and redistribution.
@@ -102,12 +103,12 @@ special, incidental, or consequential damages of any character arising as a resu
 any Contribution (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction), even if such Contributor has 
 been advised of the possibility of such damages.
  
-ARTICLE 7. Duration and Termination
+ARTICLE 7 - Duration and Termination
 The License enters into force when You download the Software and terminates at the same time the copyrights terminate.
 However, in the event of a breach by the Licensee of its obligations herein described, the rights granted to the Licensee will automatically terminate. 
 The Licensee shall erase it from all of its digital equipment immediately and cease to use the Software. 
 
-ARTICLE 8. Applicable law and Dispute resolution
+ARTICLE 8 - Applicable law and Dispute resolution
 The License is governed by French law. Should a difficulty or dispute arise in connection with the License, the parties concerned agree to seek an amicable 
 solution between them. 
 If the concerned parties are unable to find an amicable solution within two (2) months as from the occurrence any dispute, and unless emergency proceedings 
