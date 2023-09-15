@@ -41,7 +41,7 @@ class StackerSum(KartezioStacker):
 
     def stack(self, Y: List):
         stack_array = np.array(Y).astype(np.float32)
-        stack_array /= 255.
+        stack_array /= 255.0
         stack_sum = np.sum(stack_array, axis=0)
         return stack_sum.astype(np.uint8)
 

@@ -35,7 +35,12 @@ class FitnessCount(KartezioFitness):
 @registry.fitness.add("IOU")
 class FitnessIOU(KartezioFitness):
     def __init__(self):
-        super().__init__("Intersection Over Union", "IOU", 1, default_metric=registry.metrics.instantiate("IOU"))
+        super().__init__(
+            "Intersection Over Union",
+            "IOU",
+            1,
+            default_metric=registry.metrics.instantiate("IOU"),
+        )
 
 
 @registry.fitness.add("IOU2")

@@ -6,7 +6,9 @@ from kartezio.utils.io import pack_one_directory
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", help="Path to the directory containing training workspaces.", type=str)
+    parser.add_argument(
+        "path", help="Path to the directory containing training workspaces.", type=str
+    )
     args = parser.parse_args()
     directory = Directory(args.path)
     directories = []

@@ -110,7 +110,7 @@ class DatasetMeta:
         label_name,
         scale=1.0,
         mode="dataframe",
-        meta_filename=JSON_META
+        meta_filename=JSON_META,
     ):
         json_data = {
             "name": name,
@@ -295,7 +295,9 @@ class DatasetReader(Directory):
             label_reader_name, directory=self, scale=self.scale
         )
 
-    def read_dataset(self, dataset_filename=CSV_DATASET, meta_filename=JSON_META, indices=None):
+    def read_dataset(
+        self, dataset_filename=CSV_DATASET, meta_filename=JSON_META, indices=None
+    ):
         self._read_meta(meta_filename)
         if self.mode == "dataframe":
             return self._read_from_dataframe(dataset_filename, indices)
@@ -376,4 +378,6 @@ def read_dataset(
     dataset_reader = DatasetReader(dataset_path, counting=counting, preview=preview)
     if reader is not None:
         dataset_reader.add_reader(reader)
-    return dataset_reader.read_dataset(dataset_filename=filename, meta_filename=meta_filename, indices=indices)
+    return dataset_reader.read_dataset(
+        dataset_filename=filename, meta_filename=meta_filename, indices=indices
+    )

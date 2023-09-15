@@ -47,7 +47,11 @@ def main():
         "--prefix", help="Prefix to saved frames", type=str, default=None
     )
     parser.add_argument(
-        "--crop", help="(x, y, w, h) tuple to crop images", type=int, nargs="+", default=None
+        "--crop",
+        help="(x, y, w, h) tuple to crop images",
+        type=int,
+        nargs="+",
+        default=None,
     )
 
     args = parser.parse_args()
@@ -55,7 +59,9 @@ def main():
     history_directory = Directory(args.history)
     model = KartezioModel(f"{history_directory._path}/elite.json", fitness=FitnessAP())
     viewer = KartezioViewer(
-        model._model.parser.shape, model._model.parser.function_bundle, model._model.parser.endpoint
+        model._model.parser.shape,
+        model._model.parser.function_bundle,
+        model._model.parser.endpoint,
     )
     dataset = read_dataset(dataset_path=args.dataset, indices=model.indices)
     cols_std = ["Parent", "Child", "Child"]
@@ -71,13 +77,17 @@ def main():
         # dirty padding
         fitness = []
         for m in range(n_models):
-            sequence = np.asarray(ast.literal_eval(json_data["population"][m]["sequence"]))
+            sequence = np.asarray(
+                ast.literal_eval(json_data["population"][m]["sequence"])
+            )
             genome = KartezioGenome(sequence=sequence)
             model._model.genome = genome
             p, f, t = model.eval(dataset, subset="train", reformat_x=reformat_x)
-            fitness.append(1. - f)
+            fitness.append(1.0 - f)
             model_graph = viewer.get_graph(
-                model._model.genome, inputs=["Tubulin", "DAPI"], outputs=["Mask", "Markers"]
+                model._model.genome,
+                inputs=["Tubulin", "DAPI"],
+                outputs=["Mask", "Markers"],
             )
             model_graph.draw(path="tmp_graph_img.png")
             graph_image = imread_color("tmp_graph_img.png", rgb=True)

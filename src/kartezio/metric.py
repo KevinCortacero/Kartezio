@@ -13,6 +13,7 @@ def register_metrics():
     """Force decorators to wrap KartezioFitness"""
     print(f"[Kartezio - INFO] -  {len(registry.metrics.list())} metrics registered.")
 
+
 @jit(nopython=True)
 def _label_overlap(x, y):
     """fast function to get pixel overlaps between masks in x and y
@@ -163,9 +164,9 @@ class MetricCellpose(KartezioMetric):
             fn[n] = n_true[n] - tp[n]
             if tp[n] == 0:
                 if n_true[n] == 0:
-                    ap[n] = 1.
+                    ap[n] = 1.0
                 else:
-                    ap[n] = 0.
+                    ap[n] = 0.0
             else:
                 ap[n] = tp[n] / (tp[n] + fp[n] + fn[n])
 
@@ -231,6 +232,7 @@ class MetricIOU2(KartezioMetric):
 class MetricMSE(KartezioMetric):
     def __init__(self):
         super().__init__("Mean Squared Error", symbol="MSE", arity=1)
+
     def call(self, y_true: np.ndarray, y_pred: np.ndarray):
         return np.square(np.subtract(y_true, y_pred)).mean()
 

@@ -63,9 +63,7 @@ class KartezioTraining:
             frequency = 1
         self.callbacks = [
             CallbackVerbose(frequency=frequency),
-            CallbackSave(
-                self.args.output_directory, self.dataset, frequency=frequency
-            ),
+            CallbackSave(self.args.output_directory, self.dataset, frequency=frequency),
         ]
         self.reformat_x = reformat_x
 
@@ -82,7 +80,15 @@ class KartezioTraining:
         return elite
 
 
-def train_model(model, dataset, output_directory, preprocessing=None, callbacks="default", callback_frequency=1, pack=True):
+def train_model(
+    model,
+    dataset,
+    output_directory,
+    preprocessing=None,
+    callbacks="default",
+    callback_frequency=1,
+    pack=True,
+):
     if callbacks == "default":
         verbose = CallbackVerbose(frequency=callback_frequency)
         save = CallbackSave(output_directory, dataset, frequency=callback_frequency)
@@ -98,9 +104,8 @@ def train_model(model, dataset, output_directory, preprocessing=None, callbacks=
     if preprocessing:
         train_x = preprocessing.call(train_x)
 
-    res =  model.fit(train_x, train_y)
+    res = model.fit(train_x, train_y)
     if pack:
         pack_one_directory(workdir)
 
     return res
-

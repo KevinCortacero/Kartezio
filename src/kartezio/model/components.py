@@ -238,11 +238,11 @@ class GenomeWriter(GenomeAdapter):
 
     def write_connections(self, genome, node, connections):
         genome[
-        self.shape.nodes_idx + node, self.shape.con_idx: self.shape.para_idx
+            self.shape.nodes_idx + node, self.shape.con_idx : self.shape.para_idx
         ] = connections
 
     def write_parameters(self, genome, node, parameters):
-        genome[self.shape.nodes_idx + node, self.shape.para_idx:] = parameters
+        genome[self.shape.nodes_idx + node, self.shape.para_idx :] = parameters
 
     def write_output_connection(self, genome, output_index, connection):
         genome[self.shape.out_idx + output_index, self.shape.con_idx] = connection
@@ -254,20 +254,20 @@ class GenomeReader(GenomeAdapter):
 
     def read_connections(self, genome, node):
         return genome[
-               self.shape.nodes_idx + node, self.shape.con_idx: self.shape.para_idx
-               ]
+            self.shape.nodes_idx + node, self.shape.con_idx : self.shape.para_idx
+        ]
 
     def read_active_connections(self, genome, node, active_connections):
         return genome[
-               self.shape.nodes_idx + node,
-               self.shape.con_idx: self.shape.con_idx + active_connections,
-               ]
+            self.shape.nodes_idx + node,
+            self.shape.con_idx : self.shape.con_idx + active_connections,
+        ]
 
     def read_parameters(self, genome, node):
-        return genome[self.shape.nodes_idx + node, self.shape.para_idx:]
+        return genome[self.shape.nodes_idx + node, self.shape.para_idx :]
 
     def read_outputs(self, genome):
-        return genome[self.shape.out_idx:, :]
+        return genome[self.shape.out_idx :, :]
 
 
 class GenomeReaderWriter(GenomeReader, GenomeWriter):
@@ -320,9 +320,7 @@ class KartezioParser(GenomeReader):
         self.endpoint = endpoint
 
     def to_series_parser(self, stacker):
-        return ParserChain(
-            self.shape, self.function_bundle, stacker, self.endpoint
-        )
+        return ParserChain(self.shape, self.function_bundle, stacker, self.endpoint)
 
     def dumps(self) -> dict:
         return {
@@ -486,22 +484,22 @@ class KartezioParser(GenomeReader):
                     if c < self.shape.inputs:
                         in_name = f"IN-{c}"
                         pair = (f"{fname}", in_name)
-                        '''
+                        """
                         if arity == 1:
                             pair = (f"{fname}", in_name)
                         else:
                             pair = (f"{fname}-{k}", in_name)
-                        '''
+                        """
 
                     else:
                         f2_index = self.read_function(genome, c - self.shape.inputs)
                         f2_name = self.function_bundle.symbol_of(f2_index)
-                        '''
+                        """
                         if arity == 1:
                             pair = (f"{fname}", f2_name)
                         else:
                             pair = (f"{fname}-{k}", f2_name)
-                        '''
+                        """
                         pair = (f"{fname}", f2_name)
                     bigram_list.append(pair)
 
@@ -571,9 +569,8 @@ class KartezioParser(GenomeReader):
 
 
 class ParserSequential(KartezioParser):
-    """TODO: default Parser, KartezioParser becomes ABC
+    """TODO: default Parser, KartezioParser becomes ABC"""
 
-    """
     pass
 
 
@@ -594,7 +591,6 @@ class ParserChain(KartezioParser):
         all_times = []
         graphs = self.parse_to_graphs(genome)
         for series in x:
-
             start_time = time.time()
             y_pred_series = []
             # for each image

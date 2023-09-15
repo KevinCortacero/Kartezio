@@ -103,7 +103,9 @@ class ModelCGP(ModelML, Observable):
         return self.parser.parse(self.strategy.elite, x)
 
     def save_elite(self, filepath, dataset):
-        JsonSaver(dataset, self.parser).save_individual(filepath, self.strategy.population.history().individuals[0])
+        JsonSaver(dataset, self.parser).save_individual(
+            filepath, self.strategy.population.history().individuals[0]
+        )
 
     def print_python_class(self, class_name):
         python_writer = GenomeToPython(self.parser)

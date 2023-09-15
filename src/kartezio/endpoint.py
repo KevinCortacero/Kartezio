@@ -25,7 +25,9 @@ class EndpointLabels(KartezioEndpoint):
     def call(self, x, args=None):
         return {
             "mask": x[0],
-            "labels": cv2.connectedComponents(x[0], connectivity=self.connectivity, ltype=cv2.CV_16U)[1],
+            "labels": cv2.connectedComponents(
+                x[0], connectivity=self.connectivity, ltype=cv2.CV_16U
+            )[1],
         }
 
     def _to_json_kwargs(self) -> dict:
@@ -55,9 +57,16 @@ class EndpointHoughCircle(KartezioEndpoint):
         mask = x[0]
         n = 0
         new_mask = image_new(mask.shape)
-        circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 1, self.min_dist,
-                                  param1=self.p1, param2=self.p2,
-                                  minRadius=self.min_radius, maxRadius=self.max_radius)
+        circles = cv2.HoughCircles(
+            mask,
+            cv2.HOUGH_GRADIENT,
+            1,
+            self.min_dist,
+            param1=self.p1,
+            param2=self.p2,
+            minRadius=self.min_radius,
+            maxRadius=self.max_radius,
+        )
         if circles is not None:
             circles = np.uint16(np.around(circles))
             for i, circle in enumerate(circles[0, :]):
@@ -72,6 +81,7 @@ class EndpointHoughCircle(KartezioEndpoint):
             "labels": new_mask,
             "count": n,
         }
+
 
 @registry.endpoints.add("ELPS")
 class EndpointEllipse(KartezioEndpoint):
@@ -103,7 +113,7 @@ class EndpointEllipse(KartezioEndpoint):
                     cv2.ellipse(
                         new_labels,
                         (center, (MA, ma), angle),
-                        n+1,
+                        n + 1,
                         thickness=-1,
                     )
                     labels.append((center, (MA, ma), angle))

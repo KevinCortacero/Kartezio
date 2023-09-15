@@ -40,7 +40,11 @@ def main():
         "--prefix", help="Prefix to save images", type=str, default=None
     )
     parser.add_argument(
-        "--crop", help="(x, y, w, h) tuple to crop images", type=int, nargs="+", default=None
+        "--crop",
+        help="(x, y, w, h) tuple to crop images",
+        type=int,
+        nargs="+",
+        default=None,
     )
 
     args = parser.parse_args()
@@ -52,10 +56,12 @@ def main():
     # print(1.0 - f)
     # heatmap_color = cv2.applyColorMap(p[0]["labels"].astype(np.uint8)*5, cv2.COLORMAP_VIRIDIS)
     # cv2.imwrite("cellpose_out.png", heatmap_color)
-    new_x = dataset.test_x # reformat_x(dataset.test_x)
-    for train_xi in [1]: #range(len(dataset.train_x)):
+    new_x = dataset.test_x  # reformat_x(dataset.test_x)
+    for train_xi in [1]:  # range(len(dataset.train_x)):
         x = new_x[train_xi]
-        insight.create_node_images(model._model.genome, x,
-                                   prefix=f"{args.prefix}_train_{train_xi}",
-                                   crop=args.crop)
-
+        insight.create_node_images(
+            model._model.genome,
+            x,
+            prefix=f"{args.prefix}_train_{train_xi}",
+            crop=args.crop,
+        )

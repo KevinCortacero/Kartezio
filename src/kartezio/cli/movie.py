@@ -34,7 +34,11 @@ def main():
         "--prefix", help="Prefix to saved frames", type=str, default=None
     )
     parser.add_argument(
-        "--crop", help="(x, y, w, h) tuple to crop images", type=int, nargs="+", default=None
+        "--crop",
+        help="(x, y, w, h) tuple to crop images",
+        type=int,
+        nargs="+",
+        default=None,
     )
 
     args = parser.parse_args()
@@ -42,13 +46,22 @@ def main():
     history_directory = Directory(args.history)
     model = KartezioModel(f"{history_directory._path}/elite.json", fitness=FitnessAP())
     viewer = KartezioViewer(
-        model._model.parser.shape, model._model.parser.function_bundle, model._model.parser.endpoint
+        model._model.parser.shape,
+        model._model.parser.function_bundle,
+        model._model.parser.endpoint,
     )
     dataset = read_dataset(dataset_path=args.dataset, indices=model.indices)
     cols_std = ["Original Image", "Annotations", "Parent", "Child", "Child"]
     cols_first = ["Original Image", "Annotations", "Child", "Child", "Child"]
     last_fitness = 0
-    idx_to_frame = [1]*10 + list(range(1, 11)) + list(range(10, 101, 5)) + list(range(100, 501, 10)) + list(range(500, 20001, 500)) + [20000]*10
+    idx_to_frame = (
+        [1] * 10
+        + list(range(1, 11))
+        + list(range(10, 101, 5))
+        + list(range(100, 501, 10))
+        + list(range(500, 20001, 500))
+        + [20000] * 10
+    )
     print(len(idx_to_frame))
     frame_name_count = 1
     all_fitness = []
@@ -65,13 +78,17 @@ def main():
             imgs.append(dataset.train_v[img_idx])
             imgs.append(dataset.train_y[img_idx][0])
             for m in range(n_models):
-                sequence = np.asarray(ast.literal_eval(json_data["population"][m]["sequence"]))
+                sequence = np.asarray(
+                    ast.literal_eval(json_data["population"][m]["sequence"])
+                )
                 genome = KartezioGenome(sequence=sequence)
                 model._model.genome = genome
-                p, f, t = model.eval(dataset, subset="train", preprocessing=preprocessing)
+                p, f, t = model.eval(
+                    dataset, subset="train", preprocessing=preprocessing
+                )
                 imgs.append(p[img_idx]["labels"])
                 if img_idx == 0:
-                    fitness.append(1. - f)
+                    fitness.append(1.0 - f)
         best_fitness = max(fitness)
         all_fitness.append(best_fitness)
         all_indices.append(i)
@@ -85,7 +102,9 @@ def main():
 
         graphs = []
         for m in range(n_models):
-            sequence = np.asarray(ast.literal_eval(json_data["population"][m]["sequence"]))
+            sequence = np.asarray(
+                ast.literal_eval(json_data["population"][m]["sequence"])
+            )
             genome = KartezioGenome(sequence=sequence)
             model._model.genome = genome
 
@@ -95,9 +114,10 @@ def main():
                 continue
             """
 
-
             model_graph = viewer.get_graph(
-                model._model.genome, inputs=["Phalloidin", "DAPI"], outputs=["Mask", "Markers"]
+                model._model.genome,
+                inputs=["Phalloidin", "DAPI"],
+                outputs=["Mask", "Markers"],
             )
             model_graph.draw(path=f"tmp_graph_img_{m}.png")
             graph_image = imread_color(f"tmp_graph_img_{m}.png", rgb=True)
@@ -119,10 +139,10 @@ def main():
         ax1.set_title("Best AP Fitness over Generations", fontsize=7)
         ax1.set_xlim([1, i])
         ax1.set_ylim([0, 1])
-        ax1.set_xlabel('Generations', fontsize=7)
-        ax1.set_ylabel('AP', fontsize=7)
-        ax1.tick_params(axis='both', which='major', labelsize=5)
-        ax1.tick_params(axis='both', which='minor', labelsize=5)
+        ax1.set_xlabel("Generations", fontsize=7)
+        ax1.set_ylabel("AP", fontsize=7)
+        ax1.tick_params(axis="both", which="major", labelsize=5)
+        ax1.tick_params(axis="both", which="minor", labelsize=5)
         ax1.plot(all_indices, all_fitness)
 
         ax2 = fig.add_subplot(grid[0, 2])
@@ -151,7 +171,7 @@ def main():
         for spine in ax6.spines.values():
             spine.set_visible(False)
         ax6.set_xlabel(f"AP={fitness[0]:0.3f}", fontsize=7)
-        ax6.set_title('Parent', fontsize=7)
+        ax6.set_title("Parent", fontsize=7)
         ax6.imshow(graphs[0])
 
         ax7 = fig.add_subplot(grid[3, 0])
@@ -160,7 +180,7 @@ def main():
         for spine in ax7.spines.values():
             spine.set_visible(False)
         ax7.set_xlabel(f"AP={fitness[1]:0.3f}", fontsize=7)
-        ax7.set_title('Child 1', fontsize=7)
+        ax7.set_title("Child 1", fontsize=7)
         ax7.imshow(graphs[1])
 
         ax8 = fig.add_subplot(grid[3, 1])
@@ -169,7 +189,7 @@ def main():
         for spine in ax8.spines.values():
             spine.set_visible(False)
         ax8.set_xlabel(f"AP={fitness[2]:0.3f}", fontsize=7)
-        ax8.set_title('Child 2', fontsize=7)
+        ax8.set_title("Child 2", fontsize=7)
         ax8.imshow(graphs[2])
 
         ax9 = fig.add_subplot(grid[1:3, 2:4])
@@ -213,7 +233,7 @@ def main():
         """
 
         fig.suptitle(title, fontsize=10)
-        #fig.subplots_adjust(wspace=0, hspace=0)
+        # fig.subplots_adjust(wspace=0, hspace=0)
 
         """
         index_image = 0
@@ -225,12 +245,13 @@ def main():
                 index_image += 1
         """
 
-        #fig.tight_layout()
+        # fig.tight_layout()
         plt.savefig(f"frames/{frame_name}")
         fig.clear()
         plt.close(fig)
         frame_name_count += 1
         last_fitness = best_fitness
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

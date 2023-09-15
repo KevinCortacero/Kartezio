@@ -19,6 +19,7 @@ def load_model(filepath, series=False):
 
 def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False):
     from kartezio.utils.viewer import KartezioViewer
+
     viewer = KartezioViewer(
         model.parser.shape, model.parser.function_bundle, model.parser.endpoint
     )
@@ -49,7 +50,9 @@ def print_stats(values, fitness, set_name):
     stats_mean = np.mean(values)
     stats_sd = np.std(values)
     stats_max = np.max(values)
-    print(f"{stats_min:0.3f} \t {stats_mean:0.3f}+/-{stats_sd:0.3f} \t {stats_max:0.3f}")
+    print(
+        f"{stats_min:0.3f} \t {stats_mean:0.3f}+/-{stats_sd:0.3f} \t {stats_max:0.3f}"
+    )
 
 
 def get_model_size(model):

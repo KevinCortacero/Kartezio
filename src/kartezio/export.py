@@ -94,13 +94,17 @@ class KartezioInsight(KartezioParser):
         endpoint_output = self.endpoint.call(outputs)
         for node_name, node_image in output_map.items():
             if crop:
-                node_image = node_image[crop[1]:crop[1]+crop[3], crop[0]:crop[0]+crop[2]]
+                node_image = node_image[
+                    crop[1] : crop[1] + crop[3], crop[0] : crop[0] + crop[2]
+                ]
             heatmap_color = cv2.applyColorMap(node_image, cv2.COLORMAP_VIRIDIS)
             cv2.imwrite(f"{prefix}_node_{node_name}.png", heatmap_color)
         output_labels = endpoint_output["labels"]
         if crop:
-            output_labels = output_labels[crop[1]:crop[1] + crop[3], crop[0]:crop[0] + crop[2]]
-        heatmap_color = cv2.applyColorMap(output_labels.astype("uint8") * 5, cv2.COLORMAP_VIRIDIS)
+            output_labels = output_labels[
+                crop[1] : crop[1] + crop[3], crop[0] : crop[0] + crop[2]
+            ]
+        heatmap_color = cv2.applyColorMap(
+            output_labels.astype("uint8") * 5, cv2.COLORMAP_VIRIDIS
+        )
         cv2.imwrite(f"{prefix}_output.png", heatmap_color)
-
-
