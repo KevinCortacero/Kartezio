@@ -37,7 +37,19 @@ pip install --upgrade pip
 [TODO]
 
 ## Reported Results
-[TODO]
+Kartezio was compared on the Cell Image Library dataset against the reported performance of Cellpose/Stardist/MRCNN (December, 2022) as reported in Stringer et al, Nature Methods, 2021 and published in Cortacero et al, Nature Communnications, 2023:
+
+|                  | Kartezio | Kartezio | Kartezio | Cellpose | Stardist | MRCNN |
+|------------------|----------|----------|----------|----------|----------|-------|
+| Training images  | 8        | 50       | 89       | 89       | 89       | 89    |
+| AP50 on test set | 0.838 (mean)| 0.849 (mean)| 0.858 (mean) | 0.91 (max)   | 0.76 (max)     | 0.80 (max |
+
+An additional, but not published, comparison was performed against the reported performance of CPP-Net, on BBBC006v1 dataset reported in Chen et al, 2023 (July, 2023):
+
+|                  | Kartezio-s1 | Kartezio-s2 | CPP-Net | Stardist | 
+|------------------|-------------|-------------|---------|----------|
+| Training images  | 20          | 20          | 538     |   538    | 
+| AP50 on test set | 0.822       | 0.879       | 0.9811  | 0.9757   |
 
 ## References and Citation
 [TODO .bibtex]
