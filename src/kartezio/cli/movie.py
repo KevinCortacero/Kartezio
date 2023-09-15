@@ -1,26 +1,19 @@
 import argparse
 import ast
 
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
-
-from kartezio.utils.viewer import KartezioViewer
-
-from kartezio.dataset import read_dataset
-
-from kartezio.model.components import KartezioGenome
-
-from kartezio.fitness import FitnessAP
-
-from kartezio.inference import KartezioModel
-
 from numena.io.drive import Directory
-import matplotlib.pyplot as plt
-
 from numena.io.image import imread_color
 from numena.io.json import json_read
 
+from kartezio.dataset import read_dataset
+from kartezio.fitness import FitnessAP
+from kartezio.inference import KartezioModel
+from kartezio.model.components import KartezioGenome
 from kartezio.preprocessing import SelectChannels
+from kartezio.utils.viewer import KartezioViewer
 
 CHANNELS = [1, 2]
 preprocessing = SelectChannels(CHANNELS)

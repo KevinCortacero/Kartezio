@@ -1,4 +1,5 @@
 import numpy as np
+
 from kartezio.export import GenomeToPython
 from kartezio.inference import SingleModel
 from kartezio.utils.io import JsonLoader, JsonSaver

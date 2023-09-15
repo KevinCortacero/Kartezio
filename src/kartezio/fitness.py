@@ -1,5 +1,4 @@
 from kartezio.metric import MetricMSE
-
 from kartezio.model.evolution import KartezioFitness, KartezioMetric
 from kartezio.model.registry import registry
 

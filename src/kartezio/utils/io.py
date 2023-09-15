@@ -1,7 +1,7 @@
 import os
 
-from numena.io.json import json_read, json_write
 from numena.io.drive import Directory
+from numena.io.json import json_read, json_write
 
 import kartezio.utils.json_utils as json
 from kartezio.model.components import KartezioGenome, KartezioParser

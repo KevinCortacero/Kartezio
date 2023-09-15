@@ -7,8 +7,8 @@ from kartezio.model.components import (
     KartezioBundle,
     KartezioEndpoint,
     KartezioParser,
-    ParserChain,
     KartezioStacker,
+    ParserChain,
 )
 from kartezio.model.evolution import KartezioFitness, KartezioMutation
 from kartezio.model.registry import registry

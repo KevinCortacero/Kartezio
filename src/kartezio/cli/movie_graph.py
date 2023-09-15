@@ -1,22 +1,17 @@
 import argparse
 import ast
 
-import numpy as np
-from kartezio.utils.viewer import KartezioViewer
-
-from kartezio.easy import read_dataset
-
-from kartezio.model.components import KartezioGenome
-
-from kartezio.fitness import FitnessAP
-
-from kartezio.inference import KartezioModel
-
-from numena.io.drive import Directory
 import matplotlib.pyplot as plt
-
+import numpy as np
+from numena.io.drive import Directory
 from numena.io.image import imread_color
 from numena.io.json import json_read
+
+from kartezio.easy import read_dataset
+from kartezio.fitness import FitnessAP
+from kartezio.inference import KartezioModel
+from kartezio.model.components import KartezioGenome
+from kartezio.utils.viewer import KartezioViewer
 
 
 def reformat_x(x):

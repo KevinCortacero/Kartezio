@@ -16,7 +16,7 @@ from kartezio.image.kernel import (
     gabor_kernel,
     kernel_from_parameters,
 )
-from kartezio.model.components import KartezioNode, ExportableNode
+from kartezio.model.components import ExportableNode, KartezioNode
 from kartezio.model.registry import registry
 
 

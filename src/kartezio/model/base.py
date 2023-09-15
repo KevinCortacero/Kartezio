@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from kartezio.callback import Event
+from kartezio.export import GenomeToPython
 from kartezio.model.helpers import Observable
 from kartezio.utils.io import JsonSaver
-from kartezio.export import GenomeToPython
 
 
 class ModelML(ABC):
