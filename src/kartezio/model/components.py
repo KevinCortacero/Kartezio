@@ -86,89 +86,6 @@ class KartezioPreprocessing(KartezioNode, ABC):
         super().__init__(name, symbol, 1, 0)
 
 
-class KartezioBundle(KartezioComponent, ABC):
-    def __init__(self):
-        self.__nodes = {}
-        self.fill()
-
-    @staticmethod
-    def from_json(json_data):
-        bundle = EmptyBundle()
-        for node_name in json_data:
-            bundle.add_node(node_name)
-        return bundle
-
-    @abstractmethod
-    def fill(self):
-        pass
-
-    def add_node(self, node_name):
-        self.__nodes[len(self.__nodes)] = registry.nodes.instantiate(node_name)
-
-    def add_bundle(self, bundle):
-        for f in bundle.nodes:
-            self.add_node(f.name)
-
-    def name_of(self, i):
-        return self.__nodes[i].name
-
-    def symbol_of(self, i):
-        return self.__nodes[i].symbol
-
-    def arity_of(self, i):
-        return self.__nodes[i].arity
-
-    def parameters_of(self, i):
-        return self.__nodes[i].p
-
-    def execute(self, name, x, args):
-        return self.__nodes[name].call(x, args)
-
-    def show(self):
-        for i, node in self.__nodes.items():
-            print(f"[{i}] - {node.abbv}")
-
-    @property
-    def random_index(self):
-        return random.choice(self.keys)
-
-    @property
-    def last_index(self):
-        return len(self.__nodes) - 1
-
-    @property
-    def nodes(self):
-        return list(self.__nodes.values())
-
-    @property
-    def keys(self):
-        return list(self.__nodes.keys())
-
-    @property
-    def max_arity(self):
-        return max([self.arity_of(i) for i in self.keys])
-
-    @property
-    def max_parameters(self):
-        return max([self.parameters_of(i) for i in self.keys])
-
-    @property
-    def size(self):
-        return len(self.__nodes)
-
-    @property
-    def ordered_list(self):
-        return [self.__nodes[i].name for i in range(self.size)]
-
-    def dumps(self) -> dict:
-        return {}
-
-
-class EmptyBundle(KartezioBundle):
-    def fill(self):
-        pass
-
-
 class KartezioGenome(KartezioComponent, Prototype):
     """
     Only store "DNA" in a numpy array
@@ -326,7 +243,7 @@ class KartezioParser(GenomeReader):
         return {
             "metadata": {
                 "rows": 1,  # single row CGP
-                "columns": self.shape.nodes,
+                "columns": self.shape.primitives,
                 "n_in": self.shape.inputs,
                 "n_out": self.shape.outputs,
                 "n_para": self.shape.parameters,
