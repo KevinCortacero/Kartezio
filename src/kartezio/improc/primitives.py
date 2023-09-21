@@ -1,6 +1,5 @@
 import time
 from dataclasses import dataclass, field
-from typing import Sequence
 
 import cv2
 import numpy as np
@@ -11,7 +10,7 @@ from skimage.morphology import remove_small_objects, remove_small_holes
 
 from kartezio.improc.kernel import correct_ksize, SHARPEN_KERNEL, KERNEL_ROBERTS_X, KERNEL_ROBERTS_Y, gabor_kernel, \
     kernel_from_parameters
-from kartezio.model.library import EmptyLibrary, KLibrary
+from kartezio.model.library import KLibrary
 from kartezio.model.primitive import KPrimitive, KSignature
 from kartezio.model.types import KType, TypeArray
 
@@ -179,9 +178,6 @@ def f_inrange(self, x, args=None):
         mask=cv2.inRange(x[0], lower, upper),
     )
 
-image_test = np.array([3, 0, 10, 0, 4, 3, 1, 10, 10, 3, 3, 1, 10, 1, 0], dtype=np.uint8).reshape((3, 5))
-
-
 library_opencv = LibraryDefaultOpenCV()
 library_opencv.create_primitive("Max", "max", 2, 0, f_max)
 library_opencv.create_primitive("Min", "min", 2, 0, f_min)
@@ -225,22 +221,3 @@ library_opencv.create_primitive("Distance Transform", "dtrf", 1, 1, f_distance_t
 library_opencv.create_primitive("Distance Transform Threshold", "dttr", 1, 2, f_distance_transform_thresh)
 library_opencv.create_primitive("Binary In Range", "brng", 1, 2, f_bin_inrange)
 library_opencv.create_primitive("In Range", "rng", 1, 2, f_inrange)
-library_opencv.display()
-
-
-print(image_test)
-image_test_f32 = image_test.astype(np.float64)
-n = 1000
-start_time = time.time()
-for _ in range(n):
-    res = f_threshold([image_test, image_test * 4], [1, 3])
-print("--- %s seconds ---" % (time.time() - start_time))
-print(res)
-
-start_time = time.time()
-for _ in range(n):
-    res = f_distance_transform([image_test], [1, 6])
-print("--- %s seconds ---" % (time.time() - start_time))
-print(res)
-
-

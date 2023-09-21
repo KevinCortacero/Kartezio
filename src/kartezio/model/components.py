@@ -243,7 +243,7 @@ class KartezioParser(GenomeReader):
         return {
             "metadata": {
                 "rows": 1,  # single row CGP
-                "columns": self.shape.primitives,
+                "columns": self.shape.nodes,
                 "n_in": self.shape.inputs,
                 "n_out": self.shape.outputs,
                 "n_para": self.shape.parameters,

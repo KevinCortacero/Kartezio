@@ -4,13 +4,13 @@ from kartezio.model.base import ModelCGP
 from kartezio.model.components import (
     GenomeFactory,
     GenomeShape,
-    KartezioBundle,
     KartezioEndpoint,
     KartezioParser,
     KartezioStacker,
     ParserChain,
 )
 from kartezio.model.evolution import KartezioFitness, KartezioMutation
+from kartezio.model.library import KLibrary
 from kartezio.model.registry import registry
 from kartezio.mutation import GoldmanWrapper, MutationAllRandom
 from kartezio.stacker import StackerMean
@@ -26,7 +26,7 @@ class ModelContext:
     fitness: KartezioFitness = field(init=False)
     stacker: KartezioStacker = field(init=False)
     endpoint: KartezioEndpoint = field(init=False)
-    bundle: KartezioBundle = field(init=False)
+    bundle: KLibrary = field(init=False)
     parser: KartezioParser = field(init=False)
     series_mode: bool = field(init=False)
     inputs: InitVar[int] = 3
@@ -41,7 +41,7 @@ class ModelContext:
         self.genome_shape = GenomeShape(inputs, nodes, outputs, arity, parameters)
         self.genome_factory = GenomeFactory(self.genome_shape.prototype)
 
-    def set_bundle(self, bundle: KartezioBundle):
+    def set_bundle(self, bundle: KLibrary):
         self.bundle = bundle
 
     def set_endpoint(self, endpoint: KartezioEndpoint):
