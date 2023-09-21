@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
 
+
 SHARPEN_KERNEL = np.array(([0, -1, 0], [-1, 5, -1], [0, -1, 0]), dtype="int")
-ROBERT_CROSS_H_KERNEL = np.array(([0, 1], [-1, 0]), dtype="int")
-ROBERT_CROSS_V_KERNEL = np.array(([1, 0], [0, -1]), dtype="int")
+KERNEL_ROBERTS_X = np.array(([0, 1], [-1, 0]), dtype="int")
+KERNEL_ROBERTS_Y = np.array(([1, 0], [0, -1]), dtype="int")
 OPENCV_MIN_KERNEL_SIZE = 3
 OPENCV_MAX_KERNEL_SIZE = 31
 OPENCV_KERNEL_RANGE = OPENCV_MAX_KERNEL_SIZE - OPENCV_MIN_KERNEL_SIZE
