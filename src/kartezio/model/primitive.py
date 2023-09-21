@@ -1,4 +1,3 @@
-from abc import ABC
 from dataclasses import dataclass, field
 from typing import Sequence, Callable
 
@@ -16,7 +15,7 @@ class KSignature:
     def __post_init__(self):
         self.arity = len(self.input_types)
 
-class KPrimitive(ABC):
+class KPrimitive:
     def __init__(
         self,
         symbol: str,
