@@ -11,7 +11,6 @@ class KLibrary(KartezioComponent, ABC):
     def __init__(self, output_type):
         self._primitives = {}
         self.output_type = output_type
-        self.fill()
 
     @staticmethod
     def from_json(json_data):
@@ -19,10 +18,6 @@ class KLibrary(KartezioComponent, ABC):
         for node_name in json_data:
             library.add_primitive(node_name)
         return library
-
-    @abstractmethod
-    def fill(self):
-        pass
 
     def add_primitive(self, primitive: KPrimitive):
         self._primitives[len(self._primitives)] = primitive

@@ -41,7 +41,7 @@ class Registry:
             return self.__components
 
     def __init__(self):
-        self.nodes = self.SubRegistry()
+        self.primitives = self.SubRegistry()
         self.stackers = self.SubRegistry()
         self.endpoints = self.SubRegistry()
         self.fitness = self.SubRegistry()

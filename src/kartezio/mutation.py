@@ -30,9 +30,9 @@ class MutationClassic(KartezioMutation):
         self.mutation_rate = mutation_rate
         self.output_mutation_rate = output_mutation_rate
         self.n_mutations = int(
-            np.floor(self.shape.nodes * self.shape.w * self.mutation_rate)
+            np.floor(self.shape.primitives * self.shape.w * self.mutation_rate)
         )
-        self.all_indices = np.indices((self.shape.nodes, self.shape.w))
+        self.all_indices = np.indices((self.shape.primitives, self.shape.w))
         self.all_indices = np.vstack(
             (self.all_indices[0].ravel(), self.all_indices[1].ravel())
         ).T
@@ -70,7 +70,7 @@ class MutationAllRandom(KartezioMutation):
 
     def mutate(self, genome: KartezioGenome):
         # mutate genes
-        for i in range(self.shape.nodes):
+        for i in range(self.shape.primitives):
             self.mutate_function(genome, i)
             self.mutate_connections(genome, i)
             self.mutate_parameters(genome, i)

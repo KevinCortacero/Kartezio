@@ -41,7 +41,7 @@ class KartezioViewer(KartezioParser):
                     label = f"- {node} -\n{inputs[node]}"
                 else:
                     label = f"- {node} -\nIN_{node}"
-                cluster_inputs.add_node(node, label=label, fillcolor="#B6D7A8")
+                cluster_inputs.add_primitive(node, label=label, fillcolor="#B6D7A8")
 
         with G.subgraph(
             range(self.shape.inputs, self.shape.out_idx),
@@ -53,7 +53,7 @@ class KartezioViewer(KartezioParser):
                     continue
                 function_index = self.read_function(genome, node - self.shape.inputs)
                 function_name = self.function_bundle.name_of(function_index)
-                cluster_genes.add_node(node, label=f"- {node} -\n{function_name}")
+                cluster_genes.add_primitive(node, label=f"- {node} -\n{function_name}")
                 active_connections = self.function_bundle.arity_of(function_index)
                 connections = self.read_active_connections(
                     genome, node - self.shape.inputs, active_connections
@@ -79,7 +79,7 @@ class KartezioViewer(KartezioParser):
                     label = f"- {node} -\n{outputs[node - self.shape.out_idx]}"
                 else:
                     label = f"- {node} -\nOUT_{node}"
-                cluster_outputs.add_node(node, label=label, fillcolor="#F9CB9C")
+                cluster_outputs.add_primitive(node, label=label, fillcolor="#F9CB9C")
                 G.add_edge(c, node)
 
         # converting pygraphviz graph to networkx graph

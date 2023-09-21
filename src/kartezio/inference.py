@@ -20,7 +20,7 @@ class CodeModel(InferenceModel, ABC):
         self.endpoint = endpoint
 
     def call_node(self, node_name, x, args):
-        return registry.nodes.instantiate(node_name).call(x, args)
+        return registry.primitives.instantiate(node_name).call(x, args)
 
     @abstractmethod
     def _parse(self, X):
