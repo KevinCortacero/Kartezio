@@ -8,8 +8,9 @@ from kartezio.model.components import KartezioComponent
 
 
 class KLibrary(KartezioComponent, ABC):
-    def __init__(self):
+    def __init__(self, output_type):
         self._primitives = {}
+        self.output_type = output_type
         self.fill()
 
     @staticmethod
@@ -27,39 +28,40 @@ class KLibrary(KartezioComponent, ABC):
         self._primitives[len(self._primitives)] = primitive
 
     def add_library(self, library):
-        for f in library.primitives:
-            self.add_primitive(f.name)
+        for p in library.primitives:
+            self.add_primitive(p)
 
     def name_of(self, i):
-        return self._primitives[i].name
+        return self._primitives[i].signature.name
 
     def symbol_of(self, i):
         return self._primitives[i].symbol
 
     def arity_of(self, i):
-        return self._primitives[i].arity
+        return self._primitives[i].signature.arity
 
     def parameters_of(self, i):
-        return self._primitives[i].p
+        return self._primitives[i].signature.n_parameters
 
     def execute(self, name, x, args):
         return self._primitives[name].call(x, args)
 
     def display(self):
-        headers = ["Id", "Name", "Symbol", "Inputs", "Outputs", "Parameters"]
+        headers = ["Id", "Name", "Symbol", "Inputs", "Outputs", "Arity", "Param."]
         full_list = []
         for i, primitive in self._primitives.items():
-            print(i, primitive)
             one_primitive_infos = [
-                i,
-                primitive.signature.name,
-                primitive.symbol,
+                i, self.name_of(i), self.symbol_of(i),
                 primitive.signature.input_types,
                 primitive.signature.output_type,
-                primitive.signature.n_parameters,
+                self.arity_of(i),
+                self.parameters_of(i),
             ]
             full_list.append(one_primitive_infos)
-        print(tabulate(full_list, headers=headers))
+        table_name = f"  {self.output_type} Library  "
+        print("─" * len(table_name))
+        print(table_name)
+        print(tabulate(full_list, tablefmt="simple_grid", headers=headers, numalign="center", stralign="center"))
 
     @property
     def random_index(self):
@@ -91,7 +93,7 @@ class KLibrary(KartezioComponent, ABC):
 
     @property
     def ordered_list(self):
-        return [self._primitives[i].name for i in range(self.size)]
+        return [self.name_of(i) for i in range(self.size)]
 
     def dumps(self) -> dict:
         return {}
