@@ -6,7 +6,7 @@ from kartezio.model.types import KType
 
 
 @dataclass
-class PrimitiveSignature:
+class KSignature:
     name: str
     input_types: Sequence[KType]
     output_type: KType
@@ -16,11 +16,11 @@ class PrimitiveSignature:
     def __post_init__(self):
         self.arity = len(self.input_types)
 
-class Primitive(ABC):
+class KPrimitive(ABC):
     def __init__(
         self,
         symbol: str,
-        signature: PrimitiveSignature,
+        signature: KSignature,
         function: Callable,
     ):
         self.symbol = symbol
