@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Sequence, Callable
+from typing import Callable, Sequence
 
 from kartezio.model.types import KType
 

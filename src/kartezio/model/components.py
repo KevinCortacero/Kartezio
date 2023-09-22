@@ -11,6 +11,7 @@ from typing import List
 
 import numpy as np
 from numena.io.json import Serializable
+
 from kartezio.model.helpers import Factory, Observer, Prototype
 from kartezio.model.registry import registry
 

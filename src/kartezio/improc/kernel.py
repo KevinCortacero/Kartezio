@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 
-
 SHARPEN_KERNEL = np.array(([0, -1, 0], [-1, 5, -1], [0, -1, 0]), dtype="int")
 KERNEL_ROBERTS_X = np.array(([0, 1], [-1, 0]), dtype="int")
 KERNEL_ROBERTS_Y = np.array(([1, 0], [0, -1]), dtype="int")

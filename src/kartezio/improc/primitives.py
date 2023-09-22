@@ -6,13 +6,13 @@ import numpy as np
 from numena.image.morphology import morph_fill
 from numena.image.threshold import threshold_binary, threshold_tozero
 from scipy.stats import kurtosis, skew
-from skimage.morphology import remove_small_objects, remove_small_holes
+from skimage.morphology import remove_small_holes, remove_small_objects
 
 from kartezio.improc.kernel import (
-    correct_ksize,
-    SHARPEN_KERNEL,
     KERNEL_ROBERTS_X,
     KERNEL_ROBERTS_Y,
+    SHARPEN_KERNEL,
+    correct_ksize,
     gabor_kernel,
     kernel_from_parameters,
 )

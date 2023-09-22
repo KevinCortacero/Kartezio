@@ -1,9 +1,10 @@
-from abc import ABC
 import random
+from abc import ABC
+
 from tabulate import tabulate
 
-from kartezio.model.primitive import KPrimitive
 from kartezio.model.components import KartezioComponent
+from kartezio.model.primitive import KPrimitive
 
 
 class KLibrary(KartezioComponent, ABC):
