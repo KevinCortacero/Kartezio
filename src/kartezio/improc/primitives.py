@@ -164,12 +164,12 @@ def f_distance_transform_thresh(x, args=None):
     return threshold_binary(d, args[0])
 
 
-def f_bin_inrange(self, x, args=None):
+def f_bin_inrange(x, args=None):
     lower = int(min(args[0], args[1]))
     upper = int(max(args[0], args[1]))
     return cv2.inRange(x[0], lower, upper)
 
-def f_inrange(self, x, args=None):
+def f_inrange(x, args=None):
     lower = int(min(args[0], args[1]))
     upper = int(max(args[0], args[1]))
     return cv2.bitwise_and(

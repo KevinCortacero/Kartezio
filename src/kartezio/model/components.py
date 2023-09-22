@@ -3,7 +3,6 @@
 """
 import ast
 import copy
-import random
 import time
 from abc import ABC, abstractmethod
 from builtins import print
@@ -12,7 +11,6 @@ from typing import List
 
 import numpy as np
 from numena.io.json import Serializable
-
 from kartezio.model.helpers import Factory, Observer, Prototype
 from kartezio.model.registry import registry
 
@@ -257,12 +255,12 @@ class KartezioParser(GenomeReader):
     @staticmethod
     def from_json(json_data):
         shape = GenomeShape.from_json(json_data["metadata"])
-        bundle = KartezioBundle.from_json(json_data["functions"])
+        library = None # KLibrary.from_json(json_data["functions"])
         endpoint = KartezioEndpoint.from_json(json_data["endpoint"])
         if json_data["mode"] == "series":
             stacker = KartezioStacker.from_json(json_data["stacker"])
-            return ParserChain(shape, bundle, stacker, endpoint)
-        return KartezioParser(shape, bundle, endpoint)
+            return ParserChain(shape, library, stacker, endpoint)
+        return KartezioParser(shape, library, endpoint)
 
     def _parse_one_graph(self, genome, graph_source):
         next_indices = graph_source.copy()
@@ -305,7 +303,6 @@ class KartezioParser(GenomeReader):
                 inputs = [output_map[c] for c in connections]
                 p = self.read_parameters(genome, node_index)
                 value = self.function_bundle.execute(function_index, inputs, p)
-
                 output_map[node] = value
         return output_map
 

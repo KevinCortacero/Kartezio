@@ -1,9 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 import random
 from tabulate import tabulate
 
 from kartezio.model.primitive import KPrimitive
-from kartezio.model.registry import registry
 from kartezio.model.components import KartezioComponent
 
 
@@ -39,7 +38,7 @@ class KLibrary(KartezioComponent, ABC):
         return self._primitives[i].signature.n_parameters
 
     def execute(self, name, x, args):
-        return self._primitives[name].call(x, args)
+        return self._primitives[name](x, args)
 
     def display(self):
         headers = ["Id", "Name", "Symbol", "Inputs", "Outputs", "Arity", "Param."]
