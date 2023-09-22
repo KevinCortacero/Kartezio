@@ -15,6 +15,7 @@ class KSignature:
     def __post_init__(self):
         self.arity = len(self.input_types)
 
+
 class KPrimitive:
     def __init__(self, symbol: str, signature: KSignature, function: Callable):
         self.symbol = symbol

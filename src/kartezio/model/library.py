@@ -45,7 +45,9 @@ class KLibrary(KartezioComponent, ABC):
         full_list = []
         for i, primitive in self._primitives.items():
             one_primitive_infos = [
-                i, self.name_of(i), self.symbol_of(i),
+                i,
+                self.name_of(i),
+                self.symbol_of(i),
                 primitive.signature.input_types,
                 primitive.signature.output_type,
                 self.arity_of(i),
@@ -55,7 +57,15 @@ class KLibrary(KartezioComponent, ABC):
         table_name = f"  {self.output_type} Library  "
         print("─" * len(table_name))
         print(table_name)
-        print(tabulate(full_list, tablefmt="simple_grid", headers=headers, numalign="center", stralign="center"))
+        print(
+            tabulate(
+                full_list,
+                tablefmt="simple_grid",
+                headers=headers,
+                numalign="center",
+                stralign="center",
+            )
+        )
 
     @property
     def random_index(self):

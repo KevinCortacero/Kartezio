@@ -255,7 +255,7 @@ class KartezioParser(GenomeReader):
     @staticmethod
     def from_json(json_data):
         shape = GenomeShape.from_json(json_data["metadata"])
-        library = None # KLibrary.from_json(json_data["functions"])
+        library = None  # KLibrary.from_json(json_data["functions"])
         endpoint = KartezioEndpoint.from_json(json_data["endpoint"])
         if json_data["mode"] == "series":
             stacker = KartezioStacker.from_json(json_data["stacker"])
