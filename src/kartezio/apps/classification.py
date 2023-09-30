@@ -1,8 +1,8 @@
 from kartezio.fitness import FitnessCrossEntropy
-from kartezio.image.bundle import BUNDLE_OPENCV
+from kartezio.improc.primitives import library_opencv
 from kartezio.model.builder import ModelBuilder
 
-BUNDLE_DEFAULT_CLASSIFICATION = BUNDLE_OPENCV
+BUNDLE_DEFAULT_CLASSIFICATION = library_opencv
 FITNESS_DEFAULT_CLASSIFICATION = FitnessCrossEntropy()
 
 

@@ -5,16 +5,24 @@ import numpy as np
 from numena.image.morphology import morph_erode
 from numena.image.threshold import threshold_tozero
 
-from kartezio.model.components import KartezioStacker
+from kartezio.model.components import KAggregation, KSignature
 from kartezio.model.registry import registry
+from kartezio.model.types import TypeArray
 
 
 def register_stackers():
     print(f"[Kartezio - INFO] -  {len(registry.stackers.list())} stackers registered.")
 
 
+def a_f_mean(x: List, args):
+    return np.mean(np.array(x), axis=0).astype(np.uint8)
+
+
+a_mean = KAggregation(a_f_mean, [TypeArray])
+
+
 @registry.stackers.add("MEAN")
-class StackerMean(KartezioStacker):
+class StackerMean(KAggregation):
     def _to_json_kwargs(self) -> dict:
         return {}
 
@@ -31,7 +39,7 @@ class StackerMean(KartezioStacker):
 
 
 @registry.stackers.add("SUM")
-class StackerSum(KartezioStacker):
+class StackerSum(KAggregation):
     def _to_json_kwargs(self) -> dict:
         return {}
 
@@ -53,7 +61,7 @@ class StackerSum(KartezioStacker):
 
 
 @registry.stackers.add("MIN")
-class StackerMin(KartezioStacker):
+class StackerMin(KAggregation):
     def _to_json_kwargs(self) -> dict:
         return {}
 
@@ -70,7 +78,7 @@ class StackerMin(KartezioStacker):
 
 
 @registry.stackers.add("MAX")
-class StackerMax(KartezioStacker):
+class StackerMax(KAggregation):
     def _to_json_kwargs(self) -> dict:
         return {}
 
@@ -89,7 +97,7 @@ class StackerMax(KartezioStacker):
 
 
 @registry.stackers.add("MEANW")
-class MeanKartezioStackerForWatershed(KartezioStacker):
+class MeanKartezioStackerForWatershed(KAggregation):
     def _to_json_kwargs(self) -> dict:
         return {"half_kernel_size": self.half_kernel_size, "threshold": self.threshold}
 

@@ -112,7 +112,7 @@ class MetricCellpose(KartezioMetric):
     def mask_ious(self, masks_true, masks_pred):
         """return best-matched masks"""
         iou = _intersection_over_union(masks_true, masks_pred)[1:, 1:]
-        n_min = min(iou.shape[0], iou.shape[1])
+        n_min = min(iou.infos[0], iou.infos[1])
         costs = -(iou >= 0.5).astype(float) - iou / (2 * n_min)
         true_ind, pred_ind = linear_sum_assignment(costs)
         iout = np.zeros(masks_true.max())
@@ -189,7 +189,7 @@ class MetricCellpose(KartezioMetric):
         tp: float
             number of true positives at threshold
         """
-        n_min = min(iou.shape[0], iou.shape[1])
+        n_min = min(iou.infos[0], iou.infos[1])
         costs = -(iou >= th).astype(float) - iou / (2 * n_min)
         true_ind, pred_ind = linear_sum_assignment(costs)
         match_ok = iou[true_ind, pred_ind] >= th
@@ -223,7 +223,7 @@ class MetricIOU2(KartezioMetric):
         _y_pred[_y_pred > 0] = 1
         _y_true[_y_true > 0] = 1
         iou = _intersection_over_union(_y_true, _y_pred)
-        len_true, len_pred = iou.shape
+        len_true, len_pred = iou.infos
         if len_pred == 1 and len_true > 1:
             return Score(1.0)
         return Score(1.0 - iou[-1, -1])

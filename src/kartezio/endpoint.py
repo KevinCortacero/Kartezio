@@ -1,3 +1,5 @@
+from typing import List
+
 import cv2
 import numpy as np
 from numena.enums import IMAGE_UINT8_COLOR_1C
@@ -6,8 +8,9 @@ from numena.image.contour import contours_find
 from numena.image.morphology import WatershedSkimage
 from numena.image.threshold import threshold_tozero
 
-from kartezio.model.components import KartezioEndpoint
+from kartezio.model.components import KEndpoint, KSignature
 from kartezio.model.registry import registry
+from kartezio.model.types import TypeArray
 
 
 def register_endpoints():
@@ -16,8 +19,18 @@ def register_endpoints():
     )
 
 
+def f_labels(x, connectivity=4):
+    return [
+        x[0],
+        cv2.connectedComponents(x[0], connectivity=connectivity, ltype=cv2.CV_16U)[1],
+    ]
+
+
+endpoint_labels = KEndpoint(f_labels, [TypeArray])
+
+
 @registry.endpoints.add("LABELS")
-class EndpointLabels(KartezioEndpoint):
+class EndpointLabels(KEndpoint):
     def __init__(self, connectivity=4):
         super().__init__(f"Labels", "LABELS", 1, ["labels"])
         self.connectivity = connectivity
@@ -35,7 +48,7 @@ class EndpointLabels(KartezioEndpoint):
 
 
 @registry.endpoints.add("HCT")
-class EndpointHoughCircle(KartezioEndpoint):
+class EndpointHoughCircle(KEndpoint):
     def __init__(self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120):
         super().__init__("Hough Circle Transform", "HCT", 1, ["labels"])
         self.min_dist = min_dist
@@ -56,7 +69,7 @@ class EndpointHoughCircle(KartezioEndpoint):
     def call(self, x, args=None):
         mask = x[0]
         n = 0
-        new_mask = image_new(mask.shape)
+        new_mask = image_new(mask.infos)
         circles = cv2.HoughCircles(
             mask,
             cv2.HOUGH_GRADIENT,
@@ -84,7 +97,7 @@ class EndpointHoughCircle(KartezioEndpoint):
 
 
 @registry.endpoints.add("ELPS")
-class EndpointEllipse(KartezioEndpoint):
+class EndpointEllipse(KEndpoint):
     def _to_json_kwargs(self) -> dict:
         return {
             "min_axis": self.min_axis,
@@ -99,7 +112,7 @@ class EndpointEllipse(KartezioEndpoint):
     def call(self, x, args=None):
         mask = x[0]
         n = 0
-        new_labels = image_new(mask.shape)
+        new_labels = image_new(mask.infos)
         labels = []
 
         cnts = contours_find(x[0], exclude_holes=True)
@@ -128,8 +141,17 @@ class EndpointEllipse(KartezioEndpoint):
         }
 
 
+def f_e_threshold(x: List, threshold=2, mode="binary"):
+    if mode == "binary":
+        return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_BINARY)[1]]
+    return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_TOZERO)[1]]
+
+
+e_threshold = KEndpoint(f_e_threshold, [TypeArray])
+
+
 @registry.endpoints.add("TRSH")
-class EndpointThreshold(KartezioEndpoint):
+class EndpointThreshold(KEndpoint):
     def __init__(self, threshold=1):
         super().__init__(f"Threshold (t={threshold})", "TRSH", 1, ["mask"])
         self.threshold = threshold
@@ -144,7 +166,7 @@ class EndpointThreshold(KartezioEndpoint):
 
 
 @registry.endpoints.add("WSHD")
-class EndpointWatershed(KartezioEndpoint):
+class EndpointWatershed(KEndpoint):
     def __init__(self, use_dt=False, markers_distance=21, markers_area=None):
         super().__init__("Marker-Based Watershed", "WSHD", 2, [])
         self.wt = WatershedSkimage(
@@ -173,7 +195,7 @@ class EndpointWatershed(KartezioEndpoint):
 
 
 @registry.endpoints.add("LMW")
-class LocalMaxWatershed(KartezioEndpoint):
+class LocalMaxWatershed(KEndpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the distance transform of the mask
 
@@ -203,7 +225,7 @@ class LocalMaxWatershed(KartezioEndpoint):
 
 
 @registry.endpoints.add("RLMW")
-class RawLocalMaxWatershed(KartezioEndpoint):
+class RawLocalMaxWatershed(KEndpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the mask
 

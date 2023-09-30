@@ -4,7 +4,7 @@ from numena.io.drive import Directory
 from numena.time import eventid
 
 from kartezio.enums import JSON_ELITE
-from kartezio.model.components import KartezioCallback
+from kartezio.model.components import KCallback
 from kartezio.utils.io import JsonSaver
 
 
@@ -15,7 +15,7 @@ class Event(Enum):
     END_LOOP = "on_loop_end"
 
 
-class CallbackVerbose(KartezioCallback):
+class CallbackVerbose(KCallback):
     def _callback(self, n, e_name, e_content):
         fitness, time = e_content.get_best_fitness()
         if time == 0:
@@ -30,7 +30,7 @@ class CallbackVerbose(KartezioCallback):
             print(verbose)
 
 
-class CallbackSave(KartezioCallback):
+class CallbackSave(KCallback):
     def __init__(self, workdir, dataset, frequency=1):
         super().__init__(frequency)
         self.workdir = Directory(workdir).next(eventid())

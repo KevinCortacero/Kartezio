@@ -81,7 +81,7 @@ class KartezioTraining:
 
 
 def train_model(
-    model,
+    model: ModelCGP,
     dataset,
     output_directory,
     preprocessing=None,

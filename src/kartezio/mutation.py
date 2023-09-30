@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from kartezio.model.components import GenomeShape, KartezioGenome
+from kartezio.model.components import GenotypeInfos, KGenotype
 from kartezio.model.evolution import KartezioMutation
 from kartezio.model.registry import registry
 
@@ -30,9 +30,9 @@ class MutationClassic(KartezioMutation):
         self.mutation_rate = mutation_rate
         self.output_mutation_rate = output_mutation_rate
         self.n_mutations = int(
-            np.floor(self.shape.nodes * self.shape.w * self.mutation_rate)
+            np.floor(self.infos.nodes * self.infos.w * self.mutation_rate)
         )
-        self.all_indices = np.indices((self.shape.nodes, self.shape.w))
+        self.all_indices = np.indices((self.infos.nodes, self.infos.w))
         self.all_indices = np.vstack(
             (self.all_indices[0].ravel(), self.all_indices[1].ravel())
         ).T
@@ -47,13 +47,13 @@ class MutationClassic(KartezioMutation):
         for idx, mutation_parameter_index in sampling_indices:
             if mutation_parameter_index == 0:
                 self.mutate_function(genome, idx)
-            elif mutation_parameter_index <= self.shape.connections:
+            elif mutation_parameter_index <= self.infos.connections:
                 connection_idx = mutation_parameter_index - 1
                 self.mutate_connections(genome, idx, only_one=connection_idx)
             else:
-                parameter_idx = mutation_parameter_index - self.shape.connections - 1
+                parameter_idx = mutation_parameter_index - self.infos.connections - 1
                 self.mutate_parameters(genome, idx, only_one=parameter_idx)
-        for output in range(self.shape.outputs):
+        for output in range(self.infos.outputs):
             if random.random() < self.output_mutation_rate:
                 self.mutate_output(genome, output)
         return genome
@@ -65,25 +65,25 @@ class MutationAllRandom(KartezioMutation):
     Can be used to initialize genome (genome) randomly
     """
 
-    def __init__(self, metadata: GenomeShape, n_functions: int):
+    def __init__(self, metadata: GenotypeInfos, n_functions: int):
         super().__init__(metadata, n_functions)
 
-    def mutate(self, genome: KartezioGenome):
+    def mutate(self, genome: KGenotype):
         # mutate genes
-        for i in range(self.shape.nodes):
+        for i in range(self.infos.nodes):
             self.mutate_function(genome, i)
             self.mutate_connections(genome, i)
             self.mutate_parameters(genome, i)
         # mutate outputs
-        for i in range(self.shape.outputs):
+        for i in range(self.infos.outputs):
             self.mutate_output(genome, i)
         return genome
 
 
 @registry.mutations.add("copy")
 class CopyGenome:
-    def __init__(self, genome: KartezioGenome):
+    def __init__(self, genome: KGenotype):
         self.genome = genome
 
-    def mutate(self, _genome: KartezioGenome):
+    def mutate(self, _genome: KGenotype):
         return self.genome.clone()

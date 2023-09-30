@@ -1,11 +1,11 @@
-from kartezio.endpoint import EndpointThreshold
+from kartezio.endpoint import EndpointThreshold, e_threshold
 from kartezio.improc.primitives import library_opencv
 from kartezio.model.builder import ModelBuilder
-from kartezio.stacker import StackerMean
+from kartezio.stacker import StackerMean, a_mean
 
-ENDPOINT_DEFAULT_SEGMENTATION = EndpointThreshold(threshold=4)
+ENDPOINT_DEFAULT_SEGMENTATION = e_threshold
 BUNDLE_DEFAULT_SEGMENTATION = library_opencv
-STACKER_DEFAULT_SEGMENTATION = StackerMean()
+STACKER_DEFAULT_SEGMENTATION = a_mean
 
 
 def create_segmentation_model(

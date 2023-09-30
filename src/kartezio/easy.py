@@ -22,7 +22,7 @@ def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False
     from kartezio.utils.viewer import KartezioViewer
 
     viewer = KartezioViewer(
-        model.parser.shape, model.parser.function_bundle, model.parser.endpoint
+        model.decoder.infos, model.decoder.library, model.decoder.endpoint
     )
     return viewer.get_graph(
         model.genome,
@@ -40,7 +40,7 @@ def generate_python_class(filepath, class_name):
 
 
 def python_class(model, class_name):
-    python_writer = GenomeToPython(model._model.parser)
+    python_writer = GenomeToPython(model._model.decoder)
     python_writer.to_python_class(class_name, model._model.genome)
 
 
@@ -57,8 +57,8 @@ def print_stats(values, fitness, set_name):
 
 
 def get_model_size(model):
-    return model._model.parser.active_size(model._model.genome)
+    return model._model.decoder.active_size(model._model.genome)
 
 
 def node_histogram(model):
-    return model._model.parser.node_histogram(model._model.genome)
+    return model._model.decoder.node_histogram(model._model.genome)

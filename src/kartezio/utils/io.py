@@ -4,7 +4,7 @@ from numena.io.drive import Directory
 from numena.io.json import json_read, json_write
 
 import kartezio.utils.json_utils as json
-from kartezio.model.components import KartezioGenome, KartezioParser
+from kartezio.model.components import KGenotype, KDecoder
 
 
 def pack_one_directory(directory_path):
@@ -40,21 +40,21 @@ class JsonLoader:
     def read_individual(self, filepath):
         json_data = json_read(filepath=filepath)
         dataset = json_data["dataset"]
-        parser = KartezioParser.from_json(json_data["decoding"])
+        parser = KDecoder.from_json(json_data["decoding"])
         try:
-            individual = KartezioGenome.from_json(json_data["individual"])
+            individual = KGenotype.from_json(json_data["individual"])
         except KeyError:
             try:
-                individual = KartezioGenome.from_json(json_data)
+                individual = KGenotype.from_json(json_data)
             except KeyError:
-                individual = KartezioGenome.from_json(json_data["population"][0])
+                individual = KGenotype.from_json(json_data["population"][0])
         return dataset, individual, parser
 
 
 class JsonSaver:
-    def __init__(self, dataset, parser):
+    def __init__(self, dataset, parser: KDecoder):
         self.dataset_json = json.from_dataset(dataset)
-        self.parser_as_json = parser.dumps()
+        self.parser_as_json = parser.to_toml()
 
     def save_population(self, filepath, population):
         json_data = {

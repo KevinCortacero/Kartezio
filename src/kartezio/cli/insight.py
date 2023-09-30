@@ -48,7 +48,7 @@ def main():
     args = parser.parse_args()
 
     model = KartezioModel(args.model, registry.fitness.instantiate("AP"))
-    insight = KartezioInsight(model._model.parser)
+    insight = KartezioInsight(model._model.decoder)
     dataset = read_dataset(args.dataset, indices=model.indices)
     # p, f, t = model.eval(dataset, subset="test", reformat_x=reformat_x)
     # print(1.0 - f)

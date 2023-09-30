@@ -5,14 +5,15 @@ import numpy as np
 
 from kartezio.model.components import (
     GenomeReaderWriter,
-    KartezioComponent,
-    KartezioGenome,
-    KartezioNode,
+    KComponent,
+    KGenotype,
+    KNode,
+    KSignature,
 )
 from kartezio.model.types import Score, ScoreList
 
 
-class KartezioMetric(KartezioNode, ABC):
+class KartezioMetric(KNode, ABC):
     def __init__(
         self,
         name: str,
@@ -28,7 +29,11 @@ class KartezioMetric(KartezioNode, ABC):
 MetricList = List[KartezioMetric]
 
 
-class KartezioFitness(KartezioNode, ABC):
+class KFitness(KNode):
+    pass
+
+
+class KartezioFitness(KNode, ABC):
     def __init__(
         self,
         name: str,
@@ -36,7 +41,7 @@ class KartezioFitness(KartezioNode, ABC):
         arity: int,
         default_metric: KartezioMetric = None,
     ):
-        super().__init__(name, symbol, arity, 0)
+        super().__init__(name, arity, 0)
         self.metrics: MetricList = []
         if default_metric:
             self.add_metric(default_metric)
@@ -80,7 +85,7 @@ class KartezioMutation(GenomeReaderWriter, ABC):
 
     @property
     def random_parameters(self):
-        return np.random.randint(self.parameter_max_value, size=self.shape.parameters)
+        return np.random.randint(self.parameter_max_value, size=self.infos.parameters)
 
     @property
     def random_functions(self):
@@ -88,19 +93,17 @@ class KartezioMutation(GenomeReaderWriter, ABC):
 
     @property
     def random_output(self):
-        return np.random.randint(self.shape.out_idx, size=1)
+        return np.random.randint(self.infos.out_idx, size=1)
 
     def random_connections(self, idx: int):
         return np.random.randint(
-            self.shape.nodes_idx + idx, size=self.shape.connections
+            self.infos.nodes_idx + idx, size=self.infos.connections
         )
 
-    def mutate_function(self, genome: KartezioGenome, idx: int):
+    def mutate_function(self, genome: KGenotype, idx: int):
         self.write_function(genome, idx, self.random_functions)
 
-    def mutate_connections(
-        self, genome: KartezioGenome, idx: int, only_one: int = None
-    ):
+    def mutate_connections(self, genome: KGenotype, idx: int, only_one: int = None):
         new_connections = self.random_connections(idx)
         if only_one is not None:
             new_value = new_connections[only_one]
@@ -108,7 +111,7 @@ class KartezioMutation(GenomeReaderWriter, ABC):
             new_connections[only_one] = new_value
         self.write_connections(genome, idx, new_connections)
 
-    def mutate_parameters(self, genome: KartezioGenome, idx: int, only_one: int = None):
+    def mutate_parameters(self, genome: KGenotype, idx: int, only_one: int = None):
         new_parameters = self.random_parameters
         if only_one is not None:
             old_parameters = self.read_parameters(genome, idx)
@@ -116,15 +119,15 @@ class KartezioMutation(GenomeReaderWriter, ABC):
             new_parameters = old_parameters.copy()
         self.write_parameters(genome, idx, new_parameters)
 
-    def mutate_output(self, genome: KartezioGenome, idx: int):
+    def mutate_output(self, genome: KGenotype, idx: int):
         self.write_output_connection(genome, idx, self.random_output)
 
     @abstractmethod
-    def mutate(self, genome: KartezioGenome):
+    def mutate(self, genome: KGenotype):
         pass
 
 
-class KartezioPopulation(KartezioComponent, ABC):
+class KartezioPopulation(KComponent, ABC):
     def __init__(self, size):
         self.size = size
         self.individuals = [None] * self.size
@@ -166,7 +169,7 @@ class KartezioPopulation(KartezioComponent, ABC):
         return np.array(score_list, dtype=[("fitness", float), ("time", float)])
 
 
-class KartezioES(ABC):
+class KStrategy(ABC):
     @abstractmethod
     def selection(self):
         pass

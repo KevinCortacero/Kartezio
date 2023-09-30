@@ -30,7 +30,7 @@ def main():
     print(args.model)
     model = load_model(args.model)
     viewer = KartezioViewer(
-        model.parser.shape, model.parser.function_bundle, model.parser.endpoint
+        model.decoder.infos, model.decoder.library, model.decoder.endpoint
     )
     model_graph = viewer.get_graph(
         model.genome, inputs=args.inputs, outputs=args.outputs

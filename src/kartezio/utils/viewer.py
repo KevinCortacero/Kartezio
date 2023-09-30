@@ -5,10 +5,10 @@ import pygraphviz as pgv
 from networkx.drawing.nx_agraph import from_agraph
 from PIL import Image
 
-from kartezio.model.components import KartezioParser
+from kartezio.model.components import KDecoder
 
 
-class KartezioViewer(KartezioParser):
+class KartezioViewer(KDecoder):
     def __init__(self, metadata, bundle, endpoint):
         super().__init__(metadata, bundle, endpoint)
 
@@ -34,9 +34,9 @@ class KartezioViewer(KartezioParser):
             active_nodes = sum(active_nodes, [])
 
         with G.subgraph(
-            range(self.shape.inputs), name="cluster_inputs", penwidth=0, rank="source"
+            range(self.infos.inputs), name="cluster_inputs", penwidth=0, rank="source"
         ) as cluster_inputs:
-            for node in range(self.shape.inputs):
+            for node in range(self.infos.inputs):
                 if inputs:
                     label = f"- {node} -\n{inputs[node]}"
                 else:
@@ -44,39 +44,39 @@ class KartezioViewer(KartezioParser):
                 cluster_inputs.add_primitive(node, label=label, fillcolor="#B6D7A8")
 
         with G.subgraph(
-            range(self.shape.inputs, self.shape.out_idx),
+            range(self.infos.inputs, self.infos.out_idx),
             name="cluster_genes",
             penwidth=0,
         ) as cluster_genes:
-            for node in range(self.shape.inputs, self.shape.out_idx):
+            for node in range(self.infos.inputs, self.infos.out_idx):
                 if only_active and node not in active_nodes:
                     continue
-                function_index = self.read_function(genome, node - self.shape.inputs)
-                function_name = self.function_bundle.name_of(function_index)
+                function_index = self.read_function(genome, node - self.infos.inputs)
+                function_name = self.library.f_name_of(function_index)
                 cluster_genes.add_primitive(node, label=f"- {node} -\n{function_name}")
-                active_connections = self.function_bundle.arity_of(function_index)
+                active_connections = self.library.arity_of(function_index)
                 connections = self.read_active_connections(
-                    genome, node - self.shape.inputs, active_connections
+                    genome, node - self.infos.inputs, active_connections
                 )
-                parameters = self.read_parameters(genome, node - self.shape.inputs)
+                parameters = self.read_parameters(genome, node - self.infos.inputs)
 
                 for c in connections:
                     G.add_edge(c, node)
 
         with G.subgraph(
-            range(self.shape.out_idx, self.shape.out_idx + self.shape.outputs),
+            range(self.infos.out_idx, self.infos.out_idx + self.infos.outputs),
             name="cluster_outputs",
             penwidth=0,
             rank="sink",
         ) as cluster_outputs:
             for node in range(
-                self.shape.out_idx, self.shape.out_idx + self.shape.outputs
+                self.infos.out_idx, self.infos.out_idx + self.infos.outputs
             ):
-                c = self.read_outputs(genome)[node - self.shape.out_idx][
-                    self.shape.con_idx
+                c = self.read_outputs(genome)[node - self.infos.out_idx][
+                    self.infos.con_idx
                 ]
                 if outputs:
-                    label = f"- {node} -\n{outputs[node - self.shape.out_idx]}"
+                    label = f"- {node} -\n{outputs[node - self.infos.out_idx]}"
                 else:
                     label = f"- {node} -\nOUT_{node}"
                 cluster_outputs.add_primitive(node, label=label, fillcolor="#F9CB9C")
@@ -86,7 +86,7 @@ class KartezioViewer(KartezioParser):
         X = from_agraph(G)
         max_rank = 0
         node_rank = 0
-        for node_in in range(self.shape.inputs):
+        for node_in in range(self.infos.inputs):
             # dictionary {node: length}
             lengths = nx.shortest_path_length(X, str(node_in))
             result = max(lengths.items(), key=lambda p: p[1])
@@ -95,7 +95,7 @@ class KartezioViewer(KartezioParser):
                 node_rank = result[0]
 
         for node_out in range(
-            self.shape.out_idx, self.shape.out_idx + self.shape.outputs
+            self.infos.out_idx, self.infos.out_idx + self.infos.outputs
         ):
             G.add_edge(node_rank, node_out, style="invis")
 

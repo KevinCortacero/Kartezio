@@ -1,8 +1,8 @@
-from kartezio.model.evolution import KartezioES
+from kartezio.model.evolution import KStrategy
 from kartezio.population import PopulationWithElite
 
 
-class OnePlusLambda(KartezioES):
+class OnePlusLambda(KStrategy):
     def __init__(self, _lambda, factory, init_method, mutation_method, fitness):
         self._mu = 1
         self._lambda = _lambda
@@ -35,5 +35,5 @@ class OnePlusLambda(KartezioES):
             self.population[i] = self.mutation_method.mutate(self.population[i])
 
     def evaluation(self, y_true, y_pred):
-        fitness = self.fitness.call(y_true, y_pred)
+        fitness = self.fitness(y_true, y_pred)
         self.population.set_fitness(fitness)

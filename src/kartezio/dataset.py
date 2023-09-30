@@ -164,7 +164,7 @@ class ImageMaskReader(DataReader):
             return DataItem([mask], shape, 0)
         image = imread_grayscale(filepath)
         _, labels = cv2.connectedComponents(image)
-        return DataItem([labels], image.shape[:2], len(np.unique(labels)) - 1, image)
+        return DataItem([labels], image.infos[:2], len(np.unique(labels)) - 1, image)
 
 
 @registry.readers.add("image_hsv")
@@ -172,7 +172,7 @@ class ImageHSVReader(DataReader):
     def _read(self, filepath, shape=None):
         image_bgr = imread_color(filepath)
         image_hsv = bgr2hsv(image_bgr)
-        return DataItem(image_split(image_hsv), image_bgr.shape[:2], None, image_bgr)
+        return DataItem(image_split(image_hsv), image_bgr.infos[:2], None, image_bgr)
 
 
 @registry.readers.add("image_hed")
@@ -180,7 +180,7 @@ class ImageHEDReader(DataReader):
     def _read(self, filepath, shape=None):
         image_bgr = imread_color(filepath)
         image_hed = bgr2hed(image_bgr)
-        return DataItem(image_split(image_hed), image_bgr.shape[:2], None, image_bgr)
+        return DataItem(image_split(image_hed), image_bgr.infos[:2], None, image_bgr)
 
 
 @registry.readers.add("image_labels")
@@ -189,7 +189,7 @@ class ImageLabels(DataReader):
         image = cv2.imread(filepath, cv2.IMREAD_ANYDEPTH)
         for i, current_value in enumerate(np.unique(image)):
             image[image == current_value] = i
-        return DataItem([image], image.shape[:2], image.max(), visual=image)
+        return DataItem([image], image.infos[:2], image.max(), visual=image)
 
 
 @registry.readers.add("image_rgb")
@@ -197,7 +197,7 @@ class ImageRGBReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_color(filepath, rgb=False)
         return DataItem(
-            image_split(image), image.shape[:2], None, visual=rgb2bgr(image)
+            image_split(image), image.infos[:2], None, visual=rgb2bgr(image)
         )
 
 
@@ -218,7 +218,7 @@ class ImageGrayscaleReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_grayscale(filepath)
         visual = cv2.merge((image, image, image))
-        return DataItem([image], image.shape, None, visual=visual)
+        return DataItem([image], image.infos, None, visual=visual)
 
 
 @registry.readers.add("roi_polygon")
@@ -245,24 +245,24 @@ class ImageChannelsReader(DataReader):
         image = imread_tiff(filepath)
         if image.dtype == np.uint16:
             raise ValueError(f"Image must be 8bits! ({filepath})")
-        shape = image.shape[-2:]
-        if len(image.shape) == 2:
+        shape = image.infos[-2:]
+        if len(image.infos) == 2:
             channels = [image]
             preview = gray2rgb(channels[0])
-        if len(image.shape) == 3:
+        if len(image.infos) == 3:
             # channels: (c, h, w)
             channels = [channel for channel in image]
             preview = cv2.merge(
-                (image_new(channels[0].shape), channels[0], channels[1])
+                (image_new(channels[0].infos), channels[0], channels[1])
             )
-        if len(image.shape) == 4:
+        if len(image.infos) == 4:
             # stack: (z, c, h, w)
             channels = [image[:, i] for i in range(len(image[0]))]
             preview = cv2.merge(
                 (
                     channels[0].max(axis=0).astype(np.uint8),
                     channels[1].max(axis=0).astype(np.uint8),
-                    image_new(channels[0][0].shape, dtype=np.uint8),
+                    image_new(channels[0][0].infos, dtype=np.uint8),
                 )
             )
             cv2.imwrite("rgb_image.png", preview)
@@ -349,7 +349,7 @@ class DatasetReader(Directory):
             dataframe = dataframe.loc[indices]
         for row in dataframe.itertuples():
             x = self.input_reader.read(row.input, shape=None)
-            y = self.label_reader.read(row.label, shape=x.shape)
+            y = self.label_reader.read(row.label, shape=x.infos)
             if self.counting:
                 y = [y.datalist[0], y.count]
             else:

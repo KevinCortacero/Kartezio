@@ -11,7 +11,7 @@ from numena.io.json import json_read
 from kartezio.dataset import read_dataset
 from kartezio.fitness import FitnessAP
 from kartezio.inference import KartezioModel
-from kartezio.model.components import KartezioGenome
+from kartezio.model.components import KGenotype
 from kartezio.preprocessing import SelectChannels
 from kartezio.utils.viewer import KartezioViewer
 
@@ -39,9 +39,9 @@ def main():
     history_directory = Directory(args.history)
     model = KartezioModel(f"{history_directory._path}/elite.json", fitness=FitnessAP())
     viewer = KartezioViewer(
-        model._model.parser.shape,
-        model._model.parser.function_bundle,
-        model._model.parser.endpoint,
+        model._model.decoder.infos,
+        model._model.decoder.library,
+        model._model.decoder.endpoint,
     )
     dataset = read_dataset(dataset_path=args.dataset, indices=model.indices)
     cols_std = ["Original Image", "Annotations", "Parent", "Child", "Child"]
@@ -74,7 +74,7 @@ def main():
                 sequence = np.asarray(
                     ast.literal_eval(json_data["population"][m]["sequence"])
                 )
-                genome = KartezioGenome(sequence=sequence)
+                genome = KGenotype(sequence=sequence)
                 model._model.genome = genome
                 p, f, t = model.eval(
                     dataset, subset="train", preprocessing=preprocessing
@@ -98,7 +98,7 @@ def main():
             sequence = np.asarray(
                 ast.literal_eval(json_data["population"][m]["sequence"])
             )
-            genome = KartezioGenome(sequence=sequence)
+            genome = KGenotype(sequence=sequence)
             model._model.genome = genome
 
             """

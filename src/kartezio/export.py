@@ -1,11 +1,11 @@
 import cv2
 
-from kartezio.model.components import KartezioParser, KartezioToCode
+from kartezio.model.components import KDecoder, KartezioToCode
 
 
 class GenomeToPython(KartezioToCode):
-    def __init__(self, parser: KartezioParser):
-        super().__init__(parser.shape, parser.function_bundle, parser.endpoint)
+    def __init__(self, parser: KDecoder):
+        super().__init__(parser.infos, parser.library, parser.endpoint)
         self.indent_1 = " " * 4
         self.indent_2 = self.indent_1 * 2
         self.imports = "from kartezio.inference import CodeModel\n"
@@ -33,26 +33,26 @@ class GenomeToPython(KartezioToCode):
         list_of_outputs = []
         map_of_outputs = {}
 
-        for i in range(self.shape.outputs):
+        for i in range(self.infos.outputs):
             active_nodes = self.parse_to_graphs(genome)[i]
             for node in active_nodes:
                 if node in list_of_inputs or node in list_of_nodes:
                     continue
-                if node < self.shape.inputs:
+                if node < self.infos.inputs:
                     list_of_inputs.append(node)
                     map_of_input[node] = f"{self.indent_2}x_{node} = X[{node}]\n"
-                elif node < self.shape.out_idx:
+                elif node < self.infos.out_idx:
                     function_index = self.read_function(
-                        genome, node - self.shape.inputs
+                        genome, node - self.infos.inputs
                     )
-                    active_connections = self.function_bundle.arity_of(function_index)
+                    active_connections = self.library.arity_of(function_index)
                     connections = self.read_active_connections(
-                        genome, node - self.shape.inputs, active_connections
+                        genome, node - self.infos.inputs, active_connections
                     )
-                    parameters = self.read_parameters(genome, node - self.shape.inputs)
-                    f_name = self.function_bundle.name_of(function_index)
+                    parameters = self.read_parameters(genome, node - self.infos.inputs)
+                    f_name = self.library.f_name_of(function_index)
                     c_names = [
-                        f"x_{c}" if c < self.shape.inputs else f"node_{c}"
+                        f"x_{c}" if c < self.infos.inputs else f"node_{c}"
                         for c in connections
                     ]
                     c_names = "[" + ", ".join(c_names) + "]"
@@ -68,7 +68,7 @@ class GenomeToPython(KartezioToCode):
             python_code += map_of_nodes[function_node]
         for output_node in sorted(set(list_of_outputs)):
             python_code += map_of_outputs[output_node]
-        output_list = str([f"y_{y}" for y in range(self.shape.outputs)]).replace(
+        output_list = str([f"y_{y}" for y in range(self.infos.outputs)]).replace(
             "'", ""
         )
         output_list = f"{self.indent_2}Y = {output_list}\n"
@@ -80,9 +80,9 @@ class GenomeToPython(KartezioToCode):
         print(f"# {'=' * 86}")
 
 
-class KartezioInsight(KartezioParser):
-    def __init__(self, parser: KartezioParser, preprocessing=None):
-        super().__init__(parser.shape, parser.function_bundle, parser.endpoint)
+class KartezioInsight(KDecoder):
+    def __init__(self, parser: KDecoder, preprocessing=None):
+        super().__init__(parser.infos, parser.library, parser.endpoint)
         self.preprocessing = preprocessing
 
     def create_node_images(self, genome, x, prefix="", crop=None):

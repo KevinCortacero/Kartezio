@@ -1,5 +1,10 @@
+import bz2
+import pickle
 import time
+
+import toml
 from dataclasses import dataclass, field
+from typing import Sequence
 
 import cv2
 import numpy as np
@@ -16,23 +21,23 @@ from kartezio.improc.kernel import (
     gabor_kernel,
     kernel_from_parameters,
 )
-from kartezio.model.library import KLibrary
-from kartezio.model.primitive import KPrimitive, KSignature
-from kartezio.model.types import KType, TypeArray
-
-
-@dataclass
-class SignatureImage(KSignature):
-    output_type: KType = field(init=False, default=TypeArray)
+from kartezio.model.components import (
+    KSignature,
+    KPrimitive,
+    GenotypeInfos,
+    KEndpoint,
+    DecoderSequential,
+    KLibrary,
+)
+from kartezio.model.types import TypeArray
 
 
 class LibraryDefaultOpenCV(KLibrary):
     def __init__(self):
         super().__init__(TypeArray)
 
-    def create_primitive(self, name, symbol, arity, parameters, function):
-        signature = SignatureImage(name, [TypeArray] * arity, parameters)
-        primitive = KPrimitive(symbol, signature, function)
+    def create_primitive(self, name, arity, parameters, function):
+        primitive = KPrimitive(function, [TypeArray] * arity, [TypeArray], parameters)
         self.add_primitive(primitive)
 
 
@@ -128,13 +133,6 @@ def f_sobel_new(x, args=None):
 
 
 def f_roberts(x, args=None):
-    img = (x[0] / 255.0).astype(np.float32)
-    h = cv2.filter2D(img, -1, KERNEL_ROBERTS_X)
-    v = cv2.filter2D(img, -1, KERNEL_ROBERTS_Y)
-    return (cv2.sqrt(cv2.pow(h, 2) + cv2.pow(v, 2)) * 255).astype(np.uint8)
-
-
-def f_roberts_new(x, args=None):
     dx = cv2.filter2D(x[0], cv2.CV_32F, KERNEL_ROBERTS_X)
     dy = cv2.filter2D(x[0], cv2.CV_32F, KERNEL_ROBERTS_Y)
     return cv2.convertScaleAbs(cv2.magnitude(dx, dy))
@@ -295,53 +293,69 @@ def f_inrange(x, args=None):
 
 
 library_opencv = LibraryDefaultOpenCV()
-library_opencv.create_primitive("Max", "max", 2, 0, f_max)
-library_opencv.create_primitive("Min", "min", 2, 0, f_min)
-library_opencv.create_primitive("Mean", "mean", 2, 0, f_mean)
-library_opencv.create_primitive("Add", "add", 2, 0, f_add)
-library_opencv.create_primitive("Subtract", "sub", 2, 0, f_sub)
-library_opencv.create_primitive("Bitwise Not", "not", 1, 0, f_bitwise_not)
-library_opencv.create_primitive("Bitwise Or", "or", 2, 0, f_bitwise_or)
-library_opencv.create_primitive("Bitwise And", "and", 2, 0, f_bitwise_and)
-library_opencv.create_primitive("Bitwise And Mask", "andm", 2, 0, f_bitwise_and_mask)
-library_opencv.create_primitive("Bitwise Xor", "xor", 2, 0, f_bitwise_xor)
-library_opencv.create_primitive("Square Root", "sqrt", 1, 0, f_sqrt)
-library_opencv.create_primitive("Power 2", "pow", 1, 0, f_pow)
-library_opencv.create_primitive("Exp", "exp", 1, 0, f_exp)
-library_opencv.create_primitive("Log", "log", 1, 0, f_log)
-library_opencv.create_primitive("Median Blur", "blrm", 1, 1, f_median_blur)
-library_opencv.create_primitive("Gaussian Blur", "blrg", 1, 1, f_gaussian_blur)
-library_opencv.create_primitive("Laplacian", "lplc", 1, 0, f_laplacian)
-library_opencv.create_primitive("Sobel", "sobl", 1, 2, f_sobel)
-library_opencv.create_primitive("Roberts", "rbrt", 1, 1, f_roberts_new)
-library_opencv.create_primitive("Canny", "cany", 1, 2, f_canny)
-library_opencv.create_primitive("Sharpen", "shrp", 1, 0, f_sharpen)
-library_opencv.create_primitive("Gabor", "gabr", 1, 2, f_gabor)
-library_opencv.create_primitive("Subtract Gaussian", "absd", 1, 2, f_diff_gaussian)
-library_opencv.create_primitive("Absolute Difference", "abs2", 2, 0, f_absdiff)
-library_opencv.create_primitive("Fluo TopHat", "fluo", 1, 2, f_fluo_tophat)
-library_opencv.create_primitive("Relative Difference", "reld", 1, 1, f_relative_diff)
-library_opencv.create_primitive("Erode", "erod", 1, 2, f_erode)
-library_opencv.create_primitive("Dilate", "dilt", 1, 2, f_dilate)
-library_opencv.create_primitive("Open", "open", 1, 2, f_open)
-library_opencv.create_primitive("Close", "clse", 1, 2, f_close)
-library_opencv.create_primitive("Morph Gradient", "mgrd", 1, 2, f_morph_gradient)
-library_opencv.create_primitive("Morph Tophat", "mtht", 1, 2, f_morph_tophat)
-library_opencv.create_primitive("Morph BlackHat", "mbht", 1, 2, f_morph_blackhat)
-library_opencv.create_primitive("Morph Fill", "fill", 1, 0, f_fill)
+library_opencv.create_primitive("Max", 2, 0, f_max)
+library_opencv.create_primitive("Min", 2, 0, f_min)
+library_opencv.create_primitive("Mean", 2, 0, f_mean)
+library_opencv.create_primitive("Add", 2, 0, f_add)
+library_opencv.create_primitive("Subtract", 2, 0, f_sub)
+library_opencv.create_primitive("Bitwise Not", 1, 0, f_bitwise_not)
+library_opencv.create_primitive("Bitwise Or", 2, 0, f_bitwise_or)
+library_opencv.create_primitive("Bitwise And", 2, 0, f_bitwise_and)
+library_opencv.create_primitive("Bitwise And Mask", 2, 0, f_bitwise_and_mask)
+library_opencv.create_primitive("Bitwise Xor", 2, 0, f_bitwise_xor)
+library_opencv.create_primitive("Square Root", 1, 0, f_sqrt)
+library_opencv.create_primitive("Power 2", 1, 0, f_pow)
+library_opencv.create_primitive("Exp", 1, 0, f_exp)
+library_opencv.create_primitive("Log", 1, 0, f_log)
+library_opencv.create_primitive("Median Blur", 1, 1, f_median_blur)
+library_opencv.create_primitive("Gaussian Blur", 1, 1, f_gaussian_blur)
+library_opencv.create_primitive("Laplacian", 1, 0, f_laplacian)
+library_opencv.create_primitive("Sobel", 1, 2, f_sobel)
+library_opencv.create_primitive("Roberts", 1, 1, f_roberts)
+library_opencv.create_primitive("Canny", 1, 2, f_canny)
+library_opencv.create_primitive("Sharpen", 1, 0, f_sharpen)
+library_opencv.create_primitive("Gabor", 1, 2, f_gabor)
+library_opencv.create_primitive("Subtract Gaussian", 1, 2, f_diff_gaussian)
+library_opencv.create_primitive("Absolute Difference", 2, 0, f_absdiff)
+library_opencv.create_primitive("Fluo TopHat", 1, 2, f_fluo_tophat)
+library_opencv.create_primitive("Relative Difference", 1, 1, f_relative_diff)
+library_opencv.create_primitive("Erode", 1, 2, f_erode)
+library_opencv.create_primitive("Dilate", 1, 2, f_dilate)
+library_opencv.create_primitive("Open", 1, 2, f_open)
+library_opencv.create_primitive("Close", 1, 2, f_close)
+library_opencv.create_primitive("Morph Gradient", 1, 2, f_morph_gradient)
+library_opencv.create_primitive("Morph Tophat", 1, 2, f_morph_tophat)
+library_opencv.create_primitive("Morph BlackHat", 1, 2, f_morph_blackhat)
+library_opencv.create_primitive("Morph Fill", 1, 0, f_fill)
+library_opencv.create_primitive("Remove Small Objects", 1, 1, f_remove_small_objects)
+library_opencv.create_primitive("Remove Small Holes", 1, 1, f_remove_small_holes)
+library_opencv.create_primitive("Threshold", 1, 2, f_threshold)
+library_opencv.create_primitive("Threshold at 1", 1, 1, f_threshold_at_1)
+library_opencv.create_primitive("Distance Transform", 1, 1, f_distance_transform)
 library_opencv.create_primitive(
-    "Remove Small Objects", "rmso", 1, 1, f_remove_small_objects
+    "Distance Transform Threshold", 1, 2, f_distance_transform_thresh
 )
-library_opencv.create_primitive(
-    "Remove Small Holes", "rmsh", 1, 1, f_remove_small_holes
-)
-library_opencv.create_primitive("Threshold", "trh", 1, 2, f_threshold)
-library_opencv.create_primitive("Threshold at 1", "trh1", 1, 1, f_threshold_at_1)
-library_opencv.create_primitive(
-    "Distance Transform", "dtrf", 1, 1, f_distance_transform
-)
-library_opencv.create_primitive(
-    "Distance Transform Threshold", "dttr", 1, 2, f_distance_transform_thresh
-)
-library_opencv.create_primitive("Binary In Range", "brng", 1, 2, f_bin_inrange)
-library_opencv.create_primitive("In Range", "rng", 1, 2, f_inrange)
+library_opencv.create_primitive("Binary In Range", 1, 2, f_bin_inrange)
+library_opencv.create_primitive("In Range", 1, 2, f_inrange)
+
+
+def no_endpoint(x):
+    return x
+
+
+if __name__ == "__main__":
+    infos = GenotypeInfos()
+    library = library_opencv
+    endpoint = KEndpoint(
+        "Endpoint",
+        KSignature(no_endpoint.__name__, [TypeArray], [TypeArray], 0),
+        no_endpoint,
+    )
+    decoder = DecoderSequential(infos, library, endpoint)
+    with open("decoder.toml", "w") as toml_file:
+        toml.dump(decoder.to_toml(), toml_file)
+    print(toml.dumps(decoder.to_toml()))
+
+    with open("decoder.toml", "r") as toml_file:
+        toml_data = toml.load(toml_file)
+        print(toml_data)
