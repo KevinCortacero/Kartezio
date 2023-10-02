@@ -346,11 +346,8 @@ def no_endpoint(x):
 if __name__ == "__main__":
     infos = GenotypeInfos()
     library = library_opencv
-    endpoint = KEndpoint(
-        "Endpoint",
-        KSignature(no_endpoint.__name__, [TypeArray], [TypeArray], 0),
-        no_endpoint,
-    )
+    library.display()
+    endpoint = KEndpoint(no_endpoint, [TypeArray])
     decoder = DecoderSequential(infos, library, endpoint)
     with open("decoder.toml", "w") as toml_file:
         toml.dump(decoder.to_toml(), toml_file)

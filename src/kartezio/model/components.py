@@ -170,21 +170,20 @@ class KLibrary(KComponent, ABC):
         return len(self._primitives[i].inputs)
 
     def parameters_of(self, i):
-        return self._primitives[i].signature.f_parameters
+        return self._primitives[i].parameters
 
     def execute(self, f_index, x, args):
         return self._primitives[f_index](x, args)
 
     def display(self):
-        headers = ["Id", "Name", "f_name", "Inputs", "Outputs", "Arity", "Param."]
+        headers = ["Id", "Name", "Inputs", "Outputs", "Arity", "Parameters"]
         full_list = []
         for i, primitive in self._primitives.items():
             one_primitive_infos = [
                 i,
                 self.name_of(i),
-                self.f_name_of(i),
-                primitive.signature.f_inputs,
-                primitive.signature.f_outputs,
+                primitive.inputs,
+                primitive.output,
                 self.arity_of(i),
                 self.parameters_of(i),
             ]
