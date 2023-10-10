@@ -275,11 +275,11 @@ class GenotypeInfos:
     @staticmethod
     def from_json(json_data):
         return GenotypeInfos(
-            json_data["n_in"],
-            json_data["columns"],
-            json_data["n_out"],
-            json_data["n_conn"],
-            json_data["n_para"],
+            json_data["inputs"],
+            json_data["nodes"],
+            json_data["outputs"],
+            json_data["parameters"],
+            json_data["connections"],
         )
 
 
@@ -293,6 +293,7 @@ class KGenotypeArray(KGenotype):
     """
 
     def __init__(self, shape: tuple = (14, 5)):
+        super().__init__("Genotype")
         self.__genes = np.zeros(shape=shape, dtype=np.uint8)
 
     def __copy__(self):
@@ -302,7 +303,7 @@ class KGenotypeArray(KGenotype):
 
     def __deepcopy__(self, memo={}):
         new = self.__class__(self.__genes.shape)
-        new.genes = self.__genes.copy()
+        new.__genes = self.__genes.copy()
         return new
 
     def __getitem__(self, item):
@@ -313,13 +314,18 @@ class KGenotypeArray(KGenotype):
 
     @classmethod
     def from_ndarray(cls, genes: np.ndarray):
-        genotype = KGenotype()
-        genotype.genes = genes
+        genotype = KGenotypeArray()
+        genotype.__genes = genes
+        return genotype
 
     @classmethod
     def from_json(cls, json_data):
         genes = np.asarray(ast.literal_eval(json_data["sequence"]))
         return cls.from_ndarray(genes)
+
+    @property
+    def sequence(self):
+        return self.__genes
 
 
 class GenomeFactory(Factory):
@@ -419,13 +425,14 @@ class DecoderSequential(KDecoder):
 
     @staticmethod
     def from_json(json_data):
-        shape = GenotypeInfos.from_json(json_data["metadata"])
+        print(json_data)
+        shape = GenotypeInfos.from_json(json_data["genotype"])
         library = None  # KLibrary.from_json(json_data["functions"])
-        endpoint = KartezioEndpoint.from_json(json_data["endpoint"])
+        endpoint = None  # KEndpoint.from_json(json_data["endpoint"])
         if json_data["mode"] == "series":
             stacker = KAggregation.from_json(json_data["stacker"])
             return DecoderIterative(shape, library, stacker, endpoint)
-        return KDecoder(shape, library, endpoint)
+        return DecoderSequential(shape, library, endpoint)
 
     def _parse_one_graph(self, genome, graph_source):
         next_indices = graph_source.copy()

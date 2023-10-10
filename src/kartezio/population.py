@@ -26,7 +26,7 @@ class PopulationHistory:
     def fill(self, individuals, fitness, times):
         for i in range(len(individuals)):
             self.individuals[i].set_values(
-                individuals[i].genes, float(fitness[i]), float(times[i])
+                individuals[i].sequence, float(fitness[i]), float(times[i])
             )
 
     def get_best_fitness(self):
