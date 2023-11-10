@@ -52,7 +52,16 @@ An additional, but not published, comparison was performed against the reported 
 | AP50 on test set | 0.822       | 0.879       | 0.9811  | 0.9757   |
 
 ## References and Citation
-[TODO .bibtex]
+@article{cortacero2023evolutionary,
+  title={Evolutionary design of explainable algorithms for biomedical image segmentation},
+  author={Cortacero, K{\'e}vin and McKenzie, Brienne and M{\"u}ller, Sabina and Khazen, Roxana and Lafouresse, Fanny and Corsaut, Ga{\"e}lle and Van Acker, Nathalie and Frenois, Fran{\c{c}}ois-Xavier and Lamant, Laurence and Meyer, Nicolas and others},
+  journal={Nature Communications},
+  volume={14},
+  number={1},
+  pages={7112},
+  year={2023},
+  publisher={Nature Publishing Group UK London}
+}
 
 
 ## Licensing
