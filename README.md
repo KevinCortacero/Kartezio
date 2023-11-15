@@ -2,7 +2,7 @@
 <h5 align="center"> A Darwinian Designer of Explainable Algorithms for Biomedical Image Segmentation </h5>
 
 ## Package Description
-[TODO]
+Kartezio is a modular Cartesian Genetic Programming framework that generates fully transparent and easily interpretable image processing pipelines.
 
 ## Installation
 
