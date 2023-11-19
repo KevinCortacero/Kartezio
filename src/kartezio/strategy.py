@@ -35,5 +35,5 @@ class OnePlusLambda(KStrategy):
             self.population[i] = self.mutation_method.mutate(self.population[i])
 
     def evaluation(self, y_true, y_pred):
-        fitness = self.fitness(y_true, y_pred)
+        fitness = self.fitness.batch(y_true, y_pred)
         self.population.set_fitness(fitness)

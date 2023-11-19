@@ -5,7 +5,7 @@ import numpy as np
 import simplejson
 from kartezio.population import IndividualHistory
 
-from kartezio.model.components import GenotypeInfos, KGenotype
+from kartezio.model.components import GenotypeInfos, BaseGenotype
 
 """ KartezioGenome Metadata """
 
@@ -22,7 +22,7 @@ def to_metadata(json_data):
 
 def to_genome(json_data):
     sequence = np.asarray(ast.literal_eval(json_data["sequence"]))
-    return KGenotype(sequence=sequence)
+    return BaseGenotype(sequence=sequence)
 
 
 def from_individual(individual: IndividualHistory):

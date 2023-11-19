@@ -1,11 +1,11 @@
-from kartezio.endpoint import EndpointWatershed
-from kartezio.image.bundle import BUNDLE_OPENCV
+from kartezio.endpoint import EndpointWatershed, e_mcw
+from kartezio.improc.primitives import library_opencv
 from kartezio.model.builder import ModelBuilder
 from kartezio.stacker import MeanKartezioStackerForWatershed
 
-ENDPOINT_DEFAULT_INSTANCE_SEGMENTATION = EndpointWatershed()
-BUNDLE_DEFAULT_INSTANCE_SEGMENTATION = BUNDLE_OPENCV
-STACKER_DEFAULT_INSTANCE_SEGMENTATION = MeanKartezioStackerForWatershed()
+ENDPOINT_DEFAULT_INSTANCE_SEGMENTATION = e_mcw
+BUNDLE_DEFAULT_INSTANCE_SEGMENTATION = library_opencv
+STACKER_DEFAULT_INSTANCE_SEGMENTATION = None  # MeanKartezioStackerForWatershed()
 
 
 def create_instance_segmentation_model(

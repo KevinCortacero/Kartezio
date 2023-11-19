@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from kartezio.model.components import GenotypeInfos, KGenotype
+from kartezio.model.components import GenotypeInfos, BaseGenotype
 from kartezio.model.evolution import KartezioMutation
 from kartezio.model.registry import registry
 
@@ -68,7 +68,7 @@ class MutationAllRandom(KartezioMutation):
     def __init__(self, metadata: GenotypeInfos, n_functions: int):
         super().__init__(metadata, n_functions)
 
-    def mutate(self, genome: KGenotype):
+    def mutate(self, genome: BaseGenotype):
         # mutate genes
         for i in range(self.infos.nodes):
             self.mutate_function(genome, i)
@@ -82,8 +82,8 @@ class MutationAllRandom(KartezioMutation):
 
 @registry.mutations.add("copy")
 class CopyGenome:
-    def __init__(self, genome: KGenotype):
+    def __init__(self, genome: BaseGenotype):
         self.genome = genome
 
-    def mutate(self, _genome: KGenotype):
+    def mutate(self, _genome: BaseGenotype):
         return self.genome.clone()

@@ -4,4 +4,4 @@ from typing import Dict
 
 from tabulate import tabulate
 
-from kartezio.model.components import KComponent, KPrimitive
+from kartezio.model.components import BaseComponent, Primitive

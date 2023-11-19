@@ -18,14 +18,14 @@ from kartezio.model.helpers import Factory, Observer, Prototype, singleton
 from kartezio.model.types import KType
 
 
-class KComponent(ABC):
-    def __init__(self, name):
+class BaseComponent(ABC):
+    def __init__(self, name: str):
         self.name = name
 
-    def _save_as(self, _class):
+    def _save_as(self, _class: type, replace=False):
         assert isinstance(_class, type), f"{_class} is not a Class!"
-        assert issubclass(_class, KComponent), f"{_class} is not a KComponent!"
-        self.database.add(_class.__name__, self.name, self)
+        assert issubclass(_class, BaseComponent), f"{_class} is not a BaseComponent!"
+        self.database.add(_class.__name__, self.name, self, replace)
 
     def to_toml(self):
         return {
@@ -33,19 +33,31 @@ class KComponent(ABC):
         }
 
     @singleton
-    class KDatabase:
+    class Database:
         def __init__(self):
             self._database = {}
 
-        def add(self, class_name, name, component):
+        def add(self, class_name, name, component, replace: bool):
             if class_name not in self._database.keys():
                 self._database[class_name] = {}
+
+            if name in self._database[class_name].keys():
+                if not replace:
+                    raise KeyError(
+                        f"Error registering {class_name} called '{name}'. Here is the list of all registered {class_name} components: {self._database[class_name].keys()}"
+                    )
+
             self._database[class_name][name] = component
 
         def display(self):
             pprint(self._database)
 
-    database = KDatabase()
+    database = Database()
+
+
+class UpdatableComponent(BaseComponent, Observer, ABC):
+    def __init__(self, name):
+        super().__init__(name)
 
 
 @dataclass
@@ -64,49 +76,54 @@ class KSignature:
         return len(self.f_outputs)
 
 
-class KNode(KComponent, ABC):
-    def __init__(self, function: Callable):
+class BaseNode(BaseComponent, ABC):
+    def __init__(self, fn: Callable):
         assert callable(
-            function
-        ), f"given 'function' {function.__name__} is not callable! (type: {type(function)})"
-        super().__init__(function.__name__)
-        self.function = function
+            fn
+        ), f"given 'function' {fn.__name__} is not callable! (type: {type(fn)})"
+        super().__init__(fn.__name__)
+        self._fn = fn
 
     def __call__(self, *args, **kwargs):
-        return self.function(*args, **kwargs)
+        return self._fn(*args, **kwargs)
 
 
-class KPreprocessing(KNode, ABC):
+class Preprocessing(BaseNode, ABC):
     """
     Preprocessing node, called before training loop.
     """
 
-    pass
+    def __init__(self, fn: Callable):
+        super().__init__(fn)
+        self._save_as(Preprocessing)
+
+    def __call__(self, *args, **kwargs):
+        return self._fn(*args, **kwargs)
 
 
-class KPrimitive(KNode, ABC):
+class Primitive(BaseNode, ABC):
     """
     Single graph node for the CGP Graph.
     """
 
-    def __init__(self, function: Callable, inputs, output, parameters):
-        super().__init__(function)
+    def __init__(self, fn: Callable, inputs, output, parameters):
+        super().__init__(fn)
         self.inputs = inputs
         self.output = output
         self.parameters = parameters
-        self._save_as(KPrimitive)
+        self._save_as(Primitive)
 
 
-class KEndpoint(KNode, ABC):
+class Endpoint(BaseNode, ABC):
     """
     Last node called to produce final outputs. Called in training loop,
     not submitted to evolution.
     """
 
-    def __init__(self, function: Callable, inputs):
-        super().__init__(function)
+    def __init__(self, fn: Callable, inputs):
+        super().__init__(fn)
         self.inputs = inputs
-        self._save_as(KEndpoint)
+        self._save_as(Endpoint)
 
     def to_toml(self):
         return {
@@ -114,7 +131,7 @@ class KEndpoint(KNode, ABC):
         }
 
 
-class KAggregation(KNode, ABC):
+class Aggregation(BaseNode, ABC):
     def __init__(
         self,
         aggregation: Callable,
@@ -129,16 +146,16 @@ class KAggregation(KNode, ABC):
         y = []
         for i in range(len(self.inputs)):
             if self.post_aggregation:
-                y.append(self.post_aggregation(self.function(x[i])))
+                y.append(self.post_aggregation(self._fn(x[i])))
             else:
-                y.append(self.function(x[i]))
+                y.append(self._fn(x[i]))
         return y
 
 
-class KLibrary(KComponent, ABC):
+class Library(BaseComponent):
     def __init__(self, output_type):
         super().__init__(output_type)
-        self._primitives: Dict[int, KPrimitive] = {}
+        self._primitives: Dict[int, Primitive] = {}
         self.output_type = output_type
 
     def to_toml(self):
@@ -151,12 +168,12 @@ class KLibrary(KComponent, ABC):
 
     @staticmethod
     def from_json(json_data):
-        library = EmptyLibrary()
+        library = Library()
         for node_name in json_data:
             library.add_primitive(node_name)
         return library
 
-    def add_primitive(self, primitive: KPrimitive):
+    def add_primitive(self, primitive: Primitive):
         self._primitives[len(self._primitives)] = primitive
 
     def add_library(self, library):
@@ -229,17 +246,8 @@ class KLibrary(KComponent, ABC):
     def size(self):
         return len(self._primitives)
 
-    @property
-    def ordered_list(self):
-        return [self.f_name_of(i) for i in range(self.size)]
 
-
-class EmptyLibrary(KLibrary):
-    def fill(self):
-        pass
-
-
-class KGenotype(KComponent, Prototype, ABC):
+class BaseGenotype(BaseComponent, Prototype, ABC):
     def clone(self):
         return copy.deepcopy(self)
 
@@ -259,7 +267,7 @@ class GenotypeInfos:
     para_idx = None
     w: int = field(init=False)
     h: int = field(init=False)
-    prototype: KGenotype = None
+    prototype: BaseGenotype = None
 
     def __post_init__(self):
         self.in_idx = 0
@@ -283,7 +291,7 @@ class GenotypeInfos:
         )
 
 
-class KGenotypeArray(KGenotype):
+class KGenotypeArray(BaseGenotype):
     """
     Only store "DNA" into a Numpy array (ndarray)
     No metadata stored in DNA to avoid duplicates
@@ -329,7 +337,7 @@ class KGenotypeArray(KGenotype):
 
 
 class GenomeFactory(Factory):
-    def __init__(self, prototype: KGenotype):
+    def __init__(self, prototype: BaseGenotype):
         super().__init__(prototype)
 
 
@@ -384,7 +392,7 @@ class GenomeReaderWriter(GenotypeReader, GenotypeWriter):
     pass
 
 
-class KDecoder(GenotypeReader, ABC):
+class Decoder(GenotypeReader, ABC):
     def to_toml(self) -> Dict:
         return {
             "genotype": {
@@ -400,8 +408,21 @@ class KDecoder(GenotypeReader, ABC):
         }
 
 
-class DecoderSequential(KDecoder):
-    def __init__(self, infos: GenotypeInfos, library: KLibrary, endpoint: KEndpoint):
+class DecoderSequential(Decoder):
+    def __init__(
+        self, inputs: int, nodes: int, library: Library, endpoint: Endpoint = None
+    ):
+        if endpoint is None:
+            outputs = 1
+        else:
+            outputs = len(endpoint.inputs)
+        infos = GenotypeInfos(
+            inputs,
+            nodes,
+            outputs=outputs,
+            parameters=library.max_parameters,
+            connections=library.max_arity,
+        )
         super().__init__(infos)
         self.library = library
         self.endpoint = endpoint
@@ -425,12 +446,11 @@ class DecoderSequential(KDecoder):
 
     @staticmethod
     def from_json(json_data):
-        print(json_data)
         shape = GenotypeInfos.from_json(json_data["genotype"])
         library = None  # KLibrary.from_json(json_data["functions"])
         endpoint = None  # KEndpoint.from_json(json_data["endpoint"])
         if json_data["mode"] == "series":
-            stacker = KAggregation.from_json(json_data["stacker"])
+            stacker = Aggregation.from_json(json_data["stacker"])
             return DecoderIterative(shape, library, stacker, endpoint)
         return DecoderSequential(shape, library, endpoint)
 
@@ -460,7 +480,7 @@ class DecoderSequential(KDecoder):
         ]
         return graphs_list
 
-    def _x_to_output_map(self, genome: KGenotype, graphs_list: List, x: List):
+    def _x_to_output_map(self, genome: BaseGenotype, graphs_list: List, x: List):
         output_map = {i: x[i].copy() for i in range(self.infos.inputs)}
         for graph in graphs_list:
             for node in graph:
@@ -478,7 +498,7 @@ class DecoderSequential(KDecoder):
                 output_map[node] = value
         return output_map
 
-    def _parse_one(self, genome: KGenotype, graphs_list: List, x: List):
+    def _parse_one(self, genome: BaseGenotype, graphs_list: List, x: List):
         # fill output_map with inputs
         output_map = self._x_to_output_map(genome, graphs_list, x)
         return [
@@ -623,16 +643,16 @@ class DecoderSequential(KDecoder):
     def parse_population(self, population, x):
         y_pred = []
         for i in range(len(population.individuals)):
-            y, t = self.parse(population.individuals[i], x)
+            y, t = self.decode(population.individuals[i], x)
             population.set_time(i, t)
             y_pred.append(y)
         return y_pred
 
-    def parse(self, genome, x):
+    def decode(self, genome, x):
         """Decode the Genome given a list of inputs
 
         Args:
-            genome (KGenotype): [description]
+            genome (BaseGenotype): [description]
             x (List): [description]
 
         Returns:
@@ -654,7 +674,7 @@ class DecoderSequential(KDecoder):
         return all_y_pred, whole_time
 
 
-class DecoderIterative(KDecoder):
+class DecoderIterative(Decoder):
     def __init__(self, shape, bundle, stacker, endpoint):
         super().__init__(shape, bundle, endpoint)
         self.stacker = stacker
@@ -662,7 +682,7 @@ class DecoderIterative(KDecoder):
     def parse(self, genome, x):
         """Decode the Genome given a list of inputs
         Args:
-            genome (KGenotype): [description]
+            genome (BaseGenotype): [description]
             x (List): [description]
         Returns:
             [type]: [description]
@@ -694,23 +714,6 @@ class DecoderIterative(KDecoder):
         return json_data
 
 
-class KartezioToCode(KDecoder):
+class KartezioToCode(Decoder):
     def to_python_class(self, node_name, genome):
-        pass
-
-
-class KCallback(KComponent, Observer, ABC):
-    def __init__(self, frequency=1):
-        self.frequency = frequency
-        self.parser = None
-
-    def set_parser(self, parser):
-        self.parser = parser
-
-    def update(self, event):
-        if event["n"] % self.frequency == 0 or event["force"]:
-            self._callback(event["n"], event["name"], event["content"])
-
-    @abstractmethod
-    def _callback(self, n, e_name, e_content):
         pass

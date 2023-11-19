@@ -5,7 +5,7 @@ import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
 
-from kartezio.model.evolution import KartezioMetric
+from kartezio.model.evolution import KartezioMetric, KMetric
 from kartezio.model.registry import registry
 from kartezio.model.types import Score
 
@@ -63,14 +63,14 @@ def _intersection_over_union(masks_true, masks_pred):
 
 
 @registry.metrics.add("CAP")
-class MetricCellpose(KartezioMetric):
+class MetricCellpose(KMetric):
     """
     from MouseLand/cellpose:
     https://github.com/MouseLand/cellpose/blob/5cc03de9c2aa342d4b4469ff476ca04541b63414/cellpose/metrics.py
     """
 
     def __init__(self, thresholds=0.5):
-        super().__init__("Cellpose Average Precision", symbol="CAP", arity=1)
+        super().__init__("Cellpose Average Precision")
         self.thresholds = thresholds
         if not isinstance(self.thresholds, list) and not isinstance(
             self.thresholds, np.ndarray

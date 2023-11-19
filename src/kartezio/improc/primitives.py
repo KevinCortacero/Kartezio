@@ -13,6 +13,7 @@ from numena.image.threshold import threshold_binary, threshold_tozero
 from scipy.stats import kurtosis, skew
 from skimage.morphology import remove_small_holes, remove_small_objects
 
+from kartezio.improc.common import gradient_magnitude, convolution
 from kartezio.improc.kernel import (
     KERNEL_ROBERTS_X,
     KERNEL_ROBERTS_Y,
@@ -23,21 +24,21 @@ from kartezio.improc.kernel import (
 )
 from kartezio.model.components import (
     KSignature,
-    KPrimitive,
+    Primitive,
     GenotypeInfos,
-    KEndpoint,
+    Endpoint,
     DecoderSequential,
-    KLibrary,
+    Library,
 )
 from kartezio.model.types import TypeArray
 
 
-class LibraryDefaultOpenCV(KLibrary):
+class LibraryDefaultOpenCV(Library):
     def __init__(self):
         super().__init__(TypeArray)
 
     def create_primitive(self, name, arity, parameters, function):
-        primitive = KPrimitive(function, [TypeArray] * arity, [TypeArray], parameters)
+        primitive = Primitive(function, [TypeArray] * arity, [TypeArray], parameters)
         self.add_primitive(primitive)
 
 
@@ -126,16 +127,14 @@ def f_sobel(x, args=None):
 
 
 def f_sobel_new(x, args=None):
-    dx, dy = cv2.spatialGradient(x[0])
-    return cv2.convertScaleAbs(
-        cv2.magnitude(dx.astype(np.float32), dy.astype(np.float32))
-    )
+    gx, gy = cv2.spatialGradient(x[0])
+    return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
 
 
 def f_roberts(x, args=None):
-    dx = cv2.filter2D(x[0], cv2.CV_32F, KERNEL_ROBERTS_X)
-    dy = cv2.filter2D(x[0], cv2.CV_32F, KERNEL_ROBERTS_Y)
-    return cv2.convertScaleAbs(cv2.magnitude(dx, dy))
+    gx = convolution(x[0], KERNEL_ROBERTS_X)
+    gy = convolution(x[0], KERNEL_ROBERTS_Y)
+    return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
 
 
 def f_canny(x, args=None):
@@ -143,12 +142,12 @@ def f_canny(x, args=None):
 
 
 def f_sharpen(x, args=None):
-    return cv2.filter2D(x[0], -1, SHARPEN_KERNEL)
+    return convolution(x[0], SHARPEN_KERNEL)
 
 
 def f_gabor(x, args=None):
     gabor_k = gabor_kernel(11, args[0], args[1])
-    return cv2.filter2D(x[0], -1, gabor_k)
+    return convolution(x[0], gabor_k)
 
 
 def f_diff_gaussian(x, args=None):
@@ -347,7 +346,7 @@ if __name__ == "__main__":
     infos = GenotypeInfos()
     library = library_opencv
     library.display()
-    endpoint = KEndpoint(no_endpoint, [TypeArray])
+    endpoint = Endpoint(no_endpoint, [TypeArray])
     decoder = DecoderSequential(infos, library, endpoint)
     with open("decoder.toml", "w") as toml_file:
         toml.dump(decoder.to_toml(), toml_file)

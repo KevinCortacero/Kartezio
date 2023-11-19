@@ -5,8 +5,8 @@ from numena.io.json import json_read, json_write
 
 import kartezio.utils.json_utils as json
 from kartezio.model.components import (
-    KGenotype,
-    KDecoder,
+    BaseGenotype,
+    Decoder,
     DecoderSequential,
     KGenotypeArray,
 )
@@ -50,14 +50,14 @@ class JsonLoader:
             individual = KGenotypeArray.from_json(json_data["individual"])
         except KeyError:
             try:
-                individual = KGenotype.from_json(json_data)
+                individual = BaseGenotype.from_json(json_data)
             except KeyError:
-                individual = KGenotype.from_json(json_data["population"][0])
+                individual = BaseGenotype.from_json(json_data["population"][0])
         return dataset, individual, parser
 
 
 class JsonSaver:
-    def __init__(self, dataset, parser: KDecoder):
+    def __init__(self, dataset, parser: Decoder):
         self.dataset_json = json.from_dataset(dataset)
         self.parser_as_json = parser.to_toml()
 

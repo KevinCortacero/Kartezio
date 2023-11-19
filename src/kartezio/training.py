@@ -3,7 +3,7 @@ import argparse
 from kartezio.callback import CallbackSave, CallbackVerbose
 from kartezio.dataset import read_dataset
 from kartezio.enums import CSV_DATASET
-from kartezio.model.base import ModelCGP
+from kartezio.model.base import ModelBase
 from kartezio.model.helpers import singleton
 from kartezio.utils.io import pack_one_directory
 
@@ -50,7 +50,7 @@ def get_args():
 
 
 class KartezioTraining:
-    def __init__(self, model: ModelCGP, reformat_x=None, frequency=1, preview=False):
+    def __init__(self, model: ModelBase, reformat_x=None, frequency=1, preview=False):
         self.args = get_args()
         self.model = model
         self.dataset = read_dataset(
@@ -81,7 +81,7 @@ class KartezioTraining:
 
 
 def train_model(
-    model: ModelCGP,
+    model: ModelBase,
     dataset,
     output_directory,
     preprocessing=None,
@@ -102,7 +102,7 @@ def train_model(
 
     train_x, train_y = dataset.train_xy
     if preprocessing:
-        train_x = preprocessing.call(train_x)
+        train_x = preprocessing(train_x)
 
     res = model.fit(train_x, train_y)
     if pack:

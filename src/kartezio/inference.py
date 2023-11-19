@@ -43,7 +43,7 @@ class SingleModel(InferenceModel):
         self.parser = parser
 
     def predict(self, x):
-        return self.parser.parse(self.genome, x)
+        return self.parser.decode(self.genome, x)
 
 
 class EnsembleModel(InferenceModel):

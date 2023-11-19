@@ -1,10 +1,10 @@
 import cv2
 
-from kartezio.model.components import KDecoder, KartezioToCode
+from kartezio.model.components import Decoder, KartezioToCode
 
 
 class GenomeToPython(KartezioToCode):
-    def __init__(self, parser: KDecoder):
+    def __init__(self, parser: Decoder):
         super().__init__(parser.infos, parser.library, parser.endpoint)
         self.indent_1 = " " * 4
         self.indent_2 = self.indent_1 * 2
@@ -80,8 +80,8 @@ class GenomeToPython(KartezioToCode):
         print(f"# {'=' * 86}")
 
 
-class KartezioInsight(KDecoder):
-    def __init__(self, parser: KDecoder, preprocessing=None):
+class KartezioInsight(Decoder):
+    def __init__(self, parser: Decoder, preprocessing=None):
         super().__init__(parser.infos, parser.library, parser.endpoint)
         self.preprocessing = preprocessing
 

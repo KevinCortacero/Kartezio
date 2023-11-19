@@ -3,7 +3,9 @@ from typing import List
 
 from kartezio.callback import Event
 from kartezio.export import GenomeToPython
+from kartezio.model.components import Decoder
 from kartezio.model.helpers import Observable
+from kartezio.strategy import OnePlusLambda
 from kartezio.utils.io import JsonSaver
 
 
@@ -54,12 +56,14 @@ class ModelGA(ABC):
         self.current_generation += 1
 
 
-class ModelCGP(ModelML, Observable):
-    def __init__(self, generations, strategy, parser):
+class ModelBase(ModelML, Observable):
+    # def __init__(self, generations, strategy, parser):
+    def __init__(self, decoder: Decoder):
         super().__init__()
-        self.generations = generations
-        self.strategy = strategy
-        self.parser = parser
+        self.decoder = decoder
+        # self.generations = generations
+        self.strategy = OnePlusLambda()
+        # self.parser = parser
         self.callbacks = []
 
     def fit(
@@ -100,7 +104,7 @@ class ModelCGP(ModelML, Observable):
         return self.strategy.fitness.compute(y, [y_pred])
 
     def predict(self, x):
-        return self.parser.parse(self.strategy.elite, x)
+        return self.parser.decode(self.strategy.elite, x)
 
     def save_elite(self, filepath, dataset):
         JsonSaver(dataset, self.parser).save_individual(

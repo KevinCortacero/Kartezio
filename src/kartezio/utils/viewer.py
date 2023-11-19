@@ -5,10 +5,10 @@ import pygraphviz as pgv
 from networkx.drawing.nx_agraph import from_agraph
 from PIL import Image
 
-from kartezio.model.components import KDecoder
+from kartezio.model.components import Decoder
 
 
-class KartezioViewer(KDecoder):
+class KartezioViewer(Decoder):
     def __init__(self, metadata, bundle, endpoint):
         super().__init__(metadata, bundle, endpoint)
 

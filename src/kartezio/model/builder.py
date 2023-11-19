@@ -1,14 +1,14 @@
 from dataclasses import InitVar, dataclass, field
 
-from kartezio.model.base import ModelCGP
+from kartezio.model.base import ModelBase
 from kartezio.model.components import (
     GenomeFactory,
     GenotypeInfos,
-    KEndpoint,
-    KDecoder,
-    KAggregation,
+    Endpoint,
+    Decoder,
+    Aggregation,
     DecoderIterative,
-    KLibrary,
+    Library,
     DecoderSequential,
 )
 from kartezio.model.evolution import KartezioFitness, KartezioMutation, KFitness
@@ -25,10 +25,10 @@ class ModelContext:
     instance_method: KartezioMutation = field(init=False)
     mutation_method: KartezioMutation = field(init=False)
     fitness: KartezioFitness = field(init=False)
-    stacker: KAggregation = field(init=False)
-    endpoint: KEndpoint = field(init=False)
-    library: KLibrary = field(init=False)
-    decoder: KDecoder = field(init=False)
+    stacker: Aggregation = field(init=False)
+    endpoint: Endpoint = field(init=False)
+    library: Library = field(init=False)
+    decoder: Decoder = field(init=False)
     series_mode: bool = field(init=False)
     inputs: InitVar[int] = 3
     nodes: InitVar[int] = 10
@@ -42,10 +42,10 @@ class ModelContext:
         self.genome_shape = GenotypeInfos(inputs, nodes, outputs, arity, parameters)
         self.genome_factory = GenomeFactory(self.genome_shape.prototype)
 
-    def set_bundle(self, bundle: KLibrary):
+    def set_bundle(self, bundle: Library):
         self.library = bundle
 
-    def set_endpoint(self, endpoint: KEndpoint):
+    def set_endpoint(self, endpoint: Endpoint):
         self.endpoint = endpoint
 
     def set_instance_method(self, instance_method):
@@ -127,11 +127,11 @@ class ModelBuilder:
 
         if len(parser.endpoint.inputs) != parser.infos.outputs:
             raise ValueError(
-                f"Endpoint [{parser.endpoint.name}] requires {parser.endpoint.arity} output nodes. ({parser.infos.outputs} given)"
+                f"Endpoint [{parser.endpoint.name}] requires {len(parser.endpoint.inputs)} output nodes. ({parser.infos.outputs} given)"
             )
 
         if self.__context.series_mode:
-            if not isinstance(parser.stacker, KAggregation):
+            if not isinstance(parser.stacker, Aggregation):
                 raise ValueError(f"Stacker {parser.stacker} has not been properly set.")
 
             if parser.stacker.arity != parser.infos.outputs:
@@ -153,7 +153,7 @@ class ModelBuilder:
         strategy = OnePlusLambda(
             _lambda, factory, instance_method, mutation_method, fitness
         )
-        model = ModelCGP(generations, strategy, parser)
+        model = ModelBase(generations, strategy, parser)
         if callbacks:
             for callback in callbacks:
                 callback.set_parser(parser)

@@ -10,7 +10,7 @@ from numena.io.json import json_read
 from kartezio.easy import read_dataset
 from kartezio.fitness import FitnessAP
 from kartezio.inference import KartezioModel
-from kartezio.model.components import KGenotype
+from kartezio.model.components import BaseGenotype
 from kartezio.utils.viewer import KartezioViewer
 
 
@@ -75,7 +75,7 @@ def main():
             sequence = np.asarray(
                 ast.literal_eval(json_data["population"][m]["sequence"])
             )
-            genome = KGenotype(sequence=sequence)
+            genome = BaseGenotype(sequence=sequence)
             model._model.genome = genome
             p, f, t = model.eval(dataset, subset="train", reformat_x=reformat_x)
             fitness.append(1.0 - f)

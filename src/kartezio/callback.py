@@ -1,10 +1,11 @@
+from abc import ABC, abstractmethod
 from enum import Enum
 
 from numena.io.drive import Directory
 from numena.time import eventid
 
 from kartezio.enums import JSON_ELITE
-from kartezio.model.components import KCallback
+from kartezio.model.helpers import Observer
 from kartezio.utils.io import JsonSaver
 
 
@@ -15,7 +16,47 @@ class Event(Enum):
     END_LOOP = "on_loop_end"
 
 
-class CallbackVerbose(KCallback):
+class Callback(Observer, ABC):
+    def __init__(self, frequency=1):
+        self.frequency = frequency
+        self.parser = None
+
+    def set_parser(self, parser):
+        self.parser = parser
+
+    def notify(self, event):
+        if event["name"] == Event.START_LOOP:
+            self.on_evolution_start(event["n"], event["content"])
+        elif event["name"] == Event.START_STEP:
+            self.on_generation_start(event["n"], event["content"])
+        elif event["name"] == Event.END_STEP:
+            self.on_generation_end(event["n"], event["content"])
+        elif event["name"] == Event.END_LOOP:
+            self.on_evolution_end(event["n"], event["content"])
+
+        """
+        if event["n"] % self.frequency == 0 or event["force"]:
+            self._notify(event["n"], event["name"], event["content"])
+        """
+
+    @abstractmethod
+    def _notify(self, iteration, event_name, event_content):
+        pass
+
+    def on_evolution_start(self, iteration, event_content):
+        pass
+
+    def on_generation_start(self, iteration, event_content):
+        pass
+
+    def on_generation_end(self, iteration, event_content):
+        pass
+
+    def on_evolution_end(self, iteration, event_content):
+        pass
+
+
+class CallbackVerbose(Callback):
     def _callback(self, n, e_name, e_content):
         fitness, time = e_content.get_best_fitness()
         if time == 0:
@@ -30,7 +71,7 @@ class CallbackVerbose(KCallback):
             print(verbose)
 
 
-class CallbackSave(KCallback):
+class CallbackSave(Callback):
     def __init__(self, workdir, dataset, frequency=1):
         super().__init__(frequency)
         self.workdir = Directory(workdir).next(eventid())
