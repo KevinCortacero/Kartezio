@@ -32,7 +32,7 @@ class KMetric(BaseNode, ABC):
 MetricList = List[KartezioMetric]
 
 
-class KFitness(BaseNode, ABC):
+class Fitness(BaseNode, ABC):
     def __init__(self, fn, reduction="mean", multiprocessing=False):
         super().__init__(fn)
         self.reduction = reduction
@@ -156,6 +156,7 @@ class KartezioMutation(GenomeReaderWriter, ABC):
 
 class KartezioPopulation(BaseComponent, ABC):
     def __init__(self, size):
+        super().__init__("Population")
         self.size = size
         self.individuals = [None] * self.size
         self._fitness = {"fitness": np.zeros(self.size), "time": np.zeros(self.size)}

@@ -3,8 +3,10 @@ from typing import List
 
 from kartezio.callback import Event
 from kartezio.export import GenomeToPython
-from kartezio.model.components import Decoder
+from kartezio.model.components import Decoder, GenotypeInfos
+from kartezio.model.evolution import KartezioFitness
 from kartezio.model.helpers import Observable
+from kartezio.population import PopulationWithElite
 from kartezio.strategy import OnePlusLambda
 from kartezio.utils.io import JsonSaver
 
@@ -23,17 +25,25 @@ class ModelML(ABC):
         pass
 
 
-class ModelGA(ABC):
-    def __init__(self, strategy, generations):
-        self.strategy = strategy
+class GeneticAlgorithm:
+    def __init__(self, decoder: Decoder, fitness: KartezioFitness):
+        self.strategy = OnePlusLambda(decoder)
+        self.population = None
+        self.fitness = fitness
         self.current_generation = 0
-        self.generations = generations
+        self.n_generations = 0
+
+    def init(self, n_generations: int, n_children: int):
+        self.current_generation = 0
+        self.n_generations = n_generations
+        self.population = self.strategy.create_population(n_children)
+
+    def update(self):
+        pass
+
 
     def fit(self, x: List, y: List):
         pass
-
-    def initialization(self):
-        self.strategy.initialization()
 
     def is_satisfying(self):
         end_of_generations = self.current_generation >= self.generations
@@ -57,21 +67,24 @@ class ModelGA(ABC):
 
 
 class ModelBase(ModelML, Observable):
-    # def __init__(self, generations, strategy, parser):
-    def __init__(self, decoder: Decoder):
+    def __init__(self, decoder: Decoder, fitness: KartezioFitness):
         super().__init__()
         self.decoder = decoder
-        # self.generations = generations
-        self.strategy = OnePlusLambda()
-        # self.parser = parser
+        self.ga = GeneticAlgorithm(self.decoder, fitness)
+        # self.strategy = OnePlusLambda()
         self.callbacks = []
+        # self.parser = parser
+        # self.generations = generations
+
+    def compile(self, n_generations: int, n_children: int):
+        self.ga.init(n_generations, n_children)
 
     def fit(
         self,
         x,
         y,
     ):
-        genetic_algorithm = ModelGA(self.strategy, self.generations)
+        genetic_algorithm = GeneticAlgorithm(self.strategy, self.generations)
         genetic_algorithm.initialization()
         y_pred = self.parser.parse_population(self.strategy.population, x)
         genetic_algorithm.evaluation(y, y_pred)

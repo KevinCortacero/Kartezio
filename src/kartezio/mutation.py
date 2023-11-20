@@ -79,6 +79,9 @@ class MutationAllRandom(KartezioMutation):
             self.mutate_output(genome, i)
         return genome
 
+    def random(self):
+        genotype = self.infos.new()
+        return self.mutate(genotype)
 
 @registry.mutations.add("copy")
 class CopyGenome:

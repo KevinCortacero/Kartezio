@@ -40,8 +40,8 @@ class PopulationHistory:
 
 
 class PopulationWithElite(KartezioPopulation):
-    def __init__(self, _lambda):
-        super().__init__(1 + _lambda)
+    def __init__(self, n_children):
+        super().__init__(1 + n_children)
 
     def set_elite(self, individual):
         self[0] = individual

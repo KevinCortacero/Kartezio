@@ -11,7 +11,7 @@ from kartezio.model.components import (
     Library,
     DecoderSequential,
 )
-from kartezio.model.evolution import KartezioFitness, KartezioMutation, KFitness
+from kartezio.model.evolution import KartezioFitness, KartezioMutation, Fitness
 from kartezio.model.registry import registry
 from kartezio.mutation import GoldmanWrapper, MutationAllRandom
 from kartezio.stacker import StackerMean, a_mean
@@ -139,7 +139,7 @@ class ModelBuilder:
                     f"Stacker [{parser.stacker.name}] requires {parser.stacker.arity} output nodes. ({parser.infos.outputs} given)"
                 )
 
-        if not isinstance(fitness, KFitness):
+        if not isinstance(fitness, Fitness):
             raise ValueError(f"Fitness {fitness} has not been properly set.")
 
         if not isinstance(mutation_method, KartezioMutation):

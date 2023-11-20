@@ -290,6 +290,9 @@ class GenotypeInfos:
             json_data["connections"],
         )
 
+    def new(self):
+        return self.prototype.clone()
+
 
 class KGenotypeArray(BaseGenotype):
     """
