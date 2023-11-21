@@ -30,9 +30,9 @@ class MutationClassic(KartezioMutation):
         self.mutation_rate = mutation_rate
         self.output_mutation_rate = output_mutation_rate
         self.n_mutations = int(
-            np.floor(self.infos.nodes * self.infos.w * self.mutation_rate)
+            np.floor(self.infos.n_nodes * self.infos.w * self.mutation_rate)
         )
-        self.all_indices = np.indices((self.infos.nodes, self.infos.w))
+        self.all_indices = np.indices((self.infos.n_nodes, self.infos.w))
         self.all_indices = np.vstack(
             (self.all_indices[0].ravel(), self.all_indices[1].ravel())
         ).T
@@ -47,13 +47,13 @@ class MutationClassic(KartezioMutation):
         for idx, mutation_parameter_index in sampling_indices:
             if mutation_parameter_index == 0:
                 self.mutate_function(genome, idx)
-            elif mutation_parameter_index <= self.infos.connections:
+            elif mutation_parameter_index <= self.infos.n_connections:
                 connection_idx = mutation_parameter_index - 1
                 self.mutate_connections(genome, idx, only_one=connection_idx)
             else:
-                parameter_idx = mutation_parameter_index - self.infos.connections - 1
+                parameter_idx = mutation_parameter_index - self.infos.n_connections - 1
                 self.mutate_parameters(genome, idx, only_one=parameter_idx)
-        for output in range(self.infos.outputs):
+        for output in range(self.infos.n_outputs):
             if random.random() < self.output_mutation_rate:
                 self.mutate_output(genome, output)
         return genome
@@ -70,18 +70,19 @@ class MutationAllRandom(KartezioMutation):
 
     def mutate(self, genome: BaseGenotype):
         # mutate genes
-        for i in range(self.infos.nodes):
+        for i in range(self.infos.n_nodes):
             self.mutate_function(genome, i)
             self.mutate_connections(genome, i)
             self.mutate_parameters(genome, i)
         # mutate outputs
-        for i in range(self.infos.outputs):
+        for i in range(self.infos.n_outputs):
             self.mutate_output(genome, i)
         return genome
 
     def random(self):
         genotype = self.infos.new()
         return self.mutate(genotype)
+
 
 @registry.mutations.add("copy")
 class CopyGenome:

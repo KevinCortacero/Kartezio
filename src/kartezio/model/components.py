@@ -254,11 +254,11 @@ class BaseGenotype(BaseComponent, Prototype, ABC):
 
 @dataclass
 class GenotypeInfos:
-    inputs: int = 3
-    nodes: int = 10
-    outputs: int = 1
-    connections: int = 2
-    parameters: int = 2
+    n_inputs: int = 3
+    n_nodes: int = 10
+    n_outputs: int = 1
+    n_connections: int = 2
+    n_parameters: int = 2
     in_idx: int = field(init=False, repr=False)
     func_idx: int = field(init=False, repr=False)
     con_idx: int = field(init=False, repr=False)
@@ -273,11 +273,11 @@ class GenotypeInfos:
         self.in_idx = 0
         self.func_idx = 0
         self.con_idx = 1
-        self.nodes_idx = self.inputs
-        self.out_idx = self.nodes_idx + self.nodes
-        self.para_idx = self.con_idx + self.connections
-        self.w = 1 + self.connections + self.parameters
-        self.h = self.inputs + self.nodes + self.outputs
+        self.nodes_idx = self.n_inputs
+        self.out_idx = self.nodes_idx + self.n_nodes
+        self.para_idx = self.con_idx + self.n_connections
+        self.w = 1 + self.n_connections + self.n_parameters
+        self.h = self.n_inputs + self.n_nodes + self.n_outputs
         self.prototype = KGenotypeArray(shape=(self.h, self.w))
 
     @staticmethod
@@ -396,6 +396,14 @@ class GenomeReaderWriter(GenotypeReader, GenotypeWriter):
 
 
 class Decoder(GenotypeReader, ABC):
+    def decode_population(self, population, x: List) -> List:
+        y_pred = []
+        for i in range(population.size):
+            y, t = self.decode(population.individuals[i], x)
+            population.set_time(i, t)
+            y_pred.append(y)
+        return y_pred
+
     def to_toml(self) -> Dict:
         return {
             "genotype": {
@@ -413,18 +421,18 @@ class Decoder(GenotypeReader, ABC):
 
 class DecoderSequential(Decoder):
     def __init__(
-        self, inputs: int, nodes: int, library: Library, endpoint: Endpoint = None
+        self, n_inputs: int, n_nodes: int, library: Library, endpoint: Endpoint = None
     ):
         if endpoint is None:
-            outputs = 1
+            n_outputs = 1
         else:
-            outputs = len(endpoint.inputs)
+            n_outputs = len(endpoint.inputs)
         infos = GenotypeInfos(
-            inputs,
-            nodes,
-            outputs=outputs,
-            parameters=library.max_parameters,
-            connections=library.max_arity,
+            n_inputs,
+            n_nodes,
+            n_outputs=n_outputs,
+            n_parameters=library.max_parameters,
+            n_connections=library.max_arity,
         )
         super().__init__(infos)
         self.library = library
@@ -462,13 +470,15 @@ class DecoderSequential(Decoder):
         output_tree = graph_source.copy()
         while next_indices:
             next_index = next_indices.pop()
-            if next_index < self.infos.inputs:
+            if next_index < self.infos.n_inputs:
                 continue
-            function_index = self.read_function(genome, next_index - self.infos.inputs)
+            function_index = self.read_function(
+                genome, next_index - self.infos.n_inputs
+            )
             active_connections = self.library.arity_of(function_index)
             next_connections = set(
                 self.read_active_connections(
-                    genome, next_index - self.infos.inputs, active_connections
+                    genome, next_index - self.infos.n_inputs, active_connections
                 )
             )
             next_indices = next_indices.union(next_connections)
@@ -484,13 +494,13 @@ class DecoderSequential(Decoder):
         return graphs_list
 
     def _x_to_output_map(self, genome: BaseGenotype, graphs_list: List, x: List):
-        output_map = {i: x[i].copy() for i in range(self.infos.inputs)}
+        output_map = {i: x[i].copy() for i in range(self.infos.n_inputs)}
         for graph in graphs_list:
             for node in graph:
                 # inputs are already in the map
-                if node < self.infos.inputs:
+                if node < self.infos.n_inputs:
                     continue
-                node_index = node - self.infos.inputs
+                node_index = node - self.infos.n_inputs
                 # fill the map with active nodes
                 function_index = self.read_function(genome, node_index)
                 arity = self.library.arity_of(function_index)
@@ -642,14 +652,6 @@ class DecoderSequential(Decoder):
             functions.append(function_name)
             is_active.append(i in active_list)
         return functions, is_active
-
-    def parse_population(self, population, x):
-        y_pred = []
-        for i in range(len(population.individuals)):
-            y, t = self.decode(population.individuals[i], x)
-            population.set_time(i, t)
-            y_pred.append(y)
-        return y_pred
 
     def decode(self, genome, x):
         """Decode the Genome given a list of inputs

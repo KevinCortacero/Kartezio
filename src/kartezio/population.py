@@ -1,6 +1,6 @@
 import numpy as np
 
-from kartezio.model.evolution import KartezioPopulation
+from kartezio.model.population import Population
 
 
 class IndividualHistory:
@@ -39,7 +39,7 @@ class PopulationHistory:
         return self.individuals.items()
 
 
-class PopulationWithElite(KartezioPopulation):
+class PopulationWithElite(Population):
     def __init__(self, n_children):
         super().__init__(1 + n_children)
 

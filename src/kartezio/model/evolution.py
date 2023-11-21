@@ -5,10 +5,10 @@ import numpy as np
 
 from kartezio.model.components import (
     GenomeReaderWriter,
-    BaseComponent,
     BaseGenotype,
     BaseNode,
 )
+from kartezio.model.population import Population
 from kartezio.model.types import Score, ScoreList
 
 
@@ -55,6 +55,12 @@ class Fitness(BaseNode, ABC):
     def _reduce(self, population_fitness):
         if self.reduction == "mean":
             return np.mean(population_fitness, axis=1)
+        if self.reduction == "min":
+            return np.min(population_fitness, axis=1)
+        if self.reduction == "max":
+            return np.max(population_fitness, axis=1)
+        if self.reduction == "median":
+            return np.median(population_fitness, axis=1)
 
     def evaluate(self, y_true, y_pred):
         return self._fn(y_true, y_pred)
@@ -112,7 +118,7 @@ class KartezioMutation(GenomeReaderWriter, ABC):
 
     @property
     def random_parameters(self):
-        return np.random.randint(self.parameter_max_value, size=self.infos.parameters)
+        return np.random.randint(self.parameter_max_value, size=self.infos.n_parameters)
 
     @property
     def random_functions(self):
@@ -124,7 +130,7 @@ class KartezioMutation(GenomeReaderWriter, ABC):
 
     def random_connections(self, idx: int):
         return np.random.randint(
-            self.infos.nodes_idx + idx, size=self.infos.connections
+            self.infos.nodes_idx + idx, size=self.infos.n_connections
         )
 
     def mutate_function(self, genome: BaseGenotype, idx: int):
@@ -151,57 +157,4 @@ class KartezioMutation(GenomeReaderWriter, ABC):
 
     @abstractmethod
     def mutate(self, genome: BaseGenotype):
-        pass
-
-
-class KartezioPopulation(BaseComponent, ABC):
-    def __init__(self, size):
-        super().__init__("Population")
-        self.size = size
-        self.individuals = [None] * self.size
-        self._fitness = {"fitness": np.zeros(self.size), "time": np.zeros(self.size)}
-
-    def dumps(self) -> dict:
-        return {}
-
-    @abstractmethod
-    def get_best_individual(self):
-        pass
-
-    def __getitem__(self, item):
-        return self.individuals.__getitem__(item)
-
-    def __setitem__(self, key, value):
-        self.individuals.__setitem__(key, value)
-
-    def set_time(self, individual, value):
-        self._fitness["time"][individual] = value
-
-    def set_fitness(self, fitness):
-        self._fitness["fitness"] = fitness
-
-    def has_best_fitness(self):
-        return min(self.fitness) == 0.0
-
-    @property
-    def fitness(self):
-        return self._fitness["fitness"]
-
-    @property
-    def time(self):
-        return self._fitness["time"]
-
-    @property
-    def score(self):
-        score_list = list(zip(self.fitness, self.time))
-        return np.array(score_list, dtype=[("fitness", float), ("time", float)])
-
-
-class KStrategy(ABC):
-    @abstractmethod
-    def selection(self):
-        pass
-
-    @abstractmethod
-    def reproduction(self):
         pass
