@@ -43,17 +43,14 @@ class PopulationWithElite(Population):
     def __init__(self, n_children):
         super().__init__(1 + n_children)
 
-    def set_elite(self, individual):
-        self[0] = individual
-
     def get_elite(self):
         return self[0]
 
-    def get_best_individual(self):
-        # get the first element to minimize
+    def promote_new_parent(self):
         best_fitness_idx = np.argsort(self.score)[0]
-        best_individual = self[best_fitness_idx]
-        return best_individual, self.fitness[best_fitness_idx]
+        self[0] = self[best_fitness_idx]
+        self._fitness["fitness"][0] = self.fitness[best_fitness_idx]
+        self._fitness["time"][0] = self.time[best_fitness_idx]
 
     def history(self):
         population_history = PopulationHistory(self.size)

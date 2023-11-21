@@ -15,7 +15,7 @@ class OnePlusLambda(Strategy):
         )
 
     @property
-    def get_elite(self, population: Population):
+    def get_elite(self, population: PopulationWithElite):
         return population.get_elite()
 
     def create_population(self, n_children):
@@ -26,11 +26,10 @@ class OnePlusLambda(Strategy):
             population[i] = individual
         return population
 
-    def selection(self, population: Population):
-        new_elite, fitness = population.get_best_individual()
-        population.set_elite(new_elite)
+    def selection(self, population: PopulationWithElite):
+        population.promote_new_parent()
 
-    def reproduction(self, population: Population):
+    def reproduction(self, population: PopulationWithElite):
         elite = population.get_elite()
         for i in range(self.n_parents, population.size):
             population[i] = self.fn_mutation.mutate(elite.clone())

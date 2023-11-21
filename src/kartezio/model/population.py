@@ -10,14 +10,13 @@ class Population(BaseComponent, ABC):
         super().__init__("Population")
         self.size = size
         self.individuals = [None] * self.size
-        self._fitness = {"fitness": np.zeros(self.size), "time": np.zeros(self.size)}
+        self._fitness = {
+            "fitness": np.ones(self.size, dtype=np.float32),
+            "time": np.ones(self.size, dtype=np.float32),
+        }
 
     def dumps(self) -> dict:
         return {}
-
-    @abstractmethod
-    def get_best_individual(self):
-        pass
 
     def __getitem__(self, item):
         return self.individuals.__getitem__(item)
@@ -29,7 +28,7 @@ class Population(BaseComponent, ABC):
         self._fitness["time"][individual] = value
 
     def set_fitness(self, fitness):
-        self._fitness["fitness"] = fitness
+        self._fitness["fitness"][1:] = fitness
 
     def has_best_fitness(self):
         return min(self.fitness) == 0.0

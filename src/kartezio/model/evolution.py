@@ -8,7 +8,6 @@ from kartezio.model.components import (
     BaseGenotype,
     BaseNode,
 )
-from kartezio.model.population import Population
 from kartezio.model.types import Score, ScoreList
 
 

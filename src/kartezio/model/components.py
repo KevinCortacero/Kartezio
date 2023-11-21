@@ -4,10 +4,11 @@
 import ast
 import copy
 import time
-from abc import ABC, abstractmethod
+from abc import ABC
 from builtins import print
 from dataclasses import dataclass, field
 import random
+from functools import lru_cache
 from pprint import pprint
 from typing import List, Sequence, Callable, Dict
 
@@ -398,7 +399,7 @@ class GenomeReaderWriter(GenotypeReader, GenotypeWriter):
 class Decoder(GenotypeReader, ABC):
     def decode_population(self, population, x: List) -> List:
         y_pred = []
-        for i in range(population.size):
+        for i in range(1, population.size):
             y, t = self.decode(population.individuals[i], x)
             population.set_time(i, t)
             y_pred.append(y)
