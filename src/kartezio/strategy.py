@@ -1,6 +1,5 @@
 from kartezio.model.components import Decoder
 from kartezio.model.strategy import Strategy
-from kartezio.model.population import Population
 from kartezio.mutation import MutationAllRandom, MutationClassic
 from kartezio.population import PopulationWithElite
 

@@ -1,6 +1,4 @@
-from math import isclose
 
-import cv2
 import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
