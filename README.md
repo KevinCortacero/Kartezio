@@ -1,5 +1,5 @@
-<h2 align="center"> Kartezio </h2>
-<h5 align="center"> A Darwinian Designer of Explainable Algorithms for Biomedical Image Segmentation </h5>
+<h2 align="center"> Kartezio Framework </h2>
+<h5 align="center"> Evolutionary design of explainable algorithms for biomedical image segmentation </h5>
 
 ## Package Description
 Kartezio is a modular Cartesian Genetic Programming framework that generates fully transparent and easily interpretable image processing pipelines.
@@ -29,7 +29,7 @@ pip install --upgrade pip
 ### Local installation using pip
 
 ```bash
-(venv_name)$ git clone [TODO] 
+(venv_name)$ git clone https://github.com/KevinCortacero/Kartezio.git
 (venv_name)$ cd kartezio
 (venv_name)$ python -m pip install -e .
 ```
@@ -42,7 +42,7 @@ Kartezio was compared on the Cell Image Library dataset against the reported per
 |                  | Kartezio | Kartezio | Kartezio | Cellpose | Stardist | MRCNN |
 |------------------|----------|----------|----------|----------|----------|-------|
 | Training images  | 8        | 50       | 89       | 89       | 89       | 89    |
-| AP50 on test set | 0.838 (mean)| 0.849 (mean)| 0.858 (mean) | 0.91 (max)   | 0.76 (max)     | 0.80 (max |
+| AP50 on test set | 0.838 (mean)| 0.849 (mean)| 0.858 (mean) | 0.91 (max)   | 0.76 (max)     | 0.80 (max) |
 
 An additional, but not published, comparison was performed against the reported performance of CPP-Net, on BBBC006v1 dataset reported in Chen et al, 2023 (July, 2023):
 
@@ -67,6 +67,6 @@ An additional, but not published, comparison was performed against the reported 
 
 
 ## Licensing
-The Software must be used for Non-Commercial Research only, under the terms and conditions set out in the License file, and You may not use the Software except in compliance with the License.
+The Software is freely available for Non-Commercial and Academic purposes only, under the terms and conditions set out in the License file, and You may not use the Software except in compliance with the License.
 The Software distributed under the License is distributed on an "as is" basis, without warranties or conditions of any kind, either express or implied.
 See the License file for the specific language governing permissions and limitations under the License.
