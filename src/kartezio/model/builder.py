@@ -1,17 +1,17 @@
 from dataclasses import InitVar, dataclass, field
 
-from kartezio.model.base import ModelBase
+from kartezio.model.base import ModelDraft
 from kartezio.model.components import (
+    Aggregation,
+    Decoder,
+    DecoderIterative,
+    DecoderSequential,
+    Endpoint,
     GenomeFactory,
     GenotypeInfos,
-    Endpoint,
-    Decoder,
-    Aggregation,
-    DecoderIterative,
     Library,
-    DecoderSequential,
 )
-from kartezio.model.evolution import KartezioFitness, KartezioMutation, Fitness
+from kartezio.model.evolution import Fitness, KartezioFitness, KartezioMutation
 from kartezio.model.registry import registry
 from kartezio.mutation import GoldmanWrapper, MutationAllRandom
 from kartezio.stacker import StackerMean, a_mean
@@ -153,9 +153,9 @@ class ModelBuilder:
         strategy = OnePlusLambda(
             _lambda, factory, instance_method, mutation_method, fitness
         )
-        model = ModelBase(generations, strategy, parser)
+        model = ModelDraft(generations, strategy, parser)
         if callbacks:
             for callback in callbacks:
-                callback.set_parser(parser)
+                callback.set_decoder(parser)
                 model.attach(callback)
         return model

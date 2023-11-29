@@ -3,14 +3,13 @@
 """
 import ast
 import copy
+import random
 import time
 from abc import ABC
 from builtins import print
 from dataclasses import dataclass, field
-import random
-from functools import lru_cache
 from pprint import pprint
-from typing import List, Sequence, Callable, Dict
+from typing import Callable, Dict, List, Sequence
 
 import numpy as np
 from tabulate import tabulate
@@ -445,11 +444,11 @@ class DecoderSequential(Decoder):
     def to_toml(self) -> Dict:
         return {
             "genotype": {
-                "inputs": self.infos.inputs,
-                "nodes": self.infos.nodes,
-                "outputs": self.infos.outputs,
-                "parameters": self.infos.parameters,
-                "connections": self.infos.connections,
+                "inputs": self.infos.n_inputs,
+                "nodes": self.infos.n_nodes,
+                "outputs": self.infos.n_outputs,
+                "parameters": self.infos.n_parameters,
+                "connections": self.infos.n_connections,
             },
             "library": self.library.to_toml(),
             "endpoint": self.endpoint.to_toml(),

@@ -1,19 +1,12 @@
-import bz2
-import pickle
-import time
-
-import toml
-from dataclasses import dataclass, field
-from typing import Sequence
-
 import cv2
 import numpy as np
+import toml
 from numena.image.morphology import morph_fill
 from numena.image.threshold import threshold_binary, threshold_tozero
 from scipy.stats import kurtosis, skew
 from skimage.morphology import remove_small_holes, remove_small_objects
 
-from kartezio.improc.common import gradient_magnitude, convolution
+from kartezio.improc.common import convolution, gradient_magnitude
 from kartezio.improc.kernel import (
     KERNEL_ROBERTS_X,
     KERNEL_ROBERTS_Y,
@@ -23,12 +16,11 @@ from kartezio.improc.kernel import (
     kernel_from_parameters,
 )
 from kartezio.model.components import (
-    KSignature,
-    Primitive,
-    GenotypeInfos,
-    Endpoint,
     DecoderSequential,
+    Endpoint,
+    GenotypeInfos,
     Library,
+    Primitive,
 )
 from kartezio.model.types import TypeArray
 
@@ -347,7 +339,7 @@ if __name__ == "__main__":
     library = library_opencv
     library.display()
     endpoint = Endpoint(no_endpoint, [TypeArray])
-    decoder = DecoderSequential(infos, library, endpoint)
+    decoder = DecoderSequential(2, 30, library, endpoint)
     with open("decoder.toml", "w") as toml_file:
         toml.dump(decoder.to_toml(), toml_file)
     print(toml.dumps(decoder.to_toml()))

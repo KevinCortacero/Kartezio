@@ -54,7 +54,7 @@ class Observer(ABC):
         """
         Receive update from subject.
         """
-        pass
+        raise NotImplementedError()
 
 
 class Observable(ABC):

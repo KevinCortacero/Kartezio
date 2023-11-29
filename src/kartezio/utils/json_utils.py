@@ -3,9 +3,9 @@ from typing import List
 
 import numpy as np
 import simplejson
-from kartezio.population import IndividualHistory
 
-from kartezio.model.components import GenotypeInfos, BaseGenotype
+from kartezio.model.components import BaseGenotype, GenotypeInfos
+from kartezio.population import IndividualHistory
 
 """ KartezioGenome Metadata """
 

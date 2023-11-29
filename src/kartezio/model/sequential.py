@@ -1,13 +1,9 @@
-from kartezio.model.base import ModelBase
-from kartezio.model.components import (
-    Library,
-    Endpoint,
-    DecoderSequential,
-)
+from kartezio.model.base import ModelDraft
+from kartezio.model.components import DecoderSequential, Endpoint, Library
 from kartezio.model.evolution import Fitness
 
 
-class ModelSequential(ModelBase):
+class ModelSequential(ModelDraft):
     def __init__(
         self,
         n_inputs: int,

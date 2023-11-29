@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from enum import Enum
 
 from numena.io.drive import Directory
@@ -19,12 +19,12 @@ class Event(Enum):
 class Callback(Observer, ABC):
     def __init__(self, frequency=1):
         self.frequency = frequency
-        self.parser = None
+        self.decoder = None
 
-    def set_parser(self, parser):
-        self.parser = parser
+    def set_decoder(self, parser):
+        self.decoder = parser
 
-    def notify(self, event):
+    def update(self, event):
         if event["name"] == Event.START_LOOP:
             self.on_evolution_start(event["n"], event["content"])
         elif event["name"] == Event.START_STEP:
@@ -38,10 +38,6 @@ class Callback(Observer, ABC):
         if event["n"] % self.frequency == 0 or event["force"]:
             self._notify(event["n"], event["name"], event["content"])
         """
-
-    @abstractmethod
-    def _notify(self, iteration, event_name, event_content):
-        pass
 
     def on_evolution_start(self, iteration, event_content):
         pass
@@ -57,18 +53,23 @@ class Callback(Observer, ABC):
 
 
 class CallbackVerbose(Callback):
-    def _callback(self, n, e_name, e_content):
+    def _compute_metrics(self, e_content):
         fitness, time = e_content.get_best_fitness()
         if time == 0:
             fps = "'inf' "
         else:
             fps = int(round(1.0 / time))
-        if e_name == Event.END_STEP:
-            verbose = f"[G {n:04}] {fitness:.4f} {time:.6f}s {fps}fps"
-            print(verbose)
-        elif e_name == Event.END_LOOP:
-            verbose = f"[G {n:04}] {fitness:.4f} {time:.6f}s {fps}fps, loop done."
-            print(verbose)
+        return fitness, time, fps
+
+    def on_generation_end(self, n, e_content):
+        fitness, time, fps = self._compute_metrics(e_content)
+        verbose = f"[G {n:04}] {fitness:.4f} {time:.6f}s {fps}fps"
+        print(verbose)
+
+    def on_evolution_end(self, n, e_content):
+        fitness, time, fps = self._compute_metrics(e_content)
+        verbose = f"[G {n:04}] {fitness:.4f} {time:.6f}s {fps}fps, loop done."
+        print(verbose)
 
 
 class CallbackSave(Callback):
@@ -78,9 +79,9 @@ class CallbackSave(Callback):
         self.dataset = dataset
         self.json_saver = None
 
-    def set_parser(self, parser):
-        super().set_parser(parser)
-        self.json_saver = JsonSaver(self.dataset, self.parser)
+    def set_decoder(self, parser):
+        super().set_decoder(parser)
+        self.json_saver = JsonSaver(self.dataset, self.decoder)
 
     def save_population(self, population, n):
         filename = f"G{n}.json"

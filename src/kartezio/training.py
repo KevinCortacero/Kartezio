@@ -3,7 +3,7 @@ import argparse
 from kartezio.callback import CallbackSave, CallbackVerbose
 from kartezio.dataset import read_dataset
 from kartezio.enums import CSV_DATASET
-from kartezio.model.base import ModelBase
+from kartezio.model.base import ModelDraft
 from kartezio.model.helpers import singleton
 from kartezio.utils.io import pack_one_directory
 
@@ -50,7 +50,7 @@ def get_args():
 
 
 class KartezioTraining:
-    def __init__(self, model: ModelBase, reformat_x=None, frequency=1, preview=False):
+    def __init__(self, model: ModelDraft, reformat_x=None, frequency=1, preview=False):
         self.args = get_args()
         self.model = model
         self.dataset = read_dataset(
@@ -74,14 +74,14 @@ class KartezioTraining:
 
         if self.callbacks:
             for callback in self.callbacks:
-                callback.set_parser(self.model.parser)
+                callback.set_decoder(self.model.parser)
                 self.model.attach(callback)
         elite, history = self.model.fit(train_x, train_y)
         return elite
 
 
 def train_model(
-    model: ModelBase,
+    model: ModelDraft,
     dataset,
     output_directory,
     preprocessing=None,
@@ -97,7 +97,7 @@ def train_model(
         print(f"Files will be saved under {workdir}.")
     if callbacks:
         for callback in callbacks:
-            callback.set_parser(model.parser)
+            callback.set_decoder(model.parser)
             model.attach(callback)
 
     train_x, train_y = dataset.train_xy

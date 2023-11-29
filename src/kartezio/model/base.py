@@ -1,11 +1,20 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from kartezio.callback import Event
+from kartezio.callback import Callback, Event
 from kartezio.export import GenomeToPython
-from kartezio.model.components import Decoder
+from kartezio.model.components import Decoder, Endpoint, Library
 from kartezio.model.evolution import Fitness
 from kartezio.model.helpers import Observable
+from kartezio.model.mutation.base import Mutation
+from kartezio.model.mutation.behavior import AccumulateBehavior, MutationBehavior
+from kartezio.model.mutation.decay import (
+    FactorDecay,
+    LinearDecay,
+    MutationDecay,
+    NoDecay,
+)
+from kartezio.mutation import MutationAllRandom, MutationClassic
 from kartezio.strategy import OnePlusLambda
 from kartezio.utils.io import JsonSaver
 
@@ -37,6 +46,9 @@ class GeneticAlgorithm:
         self.n_generations = n_generations
         self.population = self.strategy.create_population(n_children)
 
+    def set_mutation_rate(self, rate: float):
+        self.strategy.fn_mutation.node_rate = rate
+
     def update(self):
         pass
 
@@ -66,19 +78,15 @@ class GeneticAlgorithm:
         self.current_generation += 1
 
 
-class ModelBase(ModelML, Observable):
-    def __init__(self, decoder: Decoder, fitness: Fitness):
+class ValidModel(ModelML, Observable):
+    def __init__(self, decoder: Decoder, ga: GeneticAlgorithm):
         super().__init__()
         self.decoder = decoder
-        self.ga = GeneticAlgorithm(self.decoder, fitness)
-        self.callbacks = []
+        self.ga = ga
 
     def evaluation(self, x, y):
         y_pred = self.decoder.decode_population(self.ga.population, x)
         self.ga.evaluation(y, y_pred)
-
-    def compile(self, n_generations: int, n_children: int):
-        self.ga.init(n_generations, n_children)
 
     def fit(
         self,
@@ -124,3 +132,44 @@ class ModelBase(ModelML, Observable):
     def print_python_class(self, class_name):
         python_writer = GenomeToPython(self.parser)
         python_writer.to_python_class(class_name, self.strategy.elite)
+
+
+class ModelDraft:
+    class MutationSystem:
+        def __init__(
+            self, mutation: Mutation, behavior: MutationBehavior, decay: MutationDecay
+        ):
+            self.mutation = mutation
+            self.behavior = behavior
+            self.decay = decay
+
+    def __init__(self, decoder: Decoder, fitness: Fitness):
+        super().__init__()
+        self.decoder = decoder
+        self.init = MutationAllRandom(decoder.infos, decoder.library.size)
+        self.mutation = MutationClassic(decoder.infos, decoder.library.size, 0.1, 0.15)
+        self.behavior = AccumulateBehavior(self.mutation, decoder)
+        self.decay = FactorDecay(self.mutation, 0.99)
+        # self.decay = LinearDecay(self.mutation, 0.2, 0.05, 200)
+        self.fitness = fitness
+        self.updatable = [self.decay]
+
+    def set_endpoint(self, endpoint: Endpoint):
+        self.decoder.endpoint = endpoint
+
+    def set_library(self, library: Library):
+        self.decoder.library = library
+
+    def set_n_inputs(self, n_inputs: int):
+        self.decoder.infos.n_inputs = n_inputs
+
+    def compile(self, n_generations: int, n_children: int, callbacks: List[Callback]):
+        ga = GeneticAlgorithm(self.decoder, self.fitness)
+        ga.init(n_generations, n_children)
+        model = ValidModel(self.decoder, ga)
+        for updatable in self.updatable:
+            model.attach(updatable)
+        for callback in callbacks:
+            callback.set_decoder(model.decoder)
+            model.attach(callback)
+        return model
