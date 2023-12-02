@@ -1,5 +1,7 @@
+import numpy as np
+
 from kartezio.metric import MetricMSE
-from kartezio.model.evolution import KartezioFitness, KartezioMetric
+from kartezio.model.evolution import KartezioFitness, KartezioMetric, Fitness
 from kartezio.model.registry import registry
 
 # TODO: clear the fitness process
@@ -31,15 +33,21 @@ class FitnessCount(KartezioFitness):
             self.add_metric(secondary_metric)
 
 
-@registry.fitness.add("IOU")
-class FitnessIOU(KartezioFitness):
-    def __init__(self):
-        super().__init__(
-            "Intersection Over Union",
-            "IOU",
-            1,
-            default_metric=registry.metrics.instantiate("IOU"),
-        )
+def iou(y_true: np.ndarray, y_pred: np.ndarray):
+    _y_true = y_true[0]
+    _y_pred = y_pred[0]
+    _y_pred[_y_pred > 0] = 1
+    if np.sum(_y_true) == 0:
+        _y_true = 1 - _y_true
+        _y_pred = 1 - _y_pred
+    intersection = np.logical_and(_y_true, _y_pred)
+    union = np.logical_or(_y_true, _y_pred)
+    return 1 - np.sum(intersection) / np.sum(union)
+
+
+class FitnessIOU(Fitness):
+    def __init__(self, reduction="mean", multiprocessing=False):
+        super().__init__(iou, reduction, multiprocessing)
 
 
 @registry.fitness.add("IOU2")

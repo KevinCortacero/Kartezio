@@ -18,20 +18,7 @@ from kartezio.model.helpers import Factory, Observer, Prototype, singleton
 from kartezio.model.types import KType
 
 
-class BaseComponent(ABC):
-    def __init__(self, name: str):
-        self.name = name
-
-    def _save_as(self, _class: type, replace=False):
-        assert isinstance(_class, type), f"{_class} is not a Class!"
-        assert issubclass(_class, BaseComponent), f"{_class} is not a BaseComponent!"
-        self.database.add(_class.__name__, self.name, self, replace)
-
-    def to_toml(self):
-        return {
-            "name": self.name,
-        }
-
+class Component:
     @singleton
     class Database:
         def __init__(self):
@@ -46,13 +33,48 @@ class BaseComponent(ABC):
                     raise KeyError(
                         f"Error registering {class_name} called '{name}'. Here is the list of all registered {class_name} components: {self._database[class_name].keys()}"
                     )
-
             self._database[class_name][name] = component
 
         def display(self):
             pprint(self._database)
 
     database = Database()
+    """
+     def __init_subclass__(cls, name:str):
+        pass
+        # self.database.add(_class.__name__, self.name, self, replace)
+        # Component.database.add(name, cls)
+    """
+
+
+class ClassFactory:
+    registry = {}
+
+    @classmethod
+    def register(cls, name:str, sub_class:Component):
+        if name in cls.registry:
+             print(f'Class {name} already exists. Will replace it')
+        cls.registry[name] = sub_class
+
+    @classmethod
+    def create_type(cls, name):
+        exec_class = cls.registry[name]
+        type = exec_class()
+        return type
+
+class BaseComponent(ABC):
+    def __init__(self, name: str):
+        self.name = name
+
+    def _save_as(self, _class: type, replace=False):
+        assert isinstance(_class, type), f"{_class} is not a Class!"
+        assert issubclass(_class, BaseComponent), f"{_class} is not a BaseComponent!"
+        self.database.add(_class.__name__, self.name, self, replace)
+
+    def to_toml(self):
+        return {
+            "name": self.name,
+        }
 
 
 class UpdatableComponent(BaseComponent, Observer, ABC):
