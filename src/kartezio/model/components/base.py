@@ -1,4 +1,4 @@
-from kartezio.model.helpers import singleton
+from pprint import pprint
 
 
 class Component:
@@ -18,72 +18,58 @@ class Component:
 class Components:
     _registry = {}
 
-    @classmethod
-    def contains(cls, component_type, component_name):
-        return (
-            component_name in cls._registry[component_type].__components.keys()
-        )
+    @staticmethod
+    def _contains(group_name: str, component_name: str):
+        if group_name not in Components._registry.keys():
+            return False
+        if component_name not in Components._registry[group_name].keys():
+            return False
+        return True
 
-    @classmethod
-    def add(cls, component_type, component_name, component):
-        cls._registry[component_type].__components[
-            component_name
-        ] = component
+    @staticmethod
+    def contains(component_type: type, component_name: str):
+        return Components._contains(component_type.__name__, component_name)
 
-    @classmethod
-    def register(cls, _class, component, name, replace: bool):
-        assert isinstance(_class, type), f"{_class} is not a Class!"
-        assert issubclass(_class, Component), f"{_class} is not a Component!"
-        class_name = _class.__name__
-        if class_name not in cls._registry.keys():
-            cls._registry[class_name] = {}
+    @staticmethod
+    def add(group_name: str, component_name: str, component: type):
+        assert isinstance(component, type), f"{component} is not a Class!"
+        assert issubclass(component, Component), f"{component} is not a Component!"
 
-        if name in cls._registry[class_name].keys():
+        if group_name not in Components._registry.keys():
+            Components._registry[group_name] = {}
+
+        if component_name not in Components._registry[group_name].keys():
+            Components._registry[group_name][component_name] = component
+
+        Components._registry[group_name][component_name] = component
+
+    @staticmethod
+    def instantiate(group_name: str, component_name: str, *args, **kwargs):
+        if not Components._contains(group_name, component_name):
+            raise KeyError(
+                f"Component '{group_name}', called '{component_name}' not found in the registry!"
+            )
+        return Components._registry[group_name][component_name](*args, **kwargs)
+
+    @staticmethod
+    def display():
+        pprint(Components._registry)
+
+
+def register(component_group: type, component_name: str, replace=False):
+    group_name = component_group.__name__
+
+    def inner(item_cls):
+        if Components._contains(group_name, component_name):
             if not replace:
                 raise KeyError(
-                    f"Error registering {class_name} called '{name}'."
-                    f"Here is the list of all registered {class_name} components:"
-                    f"{cls._registry[class_name].keys()}"
+                    f"""Error registering {group_name} called '{component_name}'.
+                    Here is the list of all registered {group_name} components:
+                    \n{Components._registry[group_name].keys()}.
+                    \n > Replace it using 'replace=True' in @register, or use another name.
+                """
                 )
-        cls._registry[component][name] = _class
-
-
-@singleton
-class Registry:
-    class SubRegistry:
-        def __init__(self):
-            self.__components = {}
-
-        def remove(self):
-            pass
-
-        def get(self, item_name):
-            if item_name not in self.__components.keys():
-                raise ValueError(f"Component '{item_name}' not found in the registry!")
-            return self.__components[item_name]
-
-        def instantiate(self, item_name, *args, **kwargs):
-            return self.get(item_name)(*args, **kwargs)
-
-        def list(self):
-            return self.__components
-
-    def __init__(self):
-        self.__registries = {}
-        self.__registries[Endpoint] = self.SubRegistry()
-
-
-def register(component_type, component_name, replace=False):
-    def inner(item_cls):
-        if Components.contains(component_type, component_name):
-            if replace:
-
-            else:
-                print(
-                    f"Warning, '{component_name}' already registered, replace it using 'replace=True', or use another name."
-                )
-        else:
-            Components._registry[component_type].__components[component_name] = item_cls
+        Components.add(group_name, component_name, item_cls)
 
         def wrapper(*args, **kwargs):
             return item_cls(*args, **kwargs)
@@ -91,12 +77,3 @@ def register(component_type, component_name, replace=False):
         return wrapper
 
     return inner
-
-
-class Endpoint:
-    pass
-
-
-@register(Endpoint, "test")
-class Test(object):
-    pass

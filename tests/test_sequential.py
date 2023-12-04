@@ -16,5 +16,5 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.model.decoder.infos.n_nodes, 30)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
