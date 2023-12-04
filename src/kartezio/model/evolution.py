@@ -3,11 +3,11 @@ from typing import List
 
 import numpy as np
 
-from kartezio.model.components import BaseNode
+from kartezio.model.components import Node
 from kartezio.model.types import Score, ScoreList
 
 
-class KartezioMetric(BaseNode, ABC):
+class KartezioMetric(Node, ABC):
     def __init__(
         self,
         name: str,
@@ -20,14 +20,14 @@ class KartezioMetric(BaseNode, ABC):
         pass
 
 
-class KMetric(BaseNode, ABC):
+class KMetric(Node, ABC):
     pass
 
 
 MetricList = List[KartezioMetric]
 
 
-class Fitness(BaseNode, ABC):
+class Fitness(Node, ABC):
     def __init__(self, fn, reduction="mean", multiprocessing=False):
         super().__init__(fn)
         self.reduction = reduction
@@ -61,7 +61,7 @@ class Fitness(BaseNode, ABC):
         return self._fn(y_true, y_pred)
 
 
-class KartezioFitness(BaseNode, ABC):
+class KartezioFitness(Node, ABC):
     def __init__(
         self,
         name: str,

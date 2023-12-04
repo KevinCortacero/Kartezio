@@ -8,7 +8,7 @@ from numena.image.contour import contours_find
 from numena.image.morphology import WatershedSkimage
 from numena.image.threshold import threshold_tozero
 
-from kartezio.model.components import Endpoint
+from kartezio.model.components import Endpoint, Components
 from kartezio.model.registry import registry
 from kartezio.model.types import TypeArray
 
@@ -26,11 +26,21 @@ def f_labels(x, connectivity=4):
     ]
 
 
-endpoint_labels = Endpoint(f_labels, [TypeArray])
+def f_e_threshold(x: List, threshold=2, mode="binary"):
+    if mode == "binary":
+        return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_BINARY)[1]]
+    return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_TOZERO)[1]]
 
 
-@registry.endpoints.add("LABELS")
-class EndpointLabels(Endpoint):
+endpoint_labels = Endpoint("labels", f_labels, [TypeArray], connectivity=4)
+endpoint_threshold = Endpoint("threshold", f_e_threshold, [TypeArray], mode="binary")
+
+
+print(Components.instantiate("Endpoint", "threshold"))
+
+
+# @registry.endpoints.add("LABELS")
+class EndpointLabels(Endpoint, component="Endpoint", name="Labels"):
     def __init__(self, connectivity=4):
         super().__init__(f"Labels", "LABELS", 1, ["labels"])
         self.connectivity = connectivity
@@ -139,15 +149,6 @@ class EndpointEllipse(Endpoint):
             "labels": new_labels,
             "count": n,
         }
-
-
-def f_e_threshold(x: List, threshold=2, mode="binary"):
-    if mode == "binary":
-        return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_BINARY)[1]]
-    return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_TOZERO)[1]]
-
-
-e_threshold = Endpoint(f_e_threshold, [TypeArray])
 
 
 @registry.endpoints.add("TRSH")

@@ -18,58 +18,38 @@ from kartezio.model.helpers import Factory, Observer, Prototype, singleton
 from kartezio.model.types import KType
 
 
-class Component:
-    @singleton
-    class Database:
-        def __init__(self):
-            self._database = {}
-
-        def add(self, class_name, name, component, replace: bool):
-            if class_name not in self._database.keys():
-                self._database[class_name] = {}
-
-            if name in self._database[class_name].keys():
-                if not replace:
-                    raise KeyError(
-                        f"Error registering {class_name} called '{name}'. Here is the list of all registered {class_name} components: {self._database[class_name].keys()}"
-                    )
-            self._database[class_name][name] = component
-
-        def display(self):
-            pprint(self._database)
-
-    database = Database()
-    """
-     def __init_subclass__(cls, name:str):
-        pass
-        # self.database.add(_class.__name__, self.name, self, replace)
-        # Component.database.add(name, cls)
-    """
-
-
-class ClassFactory:
-    registry = {}
+class Components:
+    __registry = {}
 
     @classmethod
-    def register(cls, name:str, sub_class:Component):
-        if name in cls.registry:
-             print(f'Class {name} already exists. Will replace it')
-        cls.registry[name] = sub_class
+    def register(cls, _class, component, name, replace: bool):
+        assert isinstance(_class, type), f"{_class} is not a Class!"
+        assert issubclass(_class, Component), f"{_class} is not a Component!"
+        class_name = _class.__name__
+        if class_name not in cls.__registry.keys():
+            cls.__registry[class_name] = {}
+
+        if name in cls.__registry[class_name].keys():
+            if not replace:
+                raise KeyError(
+                    f"Error registering {class_name} called '{name}'."
+                    f"Here is the list of all registered {class_name} components:"
+                    f"{cls.__registry[class_name].keys()}"
+                )
+        cls.__registry[component][name] = _class
 
     @classmethod
-    def create_type(cls, name):
-        exec_class = cls.registry[name]
-        type = exec_class()
-        return type
+    def display(cls):
+        pprint(cls.__registry)
+
+    @classmethod
+    def instantiate(cls, class_name, name, *args, **kwargs):
+        return cls.__registry[class_name][name](*args, **kwargs)
+
 
 class BaseComponent(ABC):
     def __init__(self, name: str):
         self.name = name
-
-    def _save_as(self, _class: type, replace=False):
-        assert isinstance(_class, type), f"{_class} is not a Class!"
-        assert issubclass(_class, BaseComponent), f"{_class} is not a BaseComponent!"
-        self.database.add(_class.__name__, self.name, self, replace)
 
     def to_toml(self):
         return {
@@ -82,48 +62,28 @@ class UpdatableComponent(BaseComponent, Observer, ABC):
         super().__init__(name)
 
 
-@dataclass
-class KSignature:
-    f_name: str
-    f_inputs: Sequence[KType]
-    f_outputs: Sequence[KType]
-    f_parameters: int = 0
-
-    @property
-    def arity(self):
-        return len(self.f_inputs)
-
-    @property
-    def n_outputs(self):
-        return len(self.f_outputs)
-
-
-class BaseNode(BaseComponent, ABC):
-    def __init__(self, fn: Callable):
+class Node(Component, ABC, component="Node"):
+    def __init__(self, fn: Callable, **kwargs):
         assert callable(
             fn
         ), f"given 'function' {fn.__name__} is not callable! (type: {type(fn)})"
-        super().__init__(fn.__name__)
+        super().__init__()
         self._fn = fn
+        self.__kwargs = kwargs
 
     def __call__(self, *args, **kwargs):
         return self._fn(*args, **kwargs)
 
 
-class Preprocessing(BaseNode, ABC):
+class Preprocessing(Node, ABC, component="Preprocessing"):
     """
     Preprocessing node, called before training loop.
     """
 
-    def __init__(self, fn: Callable):
-        super().__init__(fn)
-        self._save_as(Preprocessing)
-
-    def __call__(self, *args, **kwargs):
-        return self._fn(*args, **kwargs)
+    pass
 
 
-class Primitive(BaseNode, ABC):
+class Primitive(Node, ABC, component="Primitive"):
     """
     Single graph node for the CGP Graph.
     """
@@ -133,19 +93,18 @@ class Primitive(BaseNode, ABC):
         self.inputs = inputs
         self.output = output
         self.parameters = parameters
-        self._save_as(Primitive)
 
 
-class Endpoint(BaseNode, ABC):
+class Endpoint(Node, component="Endpoint"):
     """
     Last node called to produce final outputs. Called in training loop,
     not submitted to evolution.
     """
 
-    def __init__(self, fn: Callable, inputs):
-        super().__init__(fn)
+    def __init__(self, name: str, fn: Callable, inputs, **kwargs):
+        super().__init__(fn, **kwargs)
         self.inputs = inputs
-        self._save_as(Endpoint)
+        self._register(self.__class__, "Endpoint", name)
 
     def to_toml(self):
         return {
@@ -153,7 +112,7 @@ class Endpoint(BaseNode, ABC):
         }
 
 
-class Aggregation(BaseNode, ABC):
+class Aggregation(Node, ABC, component="Aggregation"):
     def __init__(
         self,
         aggregation: Callable,
