@@ -1,7 +1,7 @@
 import numpy as np
 
 from kartezio.metric import MetricMSE
-from kartezio.model.evolution import KartezioFitness, KartezioMetric, Fitness
+from kartezio.model.evolution import Fitness, KartezioFitness, KartezioMetric
 from kartezio.model.registry import registry
 
 # TODO: clear the fitness process

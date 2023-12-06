@@ -1,18 +1,24 @@
+import abc
+from abc import ABC, abstractmethod
 from pprint import pprint
+from typing import Dict
+
+from kartezio.model.helpers import Observer
 
 
-class Component:
-    """
-    def _register(self, _class, component: type, name: str):
-        Components.register(_class, component, name, replace=False)
-        Components.display()
+class Component(ABC):
+    def __to_dict__(self) -> Dict:
+        return {}
 
-    def __init_subclass__(cls, component: type, name: str = None):
-        if name is not None:
-            cls._register(cls, component, name)
-    """
+    @classmethod
+    @abstractmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+        pass
 
-    pass
+
+class UpdatableComponent(Component, Observer, ABC):
+    def __init__(self, name):
+        super().__init__(name)
 
 
 class Components:
@@ -54,6 +60,19 @@ class Components:
     @staticmethod
     def display():
         pprint(Components._registry)
+
+
+class Node(Component, ABC, component="Node"):
+    def __init__(self, fn: Callable, **kwargs):
+        assert callable(
+            fn
+        ), f"given 'function' {fn.__name__} is not callable! (type: {type(fn)})"
+        super().__init__()
+        self._fn = fn
+        self.__kwargs = kwargs
+
+    def __call__(self, *args, **kwargs):
+        return self._fn(*args, **kwargs)
 
 
 def register(component_group: type, component_name: str, replace=False):

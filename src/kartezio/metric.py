@@ -3,13 +3,7 @@ from numba import jit
 from scipy.optimize import linear_sum_assignment
 
 from kartezio.model.evolution import KartezioMetric, KMetric
-from kartezio.model.registry import registry
 from kartezio.model.types import Score
-
-
-def register_metrics():
-    """Force decorators to wrap KartezioFitness"""
-    print(f"[Kartezio - INFO] -  {len(registry.metrics.list())} metrics registered.")
 
 
 @jit(nopython=True)

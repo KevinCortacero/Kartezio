@@ -8,7 +8,7 @@ from numena.image.contour import contours_find
 from numena.image.morphology import WatershedSkimage
 from numena.image.threshold import threshold_tozero
 
-from kartezio.model.components import Endpoint, Components
+from kartezio.model.components import Components, Endpoint
 from kartezio.model.registry import registry
 from kartezio.model.types import TypeArray
 
