@@ -1,5 +1,7 @@
 from kartezio.model.base import ModelDraft
-from kartezio.model.components import DecoderSequential, Endpoint, Library
+from kartezio.model.components.decoder import SequentialDecoder
+from kartezio.model.components.endpoint import Endpoint
+from kartezio.model.components.library import Library
 from kartezio.model.evolution import Fitness
 
 
@@ -13,5 +15,5 @@ class ModelSequential(ModelDraft):
         endpoint: Endpoint = None,
     ):
         super().__init__(
-            DecoderSequential(n_inputs, n_nodes, library, endpoint), fitness
+            SequentialDecoder(n_inputs, n_nodes, library, endpoint), fitness
         )

@@ -1,15 +1,22 @@
-class Endpoint(Node, component="Endpoint"):
+from abc import ABC
+from typing import Dict, List
+
+from kartezio.model.components.base import Components, Node
+from kartezio.model.types import KType
+
+
+class Endpoint(Node, ABC):
     """
     Last node called to produce final outputs. Called in training loop,
     not submitted to evolution.
     """
 
-    def __init__(self, name: str, fn: Callable, inputs, **kwargs):
-        super().__init__(fn, **kwargs)
+    def __init__(self, inputs: List[KType]):
+        super().__init__()
         self.inputs = inputs
-        self._register(self.__class__, "Endpoint", name)
 
-    def to_toml(self):
-        return {
-            "name": self.name,
-        }
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Endpoint":
+        return Components.instantiate(
+            "Endpoint", dict_infos["name"], *dict_infos["args"]
+        )

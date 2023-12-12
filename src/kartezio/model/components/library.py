@@ -1,27 +1,33 @@
-from typing import Dict
+import random
+from abc import ABC
+from typing import Dict, List
 
-from kartezio.model.components.base import Component
+import numpy as np
+from tabulate import tabulate
+
+from kartezio.model.components.base import Component, Components, register
 from kartezio.model.components.primitive import Primitive
 
 
-class Library(Component):
-    def __init__(self, return_type):
+class Library(Component, ABC):
+    def __init__(self, rtype):
+        super().__init__()
         self._primitives: Dict[int, Primitive] = {}
-        self.return_type = return_type
+        self.rtype = rtype
 
-    def to_toml(self):
+    def __to_dict__(self) -> Dict:
         return {
-            "return_type": self.return_type,
-            "primitives": {
-                str(i): self.name_of(i) for i in range(len(self._primitives))
-            },
+            "rtype": self.rtype,
+            "primitives": {str(i): self.name_of(i) for i in range(self.size)},
         }
 
-    @staticmethod
-    def from_json(json_data):
-        library = Library()
-        for node_name in json_data:
-            library.add_primitive(node_name)
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Library":
+        library = LibraryEmpty(dict_infos["rtype"])
+        for i in range(len(dict_infos["primitives"])):
+            p_name = dict_infos["primitives"][str(i)]
+            primitive = Components.instantiate("Primitive", p_name)
+            library.add_primitive(primitive)
         return library
 
     def add_primitive(self, primitive: Primitive):
@@ -35,13 +41,13 @@ class Library(Component):
         return self._primitives[i].name
 
     def arity_of(self, i):
-        return len(self._primitives[i].inputs)
+        return self._primitives[i].arity
 
     def parameters_of(self, i):
-        return self._primitives[i].parameters
+        return self._primitives[i].n_parameters
 
-    def execute(self, f_index, x, args):
-        return self._primitives[f_index](x, args)
+    def execute(self, f_index, x: List[np.ndarray], args: List[int]):
+        return self._primitives[f_index].call(x, args)
 
     def display(self):
         headers = ["Id", "Name", "Inputs", "Outputs", "Arity", "Parameters"]
@@ -50,13 +56,13 @@ class Library(Component):
             one_primitive_infos = [
                 i,
                 self.name_of(i),
-                primitive.inputs,
-                primitive.output,
+                primitive.input_types,
+                primitive.rtype,
                 self.arity_of(i),
                 self.parameters_of(i),
             ]
             full_list.append(one_primitive_infos)
-        table_name = f"  {self.output_type} Library  "
+        table_name = f"  {self.rtype} Library  "
         print("─" * len(table_name))
         print(table_name)
         print(
@@ -96,3 +102,8 @@ class Library(Component):
     @property
     def size(self):
         return len(self._primitives)
+
+
+@register(Library, "library")
+class LibraryEmpty(Library):
+    pass

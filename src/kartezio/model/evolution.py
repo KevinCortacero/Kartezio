@@ -3,7 +3,7 @@ from typing import List
 
 import numpy as np
 
-from kartezio.model.components import Node
+from kartezio.model.components.base import Node
 from kartezio.model.types import Score, ScoreList
 
 

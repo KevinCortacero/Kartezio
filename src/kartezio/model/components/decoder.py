@@ -60,6 +60,7 @@ class Decoder(Component, ABC):
     def __init__(
         self, n_inputs: int, n_nodes: int, library: Library, endpoint: Endpoint = None
     ):
+        super().__init__()
         if endpoint is None:
             n_outputs = 1
         else:

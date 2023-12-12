@@ -1,4 +1,9 @@
-class Preprocessing(Node, ABC, component="Preprocessing"):
+from abc import ABC
+
+from kartezio.model.components.base import Node
+
+
+class Preprocessing(Node, ABC):
     """
     Preprocessing node, called before training loop.
     """

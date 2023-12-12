@@ -7,6 +7,9 @@ from kartezio.model.helpers import Observer
 
 
 class Component(ABC):
+    def __init__(self):
+        self.name = Components.name_of(self.__class__)
+
     def __to_dict__(self) -> Dict:
         return {}
 
@@ -23,6 +26,7 @@ class UpdatableComponent(Component, Observer, ABC):
 
 class Components:
     _registry = {}
+    _reverse = {}
 
     @staticmethod
     def _contains(group_name: str, component_name: str):
@@ -48,6 +52,7 @@ class Components:
             Components._registry[group_name][component_name] = component
 
         Components._registry[group_name][component_name] = component
+        Components._reverse[component.__name__] = f"{group_name}/{component_name}"
 
     @staticmethod
     def instantiate(group_name: str, component_name: str, *args, **kwargs):
@@ -55,24 +60,22 @@ class Components:
             raise KeyError(
                 f"Component '{group_name}', called '{component_name}' not found in the registry!"
             )
-        return Components._registry[group_name][component_name](*args, **kwargs)
+        component = Components._registry[group_name][component_name](*args, **kwargs)
+        return component
+
+    @staticmethod
+    def name_of(component_class: type) -> str:
+        return Components._reverse[component_class.__name__].split("/")[1]
 
     @staticmethod
     def display():
         pprint(Components._registry)
 
 
-class Node(Component, ABC, component="Node"):
-    def __init__(self, fn: Callable, **kwargs):
-        assert callable(
-            fn
-        ), f"given 'function' {fn.__name__} is not callable! (type: {type(fn)})"
-        super().__init__()
-        self._fn = fn
-        self.__kwargs = kwargs
-
-    def __call__(self, *args, **kwargs):
-        return self._fn(*args, **kwargs)
+class Node(Component, ABC):
+    @abstractmethod
+    def call(self, *args, **kwargs):
+        pass
 
 
 def register(component_group: type, component_name: str, replace=False):
