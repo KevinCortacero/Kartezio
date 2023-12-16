@@ -4,12 +4,7 @@ from numena.io.drive import Directory
 from numena.io.json import json_read, json_write
 
 import kartezio.utils.json_utils as json
-from kartezio.model.components import (
-    BaseGenotype,
-    Decoder,
-    DecoderSequential,
-    KGenotypeArray,
-)
+from kartezio.core.components.decoder import Decoder, SequentialDecoder
 
 
 def pack_one_directory(directory_path):
@@ -45,7 +40,7 @@ class JsonLoader:
     def read_individual(self, filepath):
         json_data = json_read(filepath=filepath)
         dataset = json_data["dataset"]
-        parser = DecoderSequential.from_json(json_data["decoding"])
+        parser = SequentialDecoder.from_json(json_data["decoding"])
         try:
             individual = KGenotypeArray.from_json(json_data["individual"])
         except KeyError:

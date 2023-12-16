@@ -1,8 +1,8 @@
-from kartezio.model.base import ModelDraft
-from kartezio.model.components.decoder import SequentialDecoder
-from kartezio.model.components.endpoint import Endpoint
-from kartezio.model.components.library import Library
-from kartezio.model.evolution import Fitness
+from kartezio.core.base import ModelDraft
+from kartezio.core.components.decoder import SequentialDecoder
+from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.components.library import Library
+from kartezio.core.evolution import Fitness
 
 
 class ModelSequential(ModelDraft):

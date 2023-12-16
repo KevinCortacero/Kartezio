@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import numpy as np
 
-from kartezio.model.components.base import Components, Node
+from kartezio.core.components.base import Components, Node
 
 
 class Primitive(Node, ABC):

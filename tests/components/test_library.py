@@ -3,10 +3,10 @@ from typing import List
 
 import numpy as np
 
-from kartezio.model.components.base import register
-from kartezio.model.components.library import Library
-from kartezio.model.components.primitive import Primitive
-from kartezio.model.types import TypeArray, TypeScalar
+from kartezio.core.components.base import register
+from kartezio.core.components.library import Library
+from kartezio.core.components.primitive import Primitive
+from kartezio.core.types import TypeArray, TypeScalar
 
 
 @register(Primitive, "add")

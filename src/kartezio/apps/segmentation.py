@@ -1,6 +1,6 @@
+from kartezio.core.builder import ModelBuilder
 from kartezio.endpoint import EndpointThreshold, e_threshold
 from kartezio.improc.primitives import library_opencv
-from kartezio.model.builder import ModelBuilder
 from kartezio.stacker import StackerMean, a_mean
 
 ENDPOINT_DEFAULT_SEGMENTATION = e_threshold

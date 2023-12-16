@@ -1,8 +1,8 @@
 import unittest
 
+from kartezio.core.sequential import ModelSequential
 from kartezio.fitness import FitnessIOU
 from kartezio.improc.primitives import library_opencv
-from kartezio.model.sequential import ModelSequential
 
 
 class MyTestCase(unittest.TestCase):

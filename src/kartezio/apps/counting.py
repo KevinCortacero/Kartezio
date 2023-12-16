@@ -1,8 +1,8 @@
+from kartezio.core.builder import ModelBuilder
+from kartezio.core.registry import registry
 from kartezio.endpoint import EndpointCounting
 from kartezio.fitness import FitnessCount
 from kartezio.image.bundle import BUNDLE_OPENCV
-from kartezio.model.builder import ModelBuilder
-from kartezio.model.registry import registry
 
 ENDPOINT_DEFAULT_COUNTING = EndpointCounting(area_range=None, threshold=4)
 BUNDLE_DEFAULT_COUNTING = BUNDLE_OPENCV

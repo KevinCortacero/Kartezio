@@ -1,9 +1,9 @@
 import unittest
 from typing import Dict, List
 
-from kartezio.model.components.base import Components, register
-from kartezio.model.components.endpoint import Endpoint
-from kartezio.model.types import TypeScalar
+from kartezio.core.components.base import Components, register
+from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.types import TypeScalar
 
 
 @register(Endpoint, "add_value")
@@ -16,7 +16,7 @@ class EndpointTest(Endpoint):
         self.value = value
 
     def __to_dict__(self) -> Dict:
-        return {"args": [self.value]}
+        return {"name": self.name, "args": [self.value]}
 
 
 class MyTestCase(unittest.TestCase):
@@ -25,8 +25,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(endpoint.call([42])[0], 84)
         endpoint_2 = Components.instantiate("Endpoint", "add_value", 42)
         self.assertEqual(endpoint_2.call([42])[0], 84)
-        dict_infos = {"name": endpoint.name, **endpoint.__to_dict__()}
-        endpoint_3 = Endpoint.__from_dict__(dict_infos=dict_infos)
+        endpoint_3 = Endpoint.__from_dict__(endpoint.__to_dict__())
         self.assertEqual(endpoint_3.call([42])[0], 84)
 
 

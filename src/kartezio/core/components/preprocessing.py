@@ -1,6 +1,6 @@
 from abc import ABC
 
-from kartezio.model.components.base import Node
+from kartezio.core.components.base import Node
 
 
 class Preprocessing(Node, ABC):

@@ -1,9 +1,11 @@
+import ast
 import copy
 from abc import ABC
+from typing import Dict
 
 import numpy as np
 
-from kartezio.model.components.base import Component
+from kartezio.core.components.base import Component
 
 
 class Chromosome:
@@ -26,7 +28,12 @@ class Genotype(Component, ABC):
 
 
 class MonoChromosome(Genotype):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "MonoChromosome":
+        pass
+
     def __init__(self, n_outputs, chromosome):
+        super().__init__()
         self.chromosome = chromosome
         self.outputs = np.zeros(n_outputs, dtype=np.uint8)
 

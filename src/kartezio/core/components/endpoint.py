@@ -1,8 +1,8 @@
 from abc import ABC
 from typing import Dict, List
 
-from kartezio.model.components.base import Components, Node
-from kartezio.model.types import KType
+from kartezio.core.components.base import Components, Node
+from kartezio.core.types import KType
 
 
 class Endpoint(Node, ABC):

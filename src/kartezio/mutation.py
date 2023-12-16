@@ -1,14 +1,19 @@
 import random
+from typing import Dict
 
 import numpy as np
 
-from kartezio.model.components import BaseGenotype, GenotypeInfos
-from kartezio.model.mutation.base import Mutation
-from kartezio.model.registry import registry
+from kartezio.core.components.base import register
+from kartezio.core.components.genotype import Genotype
+from kartezio.core.mutation.base import Mutation
 
 
-@registry.mutations.add("classic")
-class MutationClassic(Mutation):
+@register(Mutation, "random")
+class MutationRandom(Mutation):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Mutation":
+        pass
+
     def __init__(self, template, n_functions: int, node_rate: float, out_rate: float):
         super().__init__(template, n_functions)
         self.node_rate = node_rate
@@ -22,7 +27,7 @@ class MutationClassic(Mutation):
         ).T
         self.sampling_range = range(len(self.all_indices))
 
-    def mutate(self, genotype: BaseGenotype) -> BaseGenotype:
+    def mutate(self, genotype: Genotype) -> Genotype:
         sampling_indices = np.random.choice(
             self.sampling_range, self.n_mutations, replace=False
         )
@@ -41,37 +46,3 @@ class MutationClassic(Mutation):
             if random.random() < self.out_rate:
                 self.mutate_output(genotype, output)
         return genotype
-
-
-@registry.mutations.add("all_random")
-class MutationAllRandom(Mutation):
-    """
-    Can be used to initialize genome (genome) randomly
-    """
-
-    def __init__(self, metadata: GenotypeInfos, n_functions: int):
-        super().__init__(metadata, n_functions)
-
-    def mutate(self, genome: BaseGenotype):
-        # mutate genes
-        for i in range(self.infos.n_nodes):
-            self.mutate_function(genome, i)
-            self.mutate_connections(genome, i)
-            self.mutate_parameters(genome, i)
-        # mutate outputs
-        for i in range(self.infos.n_outputs):
-            self.mutate_output(genome, i)
-        return genome
-
-    def random(self):
-        genotype = self.infos.new()
-        return self.mutate(genotype)
-
-
-@registry.mutations.add("copy")
-class CopyGenome:
-    def __init__(self, genome: BaseGenotype):
-        self.genome = genome
-
-    def mutate(self, _genome: BaseGenotype):
-        return self.genome.clone()

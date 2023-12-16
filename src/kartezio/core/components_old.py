@@ -1,26 +1,11 @@
 """
 
 """
-import ast
-import copy
-import random
-import time
+
 from abc import ABC
-from builtins import print
-from dataclasses import dataclass, field
-from pprint import pprint
-from typing import Callable, Dict, List, Sequence
+from dataclasses import dataclass
 
-import numpy as np
-from tabulate import tabulate
-
-from kartezio.model.helpers import Factory, Observer, Prototype, singleton
-from kartezio.model.types import KType
-
-
-class GenomeFactory(Factory):
-    def __init__(self, prototype: BaseGenotype):
-        super().__init__(prototype)
+from kartezio.core.components.decoder import GenotypeInfos
 
 
 @dataclass

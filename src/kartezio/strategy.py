@@ -1,6 +1,7 @@
-from kartezio.model.components import Decoder
-from kartezio.model.strategy import Strategy
-from kartezio.mutation import MutationAllRandom, MutationClassic
+from kartezio.core.components.decoder import Decoder
+from kartezio.core.components.initialization import MutationAllRandom
+from kartezio.core.strategy import Strategy
+from kartezio.mutation import MutationRandom
 from kartezio.population import PopulationWithElite
 
 
@@ -9,9 +10,7 @@ class OnePlusLambda(Strategy):
         self.n_parents = 1
         self.n_children = 4
         self.fn_init = MutationAllRandom(decoder.infos, decoder.library.size)
-        self.fn_mutation = MutationClassic(
-            decoder.infos, decoder.library.size, 0.1, 0.1
-        )
+        self.fn_mutation = MutationRandom(decoder.infos, decoder.library.size, 0.1, 0.1)
 
     @property
     def get_elite(self, population: PopulationWithElite):

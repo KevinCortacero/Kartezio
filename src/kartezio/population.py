@@ -1,6 +1,6 @@
 import numpy as np
 
-from kartezio.model.population import Population
+from kartezio.core.population import Population
 
 
 class IndividualHistory:

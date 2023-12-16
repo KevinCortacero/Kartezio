@@ -4,8 +4,8 @@ from typing import List
 import numpy as np
 import simplejson
 
-from kartezio.model.components.decoder import GenotypeInfos
-from kartezio.model.components.genotype import Genotype
+from kartezio.core.components.decoder import GenotypeInfos
+from kartezio.core.components.genotype import Genotype
 from kartezio.population import IndividualHistory
 
 """ KartezioGenome Metadata """

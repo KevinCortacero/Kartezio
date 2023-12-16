@@ -3,8 +3,8 @@ from typing import List
 
 import numpy as np
 
-from kartezio.model.components.base import Node
-from kartezio.model.types import Score, ScoreList
+from kartezio.core.components.base import Node
+from kartezio.core.types import Score, ScoreList
 
 
 class KartezioMetric(Node, ABC):

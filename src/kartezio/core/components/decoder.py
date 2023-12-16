@@ -5,11 +5,12 @@ from typing import Dict, List
 
 import numpy as np
 
-from kartezio.model.components.base import Component
-from kartezio.model.components.genotype import Chromosome, Genotype, MonoChromosome
-from kartezio.model.components.library import Library
-from kartezio.model.components_old import Endpoint
-from kartezio.model.population import Population
+from kartezio.core.components.aggregation import Aggregation
+from kartezio.core.components.base import Component
+from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.components.genotype import Chromosome, Genotype, MonoChromosome
+from kartezio.core.components.library import Library
+from kartezio.core.population import Population
 
 
 @dataclass

@@ -1,9 +1,9 @@
 import cv2
 
-from kartezio.model.components import Decoder, KartezioToCode
+from kartezio.core.components.decoder import Decoder
 
 
-class GenomeToPython(KartezioToCode):
+class GenomeToPython(Decoder):
     def __init__(self, parser: Decoder):
         super().__init__(parser.infos, parser.library, parser.endpoint)
         self.indent_1 = " " * 4

@@ -2,10 +2,12 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from kartezio.model.components import BaseGenotype, GenomeReaderWriter
+from kartezio.core.components.base import Component
+from kartezio.core.components.genotype import Genotype
+from kartezio.core.components_old import GenomeReaderWriter
 
 
-class Mutation(GenomeReaderWriter, ABC):
+class Mutation(Component, GenomeReaderWriter, ABC):
     def __init__(self, shape, n_functions):
         super().__init__(shape)
         self.n_functions = n_functions
@@ -31,10 +33,10 @@ class Mutation(GenomeReaderWriter, ABC):
             self.infos.nodes_idx + idx, size=self.infos.n_connections
         )
 
-    def mutate_function(self, genome: BaseGenotype, idx: int):
+    def mutate_function(self, genome: Genotype, idx: int):
         self.write_function(genome, idx, self.random_functions)
 
-    def mutate_connections(self, genome: BaseGenotype, idx: int, only_one: int = None):
+    def mutate_connections(self, genome: Genotype, idx: int, only_one: int = None):
         new_connections = self.random_connections(idx)
         if only_one is not None:
             new_value = new_connections[only_one]
@@ -42,7 +44,7 @@ class Mutation(GenomeReaderWriter, ABC):
             new_connections[only_one] = new_value
         self.write_connections(genome, idx, new_connections)
 
-    def mutate_parameters(self, genome: BaseGenotype, idx: int, only_one: int = None):
+    def mutate_parameters(self, genome: Genotype, idx: int, only_one: int = None):
         new_parameters = self.random_parameters
         if only_one is not None:
             old_parameters = self.read_parameters(genome, idx)
@@ -50,9 +52,9 @@ class Mutation(GenomeReaderWriter, ABC):
             new_parameters = old_parameters.copy()
         self.write_parameters(genome, idx, new_parameters)
 
-    def mutate_output(self, genome: BaseGenotype, idx: int):
+    def mutate_output(self, genome: Genotype, idx: int):
         self.write_output_connection(genome, idx, self.random_output)
 
     @abstractmethod
-    def mutate(self, genome: BaseGenotype):
+    def mutate(self, genome: Genotype):
         pass

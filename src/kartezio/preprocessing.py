@@ -2,7 +2,7 @@ import cv2
 from numena.image.basics import image_split
 from numena.image.color import bgr2hed, bgr2hsv, rgb2bgr, rgb2hed
 
-from kartezio.model.components import Preprocessing
+from kartezio.core.components import Preprocessing
 
 
 class TransformToHSV(Preprocessing):

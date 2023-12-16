@@ -1,8 +1,8 @@
 from abc import ABC
 
 from kartezio.callback import Event
-from kartezio.model.components import UpdatableComponent
-from kartezio.model.mutation.base import Mutation
+from kartezio.core.components.base import UpdatableComponent
+from kartezio.core.mutation.base import Mutation
 
 
 class MutationDecay(UpdatableComponent, ABC):

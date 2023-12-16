@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from kartezio.model.population import Population
+from kartezio.core.population import Population
 
 
 class Strategy(ABC):

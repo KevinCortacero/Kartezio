@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from pprint import pprint
 from typing import Dict
 
-from kartezio.model.helpers import Observer
+from kartezio.core.helpers import Observer
 
 
 class Component(ABC):

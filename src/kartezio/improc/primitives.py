@@ -1,3 +1,5 @@
+from typing import List
+
 import cv2
 import numpy as np
 import toml
@@ -6,6 +8,12 @@ from numena.image.threshold import threshold_binary, threshold_tozero
 from scipy.stats import kurtosis, skew
 from skimage.morphology import remove_small_holes, remove_small_objects
 
+from kartezio.core.components.base import Components, register
+from kartezio.core.components.decoder import GenotypeInfos, SequentialDecoder
+from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.components.library import Library
+from kartezio.core.components.primitive import Primitive
+from kartezio.core.types import TypeArray
 from kartezio.improc.common import convolution, gradient_magnitude
 from kartezio.improc.kernel import (
     KERNEL_ROBERTS_X,
@@ -15,27 +23,26 @@ from kartezio.improc.kernel import (
     gabor_kernel,
     kernel_from_parameters,
 )
-from kartezio.model.components import (
-    DecoderSequential,
-    Endpoint,
-    GenotypeInfos,
-    Library,
-    Primitive,
-)
-from kartezio.model.types import TypeArray
+from test_pn import NoEndpoint
 
 
+@register(Library, "opencv_library")
 class LibraryDefaultOpenCV(Library):
     def __init__(self):
         super().__init__(TypeArray)
 
-    def create_primitive(self, name, arity, parameters, function):
-        primitive = Primitive(function, [TypeArray] * arity, [TypeArray], parameters)
+    def add_by_name(self, name):
+        primitive = Components.instantiate("Primitive", name)
         self.add_primitive(primitive)
 
 
-def f_max(x, args=None):
-    return cv2.max(x[0], x[1])
+@register(Primitive, "max")
+class Max(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.max(x[0], x[1])
 
 
 def f_min(x, args=None):
@@ -284,7 +291,9 @@ def f_inrange(x, args=None):
 
 
 library_opencv = LibraryDefaultOpenCV()
-library_opencv.create_primitive("Max", 2, 0, f_max)
+library_opencv.add_by_name("max")
+
+"""
 library_opencv.create_primitive("Min", 2, 0, f_min)
 library_opencv.create_primitive("Mean", 2, 0, f_mean)
 library_opencv.create_primitive("Add", 2, 0, f_add)
@@ -329,6 +338,8 @@ library_opencv.create_primitive(
 library_opencv.create_primitive("Binary In Range", 1, 2, f_bin_inrange)
 library_opencv.create_primitive("In Range", 1, 2, f_inrange)
 
+"""
+
 
 def no_endpoint(x):
     return x
@@ -338,8 +349,8 @@ if __name__ == "__main__":
     infos = GenotypeInfos()
     library = library_opencv
     library.display()
-    endpoint = Endpoint(no_endpoint, [TypeArray])
-    decoder = DecoderSequential(2, 30, library, endpoint)
+    endpoint = NoEndpoint()
+    decoder = SequentialDecoder(2, 30, library, endpoint)
     with open("decoder.toml", "w") as toml_file:
         toml.dump(decoder.to_toml(), toml_file)
     print(toml.dumps(decoder.to_toml()))

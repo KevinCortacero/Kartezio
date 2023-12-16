@@ -5,8 +5,8 @@ from typing import Dict, List
 import numpy as np
 from tabulate import tabulate
 
-from kartezio.model.components.base import Component, Components, register
-from kartezio.model.components.primitive import Primitive
+from kartezio.core.components.base import Component, Components, register
+from kartezio.core.components.primitive import Primitive
 
 
 class Library(Component, ABC):

@@ -1,18 +1,13 @@
 import numpy as np
 
+from kartezio.core.components.base import register
+from kartezio.core.evolution import Fitness, KartezioFitness, KartezioMetric
 from kartezio.metric import MetricMSE
-from kartezio.model.evolution import Fitness, KartezioFitness, KartezioMetric
-from kartezio.model.registry import registry
 
 # TODO: clear the fitness process
 
 
-def register_fitness():
-    """Force decorators to wrap KartezioFitness"""
-    print(f"[Kartezio - INFO] -  {len(registry.fitness.list())} fitness registered.")
-
-
-@registry.fitness.add("AP")
+@register(Fitness, "mean_average_precision")
 class FitnessAP(KartezioFitness):
     def __init__(self, thresholds=0.5):
         super().__init__(
@@ -23,7 +18,7 @@ class FitnessAP(KartezioFitness):
         )
 
 
-@registry.fitness.add("count")
+@register(Fitness, "count")
 class FitnessCount(KartezioFitness):
     def __init__(self, secondary_metric: KartezioMetric = None):
         super().__init__(
@@ -50,19 +45,19 @@ class FitnessIOU(Fitness):
         super().__init__(iou, reduction, multiprocessing)
 
 
-@registry.fitness.add("IOU2")
+@register(Fitness, "intersection_over_union_2")
 class FitnessIOU2(KartezioFitness):
     def __init__(self):
         super().__init__("IOU2", default_metric=registry.metrics.instantiate("IOU2"))
 
 
-@registry.fitness.add("MSE")
+@register(Fitness, "mean_squared_error")
 class FitnessMSE(KartezioFitness):
     def __init__(self):
         super().__init__("Mean Squared Error", "MSE", 1, default_metric=MetricMSE())
 
 
-@registry.fitness.add("CE")
+@register(Fitness, "cross_entropy")
 class FitnessCrossEntropy(KartezioFitness):
     def __init__(self, n_classes=2):
         super().__init__(
@@ -73,7 +68,7 @@ class FitnessCrossEntropy(KartezioFitness):
         )
 
 
-@registry.fitness.add("MCC")
+@register(Fitness, "mcc")
 class FitnessMCC(KartezioFitness):
     """
     author: Nghi Nguyen (2022)

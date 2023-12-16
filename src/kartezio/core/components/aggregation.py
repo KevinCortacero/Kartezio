@@ -1,9 +1,15 @@
-class Aggregation(Node, ABC, component="Aggregation"):
+from abc import ABC
+from typing import List
+
+from kartezio.core.components.base import Node
+
+
+class Aggregation(Node, ABC):
     def __init__(
         self,
-        aggregation: Callable,
+        aggregation,
         inputs,
-        post_aggregation: Callable = None,
+        post_aggregation=None,
     ):
         super().__init__(aggregation)
         self.post_aggregation = post_aggregation

@@ -2,12 +2,12 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from kartezio.model.components import BaseComponent
+from kartezio.core.components.base import Component
 
 
-class Population(BaseComponent, ABC):
+class Population(Component, ABC):
     def __init__(self, size):
-        super().__init__("Population")
+        super().__init__()
         self.size = size
         self.individuals = [None] * self.size
         self._fitness = {

@@ -2,19 +2,22 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from kartezio.callback import Callback, Event
-from kartezio.export import GenomeToPython
-from kartezio.model.components import Decoder, Endpoint, Library
-from kartezio.model.evolution import Fitness
-from kartezio.model.helpers import Observable
-from kartezio.model.mutation.base import Mutation
-from kartezio.model.mutation.behavior import AccumulateBehavior, MutationBehavior
-from kartezio.model.mutation.decay import (
+from kartezio.core.components.decoder import Decoder
+from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.components.initialization import MutationAllRandom
+from kartezio.core.components.library import Library
+from kartezio.core.evolution import Fitness
+from kartezio.core.helpers import Observable
+from kartezio.core.mutation.base import Mutation
+from kartezio.core.mutation.behavior import AccumulateBehavior, MutationBehavior
+from kartezio.core.mutation.decay import (
     FactorDecay,
     LinearDecay,
     MutationDecay,
     NoDecay,
 )
-from kartezio.mutation import MutationAllRandom, MutationClassic
+from kartezio.export import GenomeToPython
+from kartezio.mutation import MutationRandom
 from kartezio.strategy import OnePlusLambda
 from kartezio.utils.io import JsonSaver
 
@@ -147,7 +150,7 @@ class ModelDraft:
         super().__init__()
         self.decoder = decoder
         self.init = MutationAllRandom(decoder.infos, decoder.library.size)
-        self.mutation = MutationClassic(decoder.infos, decoder.library.size, 0.1, 0.15)
+        self.mutation = MutationRandom(decoder.infos, decoder.library.size, 0.1, 0.15)
         self.behavior = AccumulateBehavior(self.mutation, decoder)
         self.decay = FactorDecay(self.mutation, 0.99)
         # self.decay = LinearDecay(self.mutation, 0.2, 0.05, 200)
