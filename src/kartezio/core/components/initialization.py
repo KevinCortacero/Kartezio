@@ -15,8 +15,8 @@ class MutationAllRandom(Mutation):
     def __from_dict__(cls, dict_infos: Dict) -> "Mutation":
         pass
 
-    def __init__(self, metadata, n_functions: int):
-        super().__init__(metadata, n_functions)
+    def __init__(self, decoder):
+        super().__init__(decoder)
 
     def mutate(self, genotype):
         # mutate genes

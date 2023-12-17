@@ -14,10 +14,11 @@ class MutationRandom(Mutation):
     def __from_dict__(cls, dict_infos: Dict) -> "Mutation":
         pass
 
-    def __init__(self, template, n_functions: int, node_rate: float, out_rate: float):
-        super().__init__(template, n_functions)
+    def __init__(self, decoder, node_rate: float, out_rate: float):
+        super().__init__(decoder)
         self.node_rate = node_rate
         self.out_rate = out_rate
+        """
         self.n_mutations = int(
             np.floor(self.infos.n_nodes * self.infos.w * self.node_rate)
         )
@@ -26,6 +27,7 @@ class MutationRandom(Mutation):
             (self.all_indices[0].ravel(), self.all_indices[1].ravel())
         ).T
         self.sampling_range = range(len(self.all_indices))
+        """
 
     def mutate(self, genotype: Genotype) -> Genotype:
         sampling_indices = np.random.choice(

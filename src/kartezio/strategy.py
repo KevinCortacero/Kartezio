@@ -9,8 +9,8 @@ class OnePlusLambda(Strategy):
     def __init__(self, decoder: Decoder):
         self.n_parents = 1
         self.n_children = 4
-        self.fn_init = MutationAllRandom(decoder.infos, decoder.library.size)
-        self.fn_mutation = MutationRandom(decoder.infos, decoder.library.size, 0.1, 0.1)
+        self.fn_init = MutationAllRandom(decoder)
+        self.fn_mutation = MutationRandom(decoder, 0.1, 0.1)
 
     @property
     def get_elite(self, population: PopulationWithElite):

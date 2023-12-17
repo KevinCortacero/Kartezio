@@ -6,7 +6,7 @@ from typing import Dict, List
 import numpy as np
 
 from kartezio.core.components.aggregation import Aggregation
-from kartezio.core.components.base import Component
+from kartezio.core.components.base import Component, register
 from kartezio.core.components.endpoint import Endpoint
 from kartezio.core.components.genotype import Chromosome, Genotype, MonoChromosome
 from kartezio.core.components.library import Library
@@ -168,7 +168,12 @@ class Decoder(Component, ABC):
         ]
 
 
+@register(Decoder, "sequential")
 class SequentialDecoder(Decoder):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+        pass
+
     def to_iterative_decoder(self, aggregation):
         return DecoderIterative(self.infos, self.library, aggregation, self.endpoint)
 

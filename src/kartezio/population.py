@@ -1,5 +1,8 @@
+from typing import Dict
+
 import numpy as np
 
+from kartezio.core.components.base import register
 from kartezio.core.population import Population
 
 
@@ -39,7 +42,12 @@ class PopulationHistory:
         return self.individuals.items()
 
 
+@register(Population, "one_elite")
 class PopulationWithElite(Population):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+        pass
+
     def __init__(self, n_children):
         super().__init__(1 + n_children)
 

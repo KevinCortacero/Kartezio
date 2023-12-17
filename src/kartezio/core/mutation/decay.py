@@ -1,15 +1,18 @@
 from abc import ABC
+from typing import Dict
 
 from kartezio.callback import Event
-from kartezio.core.components.base import UpdatableComponent
+from kartezio.core.components.base import UpdatableComponent, register
 from kartezio.core.mutation.base import Mutation
 
 
 class MutationDecay(UpdatableComponent, ABC):
-    def __init__(self, name: str, mutation: Mutation):
-        super().__init__(name)
-        self._mutation = mutation
-        self._save_as(MutationDecay)
+    def __init__(self):
+        super().__init__()
+        self.__mutation = None
+
+    def set_mutation(self, mutation: Mutation):
+        self.__mutation = mutation
 
 
 class NoDecay(MutationDecay):
@@ -38,9 +41,14 @@ class LinearDecay(MutationDecay):
             self._mutation.node_rate = new_node_rate
 
 
+@register(MutationDecay, "factor")
 class FactorDecay(MutationDecay):
-    def __init__(self, mutation: Mutation, decay_factor: float):
-        super().__init__("factor_decay", mutation)
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+        pass
+
+    def __init__(self, decay_factor: float):
+        super().__init__()
         self.decay_factor = decay_factor
 
     def update(self, event: dict):

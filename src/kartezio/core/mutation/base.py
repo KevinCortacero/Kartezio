@@ -7,10 +7,11 @@ from kartezio.core.components.genotype import Genotype
 from kartezio.core.components_old import GenomeReaderWriter
 
 
-class Mutation(Component, GenomeReaderWriter, ABC):
-    def __init__(self, shape, n_functions):
-        super().__init__(shape)
-        self.n_functions = n_functions
+class Mutation(Component, ABC):
+    def __init__(self, shape):
+        super(Component).__init__()
+        self.decoder = shape
+        self.n_functions = self.decoder.library.size
         self.parameter_max_value = 256
 
     def dumps(self) -> dict:

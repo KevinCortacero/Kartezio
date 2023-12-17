@@ -23,7 +23,6 @@ from kartezio.improc.kernel import (
     gabor_kernel,
     kernel_from_parameters,
 )
-from test_pn import NoEndpoint
 
 
 @register(Library, "opencv_library")

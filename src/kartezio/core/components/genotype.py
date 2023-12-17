@@ -5,7 +5,7 @@ from typing import Dict
 
 import numpy as np
 
-from kartezio.core.components.base import Component
+from kartezio.core.components.base import Component, register
 
 
 class Chromosome:
@@ -27,6 +27,7 @@ class Genotype(Component, ABC):
         return copy.deepcopy(self)
 
 
+@register(Genotype, "mono_chromosome")
 class MonoChromosome(Genotype):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "MonoChromosome":

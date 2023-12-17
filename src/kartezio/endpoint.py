@@ -41,11 +41,6 @@ class EndpointThreshold(Endpoint):
         self.mode = mode
 
 
-endpoint_labels = ToLabels()
-
-endpoint_threshold = EndpointThreshold(128)
-
-
 @register(Endpoint, "hough_circle")
 class EndpointHoughCircle(Endpoint):
     def __init__(self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120):
@@ -140,33 +135,15 @@ class EndpointEllipse(Endpoint):
         }
 
 
-def marker_controlled_watershed(x: List):
-    mask_raw = x[0]
-    markers_raw = x[1]
-    wt = WatershedSkimage(use_dt=False, markers_distance=21, markers_area=None)
-    mask, markers, labels = wt.apply(mask_raw, markers=markers_raw, mask=mask_raw > 0)
-    return {
-        "mask_raw": mask_raw,
-        "markers_raw": markers_raw,
-        "mask": mask,
-        "markers": markers,
-        "count": labels.max(),
-        "labels": labels,
-    }
-
-
-e_mcw = Endpoint(marker_controlled_watershed, [TypeArray, TypeArray])
-
-
-@registry.endpoints.add("WSHD")
+@register(Endpoint, "marker_controlled_watershed")
 class EndpointWatershed(Endpoint):
     def __init__(self, use_dt=False, markers_distance=21, markers_area=None):
-        super().__init__("Marker-Based Watershed", "WSHD", 2, [])
+        super().__init__([TypeArray, TypeArray])
         self.wt = WatershedSkimage(
             use_dt=use_dt, markers_distance=markers_distance, markers_area=markers_area
         )
 
-    def call(self, x, args=None):
+    def call(self, x):
         mask = x[0]
         markers = x[1]
         mask, markers, labels = self.wt.apply(mask, markers=markers, mask=mask > 0)
@@ -187,7 +164,7 @@ class EndpointWatershed(Endpoint):
         }
 
 
-@registry.endpoints.add("LMW")
+@register(Endpoint, "local-max_watershed")
 class LocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the distance transform of the mask
@@ -195,11 +172,11 @@ class LocalMaxWatershed(Endpoint):
     """
 
     def __init__(self, threshold=1, markers_distance=21):
-        super().__init__("Local-Max Watershed", "LMW", 1, [])
+        super().__init__([TypeArray])
         self.wt = WatershedSkimage(use_dt=True, markers_distance=markers_distance)
         self.threshold = threshold
 
-    def call(self, x, args=None):
+    def call(self, x):
         mask = threshold_tozero(x[0], self.threshold)
         mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
         return {
@@ -217,7 +194,7 @@ class LocalMaxWatershed(Endpoint):
         }
 
 
-@registry.endpoints.add("RLMW")
+@register(Endpoint, "raw_watershed")
 class RawLocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the mask
@@ -225,11 +202,11 @@ class RawLocalMaxWatershed(Endpoint):
     """
 
     def __init__(self, threshold=1, markers_distance=21):
-        super().__init__("Raw Local-Max Watershed", "RLMW", 1, [])
+        super().__init__([TypeArray])
         self.wt = WatershedSkimage(markers_distance=markers_distance)
         self.threshold = threshold
 
-    def call(self, x, args=None):
+    def call(self, x):
         mask = threshold_tozero(x[0], self.threshold)
         mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
         return {

@@ -1,16 +1,6 @@
 from dataclasses import InitVar, dataclass, field
 
 from kartezio.core.base import ModelDraft
-from kartezio.core.components import (
-    Aggregation,
-    Decoder,
-    DecoderIterative,
-    DecoderSequential,
-    Endpoint,
-    GenomeFactory,
-    GenotypeInfos,
-    Library,
-)
 from kartezio.core.evolution import Fitness, KartezioFitness, KartezioMutation
 from kartezio.core.registry import registry
 from kartezio.mutation import GoldmanWrapper, MutationAllRandom

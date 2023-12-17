@@ -4,16 +4,19 @@ from kartezio.core.mutation.base import Mutation
 
 
 class MutationBehavior:
-    def __init__(self, mutation: Mutation):
-        self.__mutation = mutation
+    def __init__(self):
+        self.__mutation = None
 
     def mutate(self, genotype: Genotype):
         return self.__mutation.mutate(genotype)
 
+    def set_mutation(self, mutation: Mutation):
+        self.__mutation = mutation
+
 
 class AccumulateBehavior(MutationBehavior):
-    def __init__(self, mutation: Mutation, decoder: Decoder):
-        super().__init__(mutation)
+    def __init__(self, decoder: Decoder):
+        super().__init__()
         self.decoder = decoder
 
     def mutate(self, genotype: Genotype):

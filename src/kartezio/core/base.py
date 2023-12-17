@@ -139,23 +139,31 @@ class ValidModel(ModelML, Observable):
 
 class ModelDraft:
     class MutationSystem:
-        def __init__(
-            self, mutation: Mutation, behavior: MutationBehavior, decay: MutationDecay
-        ):
+        def __init__(self, mutation: Mutation):
             self.mutation = mutation
+            self.behavior = None
+            self.decay = None
+
+        def set_behavior(self, behavior: MutationBehavior):
             self.behavior = behavior
+
+        def set_decay(self, decay: MutationDecay):
             self.decay = decay
+
+        def compile(self):
+            self.behavior.set_mutation(self.mutation)
+            self.decay.set_mutation(self.mutation)
 
     def __init__(self, decoder: Decoder, fitness: Fitness):
         super().__init__()
         self.decoder = decoder
-        self.init = MutationAllRandom(decoder.infos, decoder.library.size)
-        self.mutation = MutationRandom(decoder.infos, decoder.library.size, 0.1, 0.15)
-        self.behavior = AccumulateBehavior(self.mutation, decoder)
-        self.decay = FactorDecay(self.mutation, 0.99)
+        self.init = MutationAllRandom(decoder)
+        self.mutation = self.MutationSystem(MutationRandom(decoder, 0.1, 0.05))
+        self.mutation.set_behavior(AccumulateBehavior(decoder))
+        self.mutation.set_decay(FactorDecay(0.99))
         # self.decay = LinearDecay(self.mutation, 0.2, 0.05, 200)
         self.fitness = fitness
-        self.updatable = [self.decay]
+        self.updatable = [self.mutation.decay]
 
     def set_endpoint(self, endpoint: Endpoint):
         self.decoder.endpoint = endpoint
@@ -167,6 +175,7 @@ class ModelDraft:
         self.decoder.infos.n_inputs = n_inputs
 
     def compile(self, n_generations: int, n_children: int, callbacks: List[Callback]):
+        self.mutation.compile()
         ga = GeneticAlgorithm(self.decoder, self.fitness)
         ga.init(n_generations, n_children)
         model = ValidModel(self.decoder, ga)

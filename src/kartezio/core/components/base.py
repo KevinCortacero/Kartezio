@@ -20,8 +20,8 @@ class Component(ABC):
 
 
 class UpdatableComponent(Component, Observer, ABC):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self):
+        super().__init__()
 
 
 class Components:
@@ -65,6 +65,10 @@ class Components:
 
     @staticmethod
     def name_of(component_class: type) -> str:
+        if component_class.__name__ not in Components._reverse.keys():
+            raise KeyError(
+                f"Component '{component_class.__name__}' not properly registered, please make sure use '@register' over your Class definition."
+            )
         return Components._reverse[component_class.__name__].split("/")[1]
 
     @staticmethod

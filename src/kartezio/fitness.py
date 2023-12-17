@@ -1,3 +1,5 @@
+from abc import ABC
+
 import numpy as np
 
 from kartezio.core.components.base import register
@@ -28,21 +30,21 @@ class FitnessCount(KartezioFitness):
             self.add_metric(secondary_metric)
 
 
-def iou(y_true: np.ndarray, y_pred: np.ndarray):
-    _y_true = y_true[0]
-    _y_pred = y_pred[0]
-    _y_pred[_y_pred > 0] = 1
-    if np.sum(_y_true) == 0:
-        _y_true = 1 - _y_true
-        _y_pred = 1 - _y_pred
-    intersection = np.logical_and(_y_true, _y_pred)
-    union = np.logical_or(_y_true, _y_pred)
-    return 1 - np.sum(intersection) / np.sum(union)
-
-
+@register(Fitness, "intersection_over_union")
 class FitnessIOU(Fitness):
+    def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
+        _y_true = y_true[0]
+        _y_pred = y_pred[0]
+        _y_pred[_y_pred > 0] = 1
+        if np.sum(_y_true) == 0:
+            _y_true = 1 - _y_true
+            _y_pred = 1 - _y_pred
+        intersection = np.logical_and(_y_true, _y_pred)
+        union = np.logical_or(_y_true, _y_pred)
+        return 1 - np.sum(intersection) / np.sum(union)
+
     def __init__(self, reduction="mean", multiprocessing=False):
-        super().__init__(iou, reduction, multiprocessing)
+        super().__init__(reduction, multiprocessing)
 
 
 @register(Fitness, "intersection_over_union_2")
