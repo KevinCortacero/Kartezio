@@ -1,7 +1,7 @@
 from kartezio.core.builder import ModelBuilder
 from kartezio.endpoint import EndpointWatershed, e_mcw
-from kartezio.vision.primitives import library_opencv
 from kartezio.stacker import MeanKartezioStackerForWatershed
+from kartezio.vision.primitives import library_opencv
 
 ENDPOINT_DEFAULT_INSTANCE_SEGMENTATION = e_mcw
 BUNDLE_DEFAULT_INSTANCE_SEGMENTATION = library_opencv

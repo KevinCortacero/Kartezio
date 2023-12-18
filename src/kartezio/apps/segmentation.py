@@ -2,8 +2,8 @@
 from kartezio.core.sequential import ModelSequential
 from kartezio.endpoint import EndpointThreshold
 from kartezio.fitness import FitnessIOU
-from kartezio.vision.primitives import library_opencv
 from kartezio.stacker import StackerMean, a_mean
+from kartezio.vision.primitives import library_opencv
 
 
 def create_segmentation_model(
