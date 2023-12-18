@@ -9,13 +9,12 @@ from scipy.stats import kurtosis, skew
 from skimage.morphology import remove_small_holes, remove_small_objects
 
 from kartezio.core.components.base import Components, register
-from kartezio.core.components.decoder import GenotypeInfos, SequentialDecoder
-from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.components.decoder import SequentialDecoder
 from kartezio.core.components.library import Library
 from kartezio.core.components.primitive import Primitive
 from kartezio.core.types import TypeArray
-from kartezio.improc.common import convolution, gradient_magnitude
-from kartezio.improc.kernel import (
+from kartezio.vision.common import convolution, gradient_magnitude
+from kartezio.vision.kernel import (
     KERNEL_ROBERTS_X,
     KERNEL_ROBERTS_Y,
     SHARPEN_KERNEL,
@@ -44,8 +43,13 @@ class Max(Primitive):
         return cv2.max(x[0], x[1])
 
 
-def f_min(x, args=None):
-    return cv2.min(x[0], x[1])
+@register(Primitive, "min")
+class Min(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.min(x[0], x[1])
 
 
 def f_mean(x, args=None):
@@ -100,8 +104,15 @@ def f_log(x, args=None):
 
 
 # future: def f_log(x, args=None): return cv2.convertScaleAbs(np.log1p(image_test_f32))
-def f_median_blur(x, args=None):
-    return cv2.medianBlur(x[0], correct_ksize(args[0]))
+
+
+@register(Primitive, "median_blur")
+class MedianBlur(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.medianBlur(x[0], correct_ksize(args[0]))
 
 
 def f_gaussian_blur(x, args=None):
@@ -291,6 +302,8 @@ def f_inrange(x, args=None):
 
 library_opencv = LibraryDefaultOpenCV()
 library_opencv.add_by_name("max")
+library_opencv.add_by_name("min")
+library_opencv.add_by_name("median_blur")
 
 """
 library_opencv.create_primitive("Min", 2, 0, f_min)

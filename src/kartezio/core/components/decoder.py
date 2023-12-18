@@ -1,60 +1,16 @@
 import time
 from abc import ABC
-from dataclasses import dataclass, field
 from typing import Dict, List
 
 import numpy as np
 
+from kartezio.core.components.adapter import Adapter, AdapterMono
 from kartezio.core.components.aggregation import Aggregation
 from kartezio.core.components.base import Component, register
 from kartezio.core.components.endpoint import Endpoint
-from kartezio.core.components.genotype import Chromosome, Genotype, MonoChromosome
+from kartezio.core.components.genotype import Genotype
 from kartezio.core.components.library import Library
 from kartezio.core.population import Population
-
-
-@dataclass
-class GenotypeInfos:
-    n_inputs: int = 3
-    n_nodes: int = 10
-    n_outputs: int = 1
-    n_connections: int = 2
-    n_parameters: int = 2
-    in_idx: int = field(init=False, repr=False)
-    func_idx: int = field(init=False, repr=False)
-    con_idx: int = field(init=False, repr=False)
-    nodes_idx = None
-    out_idx = None
-    para_idx = None
-    w: int = field(init=False)
-    h: int = field(init=False)
-    prototype: Genotype = None
-
-    def __post_init__(self):
-        self.in_idx = 0
-        self.func_idx = 0
-        self.con_idx = 1
-        self.nodes_idx = self.n_inputs
-        self.out_idx = self.nodes_idx + self.n_nodes
-        self.para_idx = self.con_idx + self.n_connections
-        self.w = 1 + self.n_connections + self.n_parameters
-        self.h = self.n_inputs + self.n_nodes + self.n_outputs
-        self.prototype = MonoChromosome(
-            self.n_outputs, Chromosome(self.n_nodes, self.w)
-        )
-
-    @staticmethod
-    def from_json(json_data):
-        return GenotypeInfos(
-            json_data["inputs"],
-            json_data["nodes"],
-            json_data["outputs"],
-            json_data["parameters"],
-            json_data["connections"],
-        )
-
-    def new(self):
-        return self.prototype.clone()
 
 
 class Decoder(Component, ABC):
@@ -66,7 +22,9 @@ class Decoder(Component, ABC):
             n_outputs = 1
         else:
             n_outputs = len(endpoint.inputs)
-        self.infos = GenotypeInfos(
+        library.display()
+        print(n_inputs, n_nodes, n_outputs, library.max_parameters, library.max_arity)
+        self.adapter = AdapterMono(
             n_inputs,
             n_nodes,
             n_outputs=n_outputs,

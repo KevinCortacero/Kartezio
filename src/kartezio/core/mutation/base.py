@@ -4,7 +4,6 @@ import numpy as np
 
 from kartezio.core.components.base import Component
 from kartezio.core.components.genotype import Genotype
-from kartezio.core.components_old import GenomeReaderWriter
 
 
 class Mutation(Component, ABC):
@@ -19,7 +18,9 @@ class Mutation(Component, ABC):
 
     @property
     def random_parameters(self):
-        return np.random.randint(self.parameter_max_value, size=self.infos.n_parameters)
+        return np.random.randint(
+            self.parameter_max_value, size=self.decoder.adapter.n_parameters
+        )
 
     @property
     def random_functions(self):
@@ -27,34 +28,35 @@ class Mutation(Component, ABC):
 
     @property
     def random_output(self):
-        return np.random.randint(self.infos.out_idx, size=1)
+        return np.random.randint(self.decoder.adapter.out_idx, size=1)
 
     def random_connections(self, idx: int):
         return np.random.randint(
-            self.infos.nodes_idx + idx, size=self.infos.n_connections
+            self.decoder.adapter.nodes_idx + idx,
+            size=self.decoder.adapter.n_connections,
         )
 
     def mutate_function(self, genome: Genotype, idx: int):
-        self.write_function(genome, idx, self.random_functions)
+        self.decoder.adapter.write_function(genome, idx, self.random_functions)
 
     def mutate_connections(self, genome: Genotype, idx: int, only_one: int = None):
         new_connections = self.random_connections(idx)
         if only_one is not None:
             new_value = new_connections[only_one]
-            new_connections = self.read_connections(genome, idx)
+            new_connections = self.decoder.adapter.read_connections(genome, idx)
             new_connections[only_one] = new_value
-        self.write_connections(genome, idx, new_connections)
+        self.decoder.adapter.write_connections(genome, idx, new_connections)
 
     def mutate_parameters(self, genome: Genotype, idx: int, only_one: int = None):
         new_parameters = self.random_parameters
         if only_one is not None:
-            old_parameters = self.read_parameters(genome, idx)
+            old_parameters = self.decoder.adapter.read_parameters(genome, idx)
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
-        self.write_parameters(genome, idx, new_parameters)
+        self.decoder.adapter.write_parameters(genome, idx, new_parameters)
 
     def mutate_output(self, genome: Genotype, idx: int):
-        self.write_output_connection(genome, idx, self.random_output)
+        self.decoder.adapter.write_output_connection(genome, idx, self.random_output)
 
     @abstractmethod
     def mutate(self, genome: Genotype):

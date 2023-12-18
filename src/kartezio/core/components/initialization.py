@@ -20,17 +20,17 @@ class MutationAllRandom(Mutation):
 
     def mutate(self, genotype):
         # mutate genes
-        for i in range(self.infos.n_nodes):
+        for i in range(self.decoder.adapter.n_nodes):
             self.mutate_function(genotype, i)
             self.mutate_connections(genotype, i)
             self.mutate_parameters(genotype, i)
         # mutate outputs
-        for i in range(self.infos.n_outputs):
+        for i in range(self.decoder.adapter.n_outputs):
             self.mutate_output(genotype, i)
         return genotype
 
     def random(self):
-        genotype = self.infos.new()
+        genotype = self.decoder.adapter.new()
         return self.mutate(genotype)
 
 

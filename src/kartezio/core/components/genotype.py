@@ -8,12 +8,6 @@ import numpy as np
 from kartezio.core.components.base import Component, register
 
 
-class Chromosome:
-    def __init__(self, n_nodes, n_genes_per_node, dtype=np.uint8):
-        self.n_nodes = n_nodes
-        self.genes = np.zeros((n_nodes, n_genes_per_node), dtype=dtype)
-
-
 class Genotype(Component, ABC):
     """
     Only store "DNA" into a Numpy array (ndarray)
@@ -33,7 +27,7 @@ class MonoChromosome(Genotype):
     def __from_dict__(cls, dict_infos: Dict) -> "MonoChromosome":
         pass
 
-    def __init__(self, n_outputs, chromosome):
+    def __init__(self, n_outputs, chromosome: np.ndarray):
         super().__init__()
         self.chromosome = chromosome
         self.outputs = np.zeros(n_outputs, dtype=np.uint8)
@@ -50,15 +44,13 @@ class MonoChromosome(Genotype):
         return new
 
     def __getitem__(self, item):
-        return self.chromosome.genes.__getitem__(item)
+        return self.chromosome.__getitem__(item)
 
     def __setitem__(self, key, value):
-        return self.chromosome.genes.__setitem__(key, value)
+        return self.chromosome.__setitem__(key, value)
 
     @staticmethod
     def from_ndarray(chromosome: np.ndarray, outputs: np.ndarray):
-        chromosome = Chromosome(*chromosome.shape, chromosome.dtype)
-        chromosome.genes = chromosome
         genotype = MonoChromosome(len(outputs), chromosome)
         genotype.outputs = outputs
         return genotype
