@@ -52,48 +52,98 @@ class Min(Primitive):
         return cv2.min(x[0], x[1])
 
 
-def f_mean(x, args=None):
-    return cv2.addWeighted(x[0], 0.5, x[1], 0.5, 0)
+@register(Primitive, "mean")
+class Mean(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.addWeighted(x[0], 0.5, x[1], 0.5, 0)
 
 
-def f_add(x, args=None):
-    return cv2.add(x[0], x[1])
+@register(Primitive, "add")
+class Add(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.add(x[0], x[1])
 
 
-def f_sub(x, args=None):
-    return cv2.subtract(x[0], x[1])
+@register(Primitive, "subtract")
+class Subtract(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.subtract(x[0], x[1])
 
 
-def f_bitwise_not(x, args=None):
-    return cv2.bitwise_not(x[0])
+@register(Primitive, "bitwise_not")
+class BitwiseNot(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.bitwise_not(x[0])
 
 
-def f_bitwise_or(x, args=None):
-    return cv2.bitwise_or(x[0], x[1])
+@register(Primitive, "bitwise_or")
+class BitwiseOr(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.bitwise_or(x[0], x[1])
 
 
-def f_bitwise_and(x, args=None):
-    return cv2.bitwise_and(x[0], x[1])
+@register(Primitive, "bitwise_and")
+class BitwiseAnd(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.bitwise_and(x[0], x[1])
 
 
-def f_bitwise_and_mask(x, args=None):
-    return cv2.bitwise_and(x[0], x[0], mask=x[1])
+@register(Primitive, "bitwise_and_mask")
+class BitwiseAndMask(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.bitwise_and(x[0], x[0], mask=x[1])
 
 
-def f_bitwise_xor(x, args=None):
-    return cv2.bitwise_xor(x[0], x[1])
+@register(Primitive, "bitwise_xor")
+class BitwiseXor(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.bitwise_xor(x[0], x[1])
 
 
-def f_sqrt(x, args=None):
-    return (cv2.sqrt((x[0] / 255.0).astype(np.float32)) * 255).astype(np.uint8)
+@register(Primitive, "sqrt")
+class Sqrt(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        # future: return cv2.convertScaleAbs(cv2.sqrt(image_test_f32))
+        return (cv2.sqrt((x[0] / 255.0).astype(np.float32)) * 255).astype(np.uint8)
 
 
-# future: def f_sqrt(x, args=None): return cv2.convertScaleAbs(cv2.sqrt(image_test_f32))
-def f_pow(x, args=None):
-    return (cv2.pow((x[0] / 255.0).astype(np.float32), 2) * 255).astype(np.uint8)
+@register(Primitive, "pow")
+class Pow(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        # future: return cv2.convertScaleAbs(cv2.pow(x[0], 2))
+        return (cv2.pow((x[0] / 255.0).astype(np.float32), 2) * 255).astype(np.uint8)
 
 
-# future: def f_pow(x, args=None): return cv2.convertScaleAbs(cv2.pow(x[0], 2))
 def f_exp(x, args=None):
     return (cv2.exp((x[0] / 255.0).astype(np.float32), 2) * 255).astype(np.uint8)
 
@@ -303,6 +353,16 @@ def f_inrange(x, args=None):
 library_opencv = LibraryDefaultOpenCV()
 library_opencv.add_by_name("max")
 library_opencv.add_by_name("min")
+library_opencv.add_by_name("mean")
+library_opencv.add_by_name("add")
+library_opencv.add_by_name("subtract")
+library_opencv.add_by_name("bitwise_not")
+library_opencv.add_by_name("bitwise_or")
+library_opencv.add_by_name("bitwise_and")
+library_opencv.add_by_name("bitwise_and_mask")
+library_opencv.add_by_name("bitwise_xor")
+library_opencv.add_by_name("sqrt")
+library_opencv.add_by_name("pow")
 library_opencv.add_by_name("median_blur")
 
 """

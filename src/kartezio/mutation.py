@@ -18,6 +18,8 @@ class MutationRandom(Mutation):
         super().__init__(decoder)
         self.node_rate = node_rate
         self.out_rate = out_rate
+        self.nodes_shape = (decoder.adapter.n_nodes, decoder.adapter.w)
+        self.outputs_shape = decoder.adapter.n_outputs
         """
         self.n_mutations = int(
             np.floor(self.infos.n_nodes * self.infos.w * self.node_rate)
@@ -30,21 +32,22 @@ class MutationRandom(Mutation):
         """
 
     def mutate(self, genotype: Genotype) -> Genotype:
-        sampling_indices = np.random.choice(
-            self.sampling_range, self.n_mutations, replace=False
-        )
-        sampling_indices = self.all_indices[sampling_indices]
-
-        for idx, mutation_parameter_index in sampling_indices:
+        random_matrix = np.random.random(size=self.nodes_shape)
+        sampling_indices = np.nonzero(random_matrix < self.node_rate)
+        for idx, mutation_parameter_index in np.transpose(sampling_indices):
             if mutation_parameter_index == 0:
                 self.mutate_function(genotype, idx)
-            elif mutation_parameter_index <= self.infos.n_connections:
+            elif mutation_parameter_index <= self.decoder.adapter.n_connections:
                 connection_idx = mutation_parameter_index - 1
                 self.mutate_connections(genotype, idx, only_one=connection_idx)
             else:
-                parameter_idx = mutation_parameter_index - self.infos.n_connections - 1
+                parameter_idx = (
+                    mutation_parameter_index - self.decoder.adapter.n_connections - 1
+                )
                 self.mutate_parameters(genotype, idx, only_one=parameter_idx)
-        for output in range(self.infos.n_outputs):
-            if random.random() < self.out_rate:
-                self.mutate_output(genotype, output)
+
+        random_matrix = np.random.random(size=self.outputs_shape)
+        sampling_indices = np.nonzero(random_matrix < self.out_rate)
+        for output in sampling_indices:
+            self.mutate_output(genotype, output)
         return genotype

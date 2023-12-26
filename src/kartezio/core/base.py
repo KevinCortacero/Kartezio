@@ -14,7 +14,6 @@ from kartezio.core.mutation.decay import (
     FactorDecay,
     LinearDecay,
     MutationDecay,
-    NoDecay,
 )
 from kartezio.export import GenomeToPython
 from kartezio.mutation import MutationRandom
@@ -75,6 +74,7 @@ class GeneticAlgorithm:
 
     def evaluation(self, y_true, y_pred):
         fitness = self.fitness.batch(y_true, y_pred)
+        print(fitness)
         self.population.set_fitness(fitness)
 
     def next(self):
@@ -133,8 +133,8 @@ class ValidModel(ModelML, Observable):
         )
 
     def print_python_class(self, class_name):
-        python_writer = GenomeToPython(self.parser)
-        python_writer.to_python_class(class_name, self.strategy.elite)
+        python_writer = GenomeToPython(self.decoder)
+        python_writer.to_python_class(class_name, self.ga.population.get_elite())
 
 
 class ModelDraft:
@@ -158,12 +158,13 @@ class ModelDraft:
         super().__init__()
         self.decoder = decoder
         self.init = MutationAllRandom(decoder)
-        self.mutation = self.MutationSystem(MutationRandom(decoder, 0.1, 0.05))
+        self.mutation = self.MutationSystem(MutationRandom(decoder, 0.15, 0.2))
         self.mutation.set_behavior(AccumulateBehavior(decoder))
-        self.mutation.set_decay(FactorDecay(0.99))
+        # self.mutation.set_decay(FactorDecay(0.9999))
+        # self.mutation.set_decay(LinearDecay((0.15 - 0.05) / 200.0))
         # self.decay = LinearDecay(self.mutation, 0.2, 0.05, 200)
         self.fitness = fitness
-        self.updatable = [self.mutation.decay]
+        self.updatable = []
 
     def set_endpoint(self, endpoint: Endpoint):
         self.decoder.endpoint = endpoint
@@ -171,11 +172,12 @@ class ModelDraft:
     def set_library(self, library: Library):
         self.decoder.library = library
 
-    def set_n_inputs(self, n_inputs: int):
-        self.decoder.infos.n_inputs = n_inputs
+    def set_decay(self, decay: MutationDecay):
+        self.mutation.set_decay(decay)
 
     def compile(self, n_generations: int, n_children: int, callbacks: List[Callback]):
         self.mutation.compile()
+        self.updatable.append(self.mutation.decay)
         ga = GeneticAlgorithm(self.decoder, self.fitness)
         ga.init(n_generations, n_children)
         model = ValidModel(self.decoder, ga)

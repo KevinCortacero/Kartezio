@@ -54,9 +54,12 @@ class FitnessIOU2(KartezioFitness):
 
 
 @register(Fitness, "mean_squared_error")
-class FitnessMSE(KartezioFitness):
-    def __init__(self):
-        super().__init__("Mean Squared Error", "MSE", 1, default_metric=MetricMSE())
+class FitnessMSE(Fitness):
+    def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
+        return np.square(np.subtract(y_true, y_pred)).mean()
+
+    def __init__(self, reduction="mean", multiprocessing=False):
+        super().__init__(reduction, multiprocessing)
 
 
 @register(Fitness, "cross_entropy")

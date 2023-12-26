@@ -42,7 +42,9 @@ class AdapterMono(Component):
         self.prototype = self.create_protoype()
 
     def create_protoype(self):
-        return MonoChromosome(self.n_outputs, np.zeros((self.n_nodes, self.w)))
+        return MonoChromosome(
+            self.n_outputs, np.zeros((self.n_nodes, self.w), dtype=np.uint8)
+        )
 
     def write_function(self, genome, node, function_id):
         genome[node, self.func_idx] = function_id
@@ -57,19 +59,19 @@ class AdapterMono(Component):
         genome.outputs[output_index] = connection
 
     def read_function(self, genome, node):
-        return genome[self.nodes_idx + node, self.func_idx]
+        return genome[node, self.func_idx]
 
     def read_connections(self, genome, node):
-        return genome[self.nodes_idx + node, self.con_idx : self.para_idx]
+        return genome[node, self.con_idx : self.para_idx]
 
     def read_active_connections(self, genome, node, active_connections):
         return genome[
-            self.nodes_idx + node,
+            node,
             self.con_idx : self.con_idx + active_connections,
         ]
 
     def read_parameters(self, genome, node):
-        return genome[self.nodes_idx + node, self.para_idx :]
+        return genome[node, self.para_idx :]
 
-    def read_outputs(self, genome):
-        return genome[self.out_idx :, :]
+    def read_outputs(self, genotype):
+        return genotype.outputs

@@ -22,8 +22,6 @@ class Decoder(Component, ABC):
             n_outputs = 1
         else:
             n_outputs = len(endpoint.inputs)
-        library.display()
-        print(n_inputs, n_nodes, n_outputs, library.max_parameters, library.max_arity)
         self.adapter = AdapterMono(
             n_inputs,
             n_nodes,
@@ -76,15 +74,15 @@ class Decoder(Component, ABC):
         output_tree = graph_source.copy()
         while next_indices:
             next_index = next_indices.pop()
-            if next_index < self.infos.n_inputs:
+            if next_index < self.adapter.n_inputs:
                 continue
-            function_index = self.read_function(
-                genotype, next_index - self.infos.n_inputs
+            function_index = self.adapter.read_function(
+                genotype, next_index - self.adapter.n_inputs
             )
             active_connections = self.library.arity_of(function_index)
             next_connections = set(
-                self.read_active_connections(
-                    genotype, next_index - self.infos.n_inputs, active_connections
+                self.adapter.read_active_connections(
+                    genotype, next_index - self.adapter.n_inputs, active_connections
                 )
             )
             next_indices = next_indices.union(next_connections)
@@ -92,27 +90,26 @@ class Decoder(Component, ABC):
         return sorted(list(output_tree))
 
     def parse_to_graphs(self, genotype: Genotype):
-        outputs = self.read_outputs(genotype)
-        graphs_list = [
-            self._parse_one_graph(genotype, {output[self.infos.con_idx]})
-            for output in outputs
-        ]
+        outputs = self.adapter.read_outputs(genotype)
+        graphs_list = [self._parse_one_graph(genotype, {output}) for output in outputs]
         return graphs_list
 
     def _x_to_output_map(self, genotype: Genotype, graphs_list: List, x: List):
-        output_map = {i: x[i].copy() for i in range(self.infos.n_inputs)}
+        output_map = {i: x[i].copy() for i in range(self.adapter.n_inputs)}
         for graph in graphs_list:
             for node in graph:
                 # inputs are already in the map
-                if node < self.infos.n_inputs:
+                if node < self.adapter.n_inputs:
                     continue
-                node_index = node - self.infos.n_inputs
+                node_index = node - self.adapter.n_inputs
                 # fill the map with active nodes
-                function_index = self.read_function(genotype, node_index)
+                function_index = self.adapter.read_function(genotype, node_index)
                 arity = self.library.arity_of(function_index)
-                connections = self.read_active_connections(genotype, node_index, arity)
+                connections = self.adapter.read_active_connections(
+                    genotype, node_index, arity
+                )
                 inputs = [output_map[c] for c in connections]
-                p = self.read_parameters(genotype, node_index)
+                p = self.adapter.read_parameters(genotype, node_index)
                 value = self.library.execute(function_index, inputs, p)
                 output_map[node] = value
         return output_map
@@ -121,8 +118,8 @@ class Decoder(Component, ABC):
         # fill output_map with inputs
         output_map = self._x_to_output_map(genotype, graphs_list, x)
         return [
-            output_map[output_gene[self.infos.con_idx]]
-            for output_gene in self.read_outputs(genotype)
+            output_map[output_gene]
+            for output_gene in self.adapter.read_outputs(genotype)
         ]
 
 
@@ -228,7 +225,6 @@ class SequentialDecoder(Decoder):
     def bigrams(self, genome):
         graphs_list = self.parse_to_graphs(genome)
         outputs = self.read_outputs(genome)
-        print(graphs_list)
         bigram_list = []
         for i, graph in enumerate(graphs_list):
             for j, node in enumerate(graph):
@@ -266,7 +262,6 @@ class SequentialDecoder(Decoder):
             fname = self.library.name_of(f_last)
             pair = (f"OUT-{i}", fname)
             bigram_list.append(pair)
-        print(bigram_list)
         return bigram_list
 
     def function_distribution(self, genome):

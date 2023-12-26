@@ -1,7 +1,7 @@
 import ast
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import cv2
 import numpy as np
@@ -18,7 +18,7 @@ from numena.io.image import imread_color, imread_grayscale, imread_tiff
 from numena.io.imagej import read_ellipses_from_csv, read_polygons_from_roi
 from numena.io.json import json_read, json_write
 
-from kartezio.core.components.base import Component, register
+from kartezio.core.components.base import Component, register, Components
 from kartezio.enums import CSV_DATASET, DIR_PREVIEW, JSON_META
 
 
@@ -142,6 +142,10 @@ class DataReader(Component):
 
     @abstractmethod
     def _read(self, filepath, shape=None):
+        pass
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
         pass
 
 
@@ -289,11 +293,11 @@ class DatasetReader(Directory):
         self.label_name = meta["label_name"]
         input_reader_name = f"{meta['input']['type']}_{meta['input']['format']}"
         label_reader_name = f"{meta['label']['type']}_{meta['label']['format']}"
-        self.input_reader = registry.readers.instantiate(
-            input_reader_name, directory=self, scale=self.scale
+        self.input_reader = Components.instantiate(
+            "DataReader", input_reader_name, directory=self, scale=self.scale
         )
-        self.label_reader = registry.readers.instantiate(
-            label_reader_name, directory=self, scale=self.scale
+        self.label_reader = Components.instantiate(
+            "DataReader", label_reader_name, directory=self, scale=self.scale
         )
 
     def read_dataset(

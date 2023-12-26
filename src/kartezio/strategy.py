@@ -12,7 +12,6 @@ class OnePlusLambda(Strategy):
         self.fn_init = MutationAllRandom(decoder)
         self.fn_mutation = MutationRandom(decoder, 0.1, 0.1)
 
-    @property
     def get_elite(self, population: PopulationWithElite):
         return population.get_elite()
 
@@ -31,7 +30,3 @@ class OnePlusLambda(Strategy):
         elite = population.get_elite()
         for i in range(self.n_parents, population.size):
             population[i] = self.fn_mutation.mutate(elite.clone())
-
-    def evaluation(self, y_true, y_pred):
-        fitness = self.fitness.batch(y_true, y_pred)
-        self.population.set_fitness(fitness)

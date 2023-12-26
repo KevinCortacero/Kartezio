@@ -3,18 +3,18 @@ import cv2
 from kartezio.core.components.decoder import Decoder
 
 
-class GenomeToPython(Decoder):
-    def __init__(self, parser: Decoder):
-        super().__init__(parser.infos, parser.library, parser.endpoint)
+class GenomeToPython:
+    def __init__(self, decoder: Decoder):
+        self.decoder = decoder
         self.indent_1 = " " * 4
         self.indent_2 = self.indent_1 * 2
         self.imports = "from kartezio.inference import CodeModel\n"
-        endpoint_kwargs = self.endpoint._to_json_kwargs()
-        endpoint_class_name = self.endpoint.__class__.__name__
-        import_package = str(self.endpoint.__class__).split("'")[1]
-        import_package = import_package.replace(f".{endpoint_class_name}", "")
-        self.imports += f"from {import_package} import {endpoint_class_name}\n"
-        self.endpoint_instantiation = f"{endpoint_class_name}(**{endpoint_kwargs})"
+        # endpoint_kwargs = self.decoder.endpoint._to_json_kwargs()
+        endpoint_class_name = self.decoder.endpoint.__class__.__name__
+        # import_package = str(self.endpoint.__class__).split("'")[1]
+        # import_package = import_package.replace(f".{endpoint_class_name}", "")
+        # self.imports += f"from {import_package} import {endpoint_class_name}\n"
+        # self.endpoint_instantiation = f"{endpoint_class_name}(**{endpoint_kwargs})"
 
     def to_python_class(self, class_name, genome):
         python_code = ""
@@ -22,7 +22,7 @@ class GenomeToPython(Decoder):
         python_code += f"class {class_name}(CodeModel):\n"
         # init method
         python_code += f"{self.indent_1}def __init__(self):\n"
-        python_code += f"{self.indent_2}super().__init__(endpoint={self.endpoint_instantiation})\n\n"
+        #  python_code += f"{self.indent_2}super().__init__(endpoint={self.endpoint_instantiation})\n\n"
         python_code += "\n"
         # parse method
         python_code += f"{self.indent_1}def _parse(self, X):\n"
@@ -33,26 +33,28 @@ class GenomeToPython(Decoder):
         list_of_outputs = []
         map_of_outputs = {}
 
-        for i in range(self.infos.outputs):
-            active_nodes = self.parse_to_graphs(genome)[i]
+        for i in range(self.decoder.adapter.n_outputs):
+            active_nodes = self.decoder.parse_to_graphs(genome)[i]
             for node in active_nodes:
                 if node in list_of_inputs or node in list_of_nodes:
                     continue
-                if node < self.infos.inputs:
+                if node < self.decoder.adapter.n_inputs:
                     list_of_inputs.append(node)
                     map_of_input[node] = f"{self.indent_2}x_{node} = X[{node}]\n"
-                elif node < self.infos.out_idx:
-                    function_index = self.read_function(
-                        genome, node - self.infos.inputs
+                elif node < self.decoder.adapter.out_idx:
+                    function_index = self.decoder.adapter.read_function(
+                        genome, node - self.decoder.adapter.n_inputs
                     )
-                    active_connections = self.library.arity_of(function_index)
-                    connections = self.read_active_connections(
-                        genome, node - self.infos.inputs, active_connections
+                    active_connections = self.decoder.library.arity_of(function_index)
+                    connections = self.decoder.adapter.read_active_connections(
+                        genome, node - self.decoder.adapter.n_inputs, active_connections
                     )
-                    parameters = self.read_parameters(genome, node - self.infos.inputs)
-                    f_name = self.library.f_name_of(function_index)
+                    parameters = self.decoder.adapter.read_parameters(
+                        genome, node - self.decoder.adapter.n_inputs
+                    )
+                    f_name = self.decoder.library.name_of(function_index)
                     c_names = [
-                        f"x_{c}" if c < self.infos.inputs else f"node_{c}"
+                        f"x_{c}" if c < self.decoder.adapter.n_inputs else f"node_{c}"
                         for c in connections
                     ]
                     c_names = "[" + ", ".join(c_names) + "]"
@@ -68,9 +70,9 @@ class GenomeToPython(Decoder):
             python_code += map_of_nodes[function_node]
         for output_node in sorted(set(list_of_outputs)):
             python_code += map_of_outputs[output_node]
-        output_list = str([f"y_{y}" for y in range(self.infos.outputs)]).replace(
-            "'", ""
-        )
+        output_list = str(
+            [f"y_{y}" for y in range(self.decoder.adapter.n_outputs)]
+        ).replace("'", "")
         output_list = f"{self.indent_2}Y = {output_list}\n"
         python_code += output_list
         python_code += f"{self.indent_2}return Y\n"

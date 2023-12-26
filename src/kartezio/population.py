@@ -9,13 +9,15 @@ from kartezio.core.population import Population
 class IndividualHistory:
     def __init__(self):
         self.fitness = {"fitness": 0.0, "time": 0.0}
-        self.sequence = None
+        self.chromosome = None
+        self.outputs = None
 
-    def set_sequence(self, sequence):
-        self.sequence = sequence
+    def set_genes(self, chromosome, outputs):
+        self.chromosome = chromosome
+        self.outputs = outputs
 
-    def set_values(self, sequence, fitness, time):
-        self.sequence = sequence
+    def set_values(self, chromosome, outputs, fitness, time):
+        self.set_genes(chromosome, outputs)
         self.fitness["fitness"] = fitness
         self.fitness["time"] = time
 
@@ -29,7 +31,10 @@ class PopulationHistory:
     def fill(self, individuals, fitness, times):
         for i in range(len(individuals)):
             self.individuals[i].set_values(
-                individuals[i].sequence, float(fitness[i]), float(times[i])
+                individuals[i].chromosome,
+                individuals[i].outputs,
+                float(fitness[i]),
+                float(times[i]),
             )
 
     def get_best_fitness(self):
