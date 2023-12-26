@@ -9,7 +9,7 @@ from kartezio.core.components.primitive import Primitive
 from kartezio.core.types import TypeArray, TypeScalar
 
 
-@register(Primitive, "add")
+@register(Primitive, "add_test")
 class PrimitiveTest(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
