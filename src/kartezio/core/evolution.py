@@ -39,12 +39,9 @@ class Fitness(Component, ABC):
             pass
         else:
             for idx_individual in range(len(y_pred)):
-                for idx_image in range(len(y_true)):
-                    _y_true = y_true[idx_image].copy()
-                    _y_pred = y_pred[idx_individual][idx_image]
-                    population_fitness[idx_individual, idx_image] = self.evaluate(
-                        _y_true, _y_pred
-                    )
+                population_fitness[idx_individual] = self.evaluate(
+                    y_true, y_pred[idx_individual]
+                )
         return self._reduce(population_fitness)
 
     def _reduce(self, population_fitness):

@@ -7,6 +7,7 @@ from numena.image.basics import image_new
 from numena.image.contour import contours_find
 from numena.image.morphology import WatershedSkimage
 from numena.image.threshold import threshold_tozero
+from skimage.segmentation import watershed
 
 from kartezio.core.components.base import Components, register
 from kartezio.core.components.endpoint import Endpoint
@@ -137,24 +138,27 @@ class EndpointEllipse(Endpoint):
 
 @register(Endpoint, "marker_controlled_watershed")
 class EndpointWatershed(Endpoint):
-    def __init__(self, use_dt=False, markers_distance=21, markers_area=None):
+    def __init__(self, backend="opencv"):
         super().__init__([TypeArray, TypeArray])
-        self.wt = WatershedSkimage(
-            use_dt=use_dt, markers_distance=markers_distance, markers_area=markers_area
-        )
+        self.backend = backend
 
     def call(self, x):
-        mask = x[0]
-        markers = x[1]
-        mask, markers, labels = self.wt.apply(mask, markers=markers, mask=mask > 0)
-        return {
-            "mask_raw": x[0],
-            "markers_raw": x[1],
-            "mask": mask,
-            "markers": markers,
-            "count": len(np.unique(labels)) - 1,
-            "labels": labels,
-        }
+        marker_labels = cv2.connectedComponents(x[1], connectivity=8)[1]
+        if self.backend == "skimage":
+            labels = watershed(
+                -x[0], markers=marker_labels, mask=x[0], watershed_line=True
+            )
+            return [labels]
+        elif self.backend == "opencv":
+            background = x[0] == 0
+            marker_labels[background] = 0
+            image = x[0].copy()
+            image[background] = 255
+            image = cv2.merge((image, image, image))
+            cv2.watershed(image, marker_labels)
+            marker_labels[marker_labels == -1] = 0
+            marker_labels[background] = 0
+            return [marker_labels]
 
     def _to_json_kwargs(self) -> dict:
         return {

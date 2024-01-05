@@ -69,12 +69,8 @@ class GeneticAlgorithm:
     def reproduction(self):
         self.strategy.reproduction(self.population)
 
-    def mutation(self):
-        self.strategy.mutation()
-
     def evaluation(self, y_true, y_pred):
         fitness = self.fitness.batch(y_true, y_pred)
-        print(fitness)
         self.population.set_fitness(fitness)
 
     def next(self):
@@ -143,6 +139,8 @@ class ModelDraft:
             self.mutation = mutation
             self.behavior = None
             self.decay = None
+            self.node_rate = 0.15
+            self.out_rate = 0.2
 
         def set_behavior(self, behavior: MutationBehavior):
             self.behavior = behavior
@@ -150,9 +148,16 @@ class ModelDraft:
         def set_decay(self, decay: MutationDecay):
             self.decay = decay
 
+        def set_mutation_rates(self, node_rate, out_rate):
+            self.node_rate = node_rate
+            self.out_rate = out_rate
+
         def compile(self):
+            self.mutation.node_rate = self.node_rate
+            self.mutation.out_rate = self.out_rate
             self.behavior.set_mutation(self.mutation)
-            self.decay.set_mutation(self.mutation)
+            if self.decay:
+                self.decay.set_mutation(self.mutation)
 
     def __init__(self, decoder: Decoder, fitness: Fitness):
         super().__init__()
@@ -175,9 +180,13 @@ class ModelDraft:
     def set_decay(self, decay: MutationDecay):
         self.mutation.set_decay(decay)
 
+    def set_mutation_rates(self, node_rate, out_rate):
+        self.mutation.set_mutation_rates(node_rate, out_rate)
+
     def compile(self, n_generations: int, n_children: int, callbacks: List[Callback]):
         self.mutation.compile()
-        self.updatable.append(self.mutation.decay)
+        if self.mutation.decay:
+            self.updatable.append(self.mutation.decay)
         ga = GeneticAlgorithm(self.decoder, self.fitness)
         ga.init(n_generations, n_children)
         model = ValidModel(self.decoder, ga)

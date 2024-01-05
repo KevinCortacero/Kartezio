@@ -42,7 +42,7 @@ class Decoder(Component, ABC):
             start_time = time.time()
             y_pred = self._parse_one(genotype, graphs, xi)
             if self.endpoint is not None:
-                y_pred = self.endpoint(y_pred)
+                y_pred = self.endpoint.call(y_pred)
             all_times.append(time.time() - start_time)
             all_y_pred.append(y_pred)
         whole_time = np.mean(np.array(all_times))
