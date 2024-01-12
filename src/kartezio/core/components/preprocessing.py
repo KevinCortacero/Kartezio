@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Dict
 
-from kartezio.core.components.base import Node, Components
+from kartezio.core.components.base import Components, Node
 
 
 class Preprocessing(Node, ABC):

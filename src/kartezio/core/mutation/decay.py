@@ -29,7 +29,6 @@ class LinearDecay(MutationDecay):
         if event["name"] == Event.END_STEP:
             self._mutation.node_rate -= self.step
             self._mutation.out_rate -= self.step
-            print(self._mutation.node_rate, self._mutation.out_rate)
 
 
 @register(MutationDecay, "factor")
@@ -46,4 +45,3 @@ class FactorDecay(MutationDecay):
         if event["name"] == Event.END_STEP:
             self._mutation.node_rate *= self.decay_factor
             self._mutation.out_rate *= self.decay_factor
-            print(self._mutation.node_rate, self._mutation.out_rate)

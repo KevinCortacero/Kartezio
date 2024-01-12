@@ -4,7 +4,7 @@ from typing import Dict, List
 
 import numpy as np
 
-from kartezio.core.components.adapter import Adapter, AdapterMono
+from kartezio.core.components.adapter import AdapterMono
 from kartezio.core.components.aggregation import Aggregation
 from kartezio.core.components.base import Component, register
 from kartezio.core.components.endpoint import Endpoint
@@ -74,6 +74,7 @@ class Decoder(Component, ABC):
         output_tree = graph_source.copy()
         while next_indices:
             next_index = next_indices.pop()
+
             if next_index < self.adapter.n_inputs:
                 continue
             function_index = self.adapter.read_function(

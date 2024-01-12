@@ -151,21 +151,11 @@ class EndpointWatershed(Endpoint):
             return [labels]
         elif self.backend == "opencv":
             background = x[0] == 0
-            marker_labels[background] = 0
-            image = x[0].copy()
-            image[background] = 255
-            image = cv2.merge((image, image, image))
+            image = cv2.merge((x[0], x[0], x[0]))
             cv2.watershed(image, marker_labels)
             marker_labels[marker_labels == -1] = 0
             marker_labels[background] = 0
             return [marker_labels]
-
-    def _to_json_kwargs(self) -> dict:
-        return {
-            "use_dt": self.wt.use_dt,
-            "markers_distance": self.wt.markers_distance,
-            "markers_area": self.wt.markers_area,
-        }
 
 
 @register(Endpoint, "local-max_watershed")

@@ -48,15 +48,19 @@ class TransformToHED(Preprocessing):
 
 @register(Preprocessing, "select_channels")
 class SelectChannels(Preprocessing):
-    def __init__(self, channels):
+    def __init__(self, channels, scalars=None):
         super().__init__()
         self.channels = channels
+        self.scalars = scalars
 
     def call(self, x):
         new_x = []
         for i in range(len(x)):
             one_item = [x[i][channel] for channel in self.channels]
-            new_x.append(one_item)
+            if self.scalars:
+                new_x.append([one_item, self.scalars])
+            else:
+                new_x.append(one_item)
         return new_x
 
 

@@ -7,14 +7,11 @@ from kartezio.core.components.genotype import Genotype
 
 
 class Mutation(Component, ABC):
-    def __init__(self, shape):
+    def __init__(self, decoder):
         super(Component).__init__()
-        self.decoder = shape
-        self.n_functions = self.decoder.library.size
+        self.decoder = decoder
+        self.n_functions = decoder.library.size
         self.parameter_max_value = 256
-
-    def dumps(self) -> dict:
-        return {}
 
     @property
     def random_parameters(self):
@@ -32,7 +29,7 @@ class Mutation(Component, ABC):
 
     def random_connections(self, idx: int):
         return np.random.randint(
-            self.decoder.adapter.nodes_idx + idx,
+            self.decoder.adapter.n_inputs + idx,
             size=self.decoder.adapter.n_connections,
         )
 

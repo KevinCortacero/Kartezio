@@ -2,42 +2,44 @@ import cv2
 import numpy as np
 
 from kartezio.callback import CallbackVerbose
-from kartezio.core.mutation.decay import LinearDecay, FactorDecay
+from kartezio.core.mutation.decay import FactorDecay, LinearDecay
+from kartezio.core.sequential import ModelSequential
 from kartezio.dataset import read_dataset
 from kartezio.endpoint import EndpointWatershed
-from kartezio.fitness import FitnessIOU, FitnessAP
+from kartezio.fitness import FitnessAP, FitnessIOU
 from kartezio.preprocessing import SelectChannels
 from kartezio.vision.primitives import library_opencv
-from kartezio.core.sequential import ModelSequential
-
 
 if __name__ == "__main__":
     path = r"dataset\1-cell_image_library\dataset"
     n_iterations = 2000
-    dataset = read_dataset(path, indices=range(2))
-    # dataset = read_dataset(path)
-    library_opencv.display()
+    preprocessing = SelectChannels([1, 2])
+    dataset = read_dataset(
+        path,
+        indices=[50, 5, 0, 82, 3, 86, 48, 32, 39, 8, 55, 10, 53, 49, 38]
+        # indices=range(4),
+    )
     draft = ModelSequential(
         2,
         30,
         library_opencv,
         FitnessAP(reduction="mean"),
-        endpoint=EndpointWatershed(backend="opencv"),
+        EndpointWatershed(backend="opencv"),
     )
-    draft.set_mutation_rates(0.15, 0.20)
-    draft.set_decay(LinearDecay((0.15 - 0.05) / n_iterations))
-    # draft.set_decay(FactorDecay(0.99))
-    model = draft.compile(n_iterations, 4, callbacks=[CallbackVerbose()])
-    train_x = SelectChannels([1, 2]).call(dataset.train_x)
+    draft.set_mutation_rates(0.05, 0.1)
+    # draft.set_decay(LinearDecay((0.15 - 0.05) / n_iterations))
+    # draft.set_decay(LinearDecay(0))
+    model = draft.compile(n_iterations, 2, callbacks=[CallbackVerbose()])
+    train_x = preprocessing.call(dataset.train_x)
+    test_x = preprocessing.call(dataset.test_x)
     elite, history = model.fit(train_x, dataset.train_y)
-    p, t = model.predict(train_x)
-    for i, pi in enumerate(p):
-        print(i)
-        cv2.imwrite(
-            f"labels_{i}.png",
-            cv2.applyColorMap(pi[0].astype(np.uint8), cv2.COLORMAP_VIRIDIS),
-        )
     print(model.evaluate(train_x, dataset.train_y))
+    print(model.evaluate(test_x, dataset.test_y))
+    print("...")
+    model.decoder.endpoint.backend = "skimage"
+    print(model.evaluate(train_x, dataset.train_y))
+    print(model.evaluate(test_x, dataset.test_y))
+    p, t = model.predict(train_x)
     print(FitnessAP(reduction="min").batch(dataset.train_y, [p]))
     print(FitnessAP(reduction="mean").batch(dataset.train_y, [p]))
     print(FitnessAP(reduction="median").batch(dataset.train_y, [p]))

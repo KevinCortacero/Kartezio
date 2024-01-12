@@ -1,7 +1,7 @@
 import ast
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 import cv2
 import numpy as np
@@ -18,7 +18,7 @@ from numena.io.image import imread_color, imread_grayscale, imread_tiff
 from numena.io.imagej import read_ellipses_from_csv, read_polygons_from_roi
 from numena.io.json import json_read, json_write
 
-from kartezio.core.components.base import Component, register, Components
+from kartezio.core.components.base import Component, Components, register
 from kartezio.enums import CSV_DATASET, DIR_PREVIEW, JSON_META
 
 

@@ -1,10 +1,10 @@
 from abc import ABC
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 
 from kartezio.core.components.base import Component, register
-from kartezio.core.components.genotype import MonoChromosome
+from kartezio.core.components.genotype import Genotype, MonoChromosome
 
 
 class Adapter(Component, ABC):
@@ -12,7 +12,7 @@ class Adapter(Component, ABC):
 
 
 @register(Adapter, "mono")
-class AdapterMono(Component):
+class AdapterMono(Adapter):
     """
     Adpater Design Pattern: https://refactoring.guru/design-patterns/adapter
     """
@@ -32,22 +32,19 @@ class AdapterMono(Component):
         self.n_connections = n_connections
         self.n_parameters = n_parameters
         self.in_idx = 0
-        self.func_idx = 0
         self.con_idx = 1
-        self.nodes_idx = self.n_inputs
-        self.out_idx = self.nodes_idx + self.n_nodes
+        self.out_idx = self.n_inputs + self.n_nodes
         self.para_idx = self.con_idx + self.n_connections
         self.w = 1 + self.n_connections + self.n_parameters
-        self.h = self.n_inputs + self.n_nodes + self.n_outputs
-        self.prototype = self.create_protoype()
+        self.prototype = self.create_prototype()
 
-    def create_protoype(self):
+    def create_prototype(self):
         return MonoChromosome(
             self.n_outputs, np.zeros((self.n_nodes, self.w), dtype=np.uint8)
         )
 
     def write_function(self, genome, node, function_id):
-        genome[node, self.func_idx] = function_id
+        genome[node, 0] = function_id
 
     def write_connections(self, genome, node, connections):
         genome[node, self.con_idx : self.para_idx] = connections
@@ -59,7 +56,7 @@ class AdapterMono(Component):
         genome.outputs[output_index] = connection
 
     def read_function(self, genome, node):
-        return genome[node, self.func_idx]
+        return genome[node, 0]
 
     def read_connections(self, genome, node):
         return genome[node, self.con_idx : self.para_idx]

@@ -32,11 +32,6 @@ class MonoChromosome(Genotype):
         self.chromosome = chromosome
         self.outputs = np.zeros(n_outputs, dtype=np.uint8)
 
-    def __copy__(self):
-        new = self.__class__(len(self.outputs), self.chromosome.copy())
-        new.__dict__.update(self.__dict__)
-        return new
-
     def __deepcopy__(self, memo):
         new = self.__class__(len(self.outputs), self.chromosome.copy())
         new.chromosome = self.chromosome.copy()

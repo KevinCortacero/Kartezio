@@ -5,13 +5,13 @@ from kartezio.core.mutation.base import Mutation
 
 class MutationBehavior:
     def __init__(self):
-        self.__mutation = None
+        self._mutation = None
 
     def mutate(self, genotype: Genotype):
-        return self.__mutation.mutate(genotype)
+        return self._mutation.mutate(genotype)
 
     def set_mutation(self, mutation: Mutation):
-        self.__mutation = mutation
+        self._mutation = mutation
 
 
 class AccumulateBehavior(MutationBehavior):
@@ -23,7 +23,7 @@ class AccumulateBehavior(MutationBehavior):
         changed = False
         active_nodes = self.decoder.parse_to_graphs(genotype)
         while not changed:
-            genotype = self.__mutation.mutate(genotype)
+            genotype = self._mutation.mutate(genotype)
             new_active_nodes = self.decoder.parse_to_graphs(genotype)
             changed = active_nodes != new_active_nodes
         return genotype

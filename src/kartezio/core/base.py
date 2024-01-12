@@ -4,17 +4,14 @@ from typing import List
 from kartezio.callback import Callback, Event
 from kartezio.core.components.decoder import Decoder
 from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.components.genotype import Genotype
 from kartezio.core.components.initialization import MutationAllRandom
 from kartezio.core.components.library import Library
 from kartezio.core.evolution import Fitness
 from kartezio.core.helpers import Observable
 from kartezio.core.mutation.base import Mutation
 from kartezio.core.mutation.behavior import AccumulateBehavior, MutationBehavior
-from kartezio.core.mutation.decay import (
-    FactorDecay,
-    LinearDecay,
-    MutationDecay,
-)
+from kartezio.core.mutation.decay import FactorDecay, LinearDecay, MutationDecay
 from kartezio.export import GenomeToPython
 from kartezio.mutation import MutationRandom
 from kartezio.strategy import OnePlusLambda
@@ -36,8 +33,8 @@ class ModelML(ABC):
 
 
 class GeneticAlgorithm:
-    def __init__(self, decoder: Decoder, fitness: Fitness):
-        self.strategy = OnePlusLambda(decoder)
+    def __init__(self, init, mutation, fitness: Fitness):
+        self.strategy = OnePlusLambda(init, mutation)
         self.population = None
         self.fitness = fitness
         self.current_generation = 0
@@ -47,9 +44,6 @@ class GeneticAlgorithm:
         self.current_generation = 0
         self.n_generations = n_generations
         self.population = self.strategy.create_population(n_children)
-
-    def set_mutation_rate(self, rate: float):
-        self.strategy.fn_mutation.node_rate = rate
 
     def update(self):
         pass
@@ -123,14 +117,14 @@ class ValidModel(ModelML, Observable):
     def predict(self, x):
         return self.decoder.decode(self.ga.population.get_elite(), x)
 
-    def save_elite(self, filepath, dataset):
-        JsonSaver(dataset, self.parser).save_individual(
-            filepath, self.strategy.population.history().individuals[0]
-        )
-
     def print_python_class(self, class_name):
         python_writer = GenomeToPython(self.decoder)
         python_writer.to_python_class(class_name, self.ga.population.get_elite())
+
+    def display_elite(self):
+        elite = self.ga.population.get_elite()
+        print(elite[0])
+        print(elite.outputs)
 
 
 class ModelDraft:
@@ -155,15 +149,28 @@ class ModelDraft:
         def compile(self):
             self.mutation.node_rate = self.node_rate
             self.mutation.out_rate = self.out_rate
-            self.behavior.set_mutation(self.mutation)
+            if self.behavior:
+                self.behavior.set_mutation(self.mutation)
             if self.decay:
                 self.decay.set_mutation(self.mutation)
 
-    def __init__(self, decoder: Decoder, fitness: Fitness):
+        def mutate(self, genotype: Genotype):
+            if self.behavior:
+                return self.behavior.mutate(genotype)
+            else:
+                return self.mutation.mutate(genotype)
+
+    def __init__(self, decoder: Decoder, fitness: Fitness, init=None, mutation=None):
         super().__init__()
         self.decoder = decoder
-        self.init = MutationAllRandom(decoder)
-        self.mutation = self.MutationSystem(MutationRandom(decoder, 0.15, 0.2))
+        if init:
+            self.init = init
+        else:
+            self.init = MutationAllRandom(decoder)
+        if mutation:
+            self.mutation = self.MutationSystem(mutation)
+        else:
+            self.mutation = self.MutationSystem(MutationRandom(decoder, 0.15, 0.2))
         self.mutation.set_behavior(AccumulateBehavior(decoder))
         # self.mutation.set_decay(FactorDecay(0.9999))
         # self.mutation.set_decay(LinearDecay((0.15 - 0.05) / 200.0))
@@ -187,7 +194,7 @@ class ModelDraft:
         self.mutation.compile()
         if self.mutation.decay:
             self.updatable.append(self.mutation.decay)
-        ga = GeneticAlgorithm(self.decoder, self.fitness)
+        ga = GeneticAlgorithm(self.init, self.mutation, self.fitness)
         ga.init(n_generations, n_children)
         model = ValidModel(self.decoder, ga)
         for updatable in self.updatable:

@@ -1,4 +1,3 @@
-import random
 from typing import Dict
 
 import numpy as np
@@ -20,16 +19,6 @@ class MutationRandom(Mutation):
         self.out_rate = out_rate
         self.nodes_shape = (decoder.adapter.n_nodes, decoder.adapter.w)
         self.outputs_shape = decoder.adapter.n_outputs
-        """
-        self.n_mutations = int(
-            np.floor(self.infos.n_nodes * self.infos.w * self.node_rate)
-        )
-        self.all_indices = np.indices((self.infos.n_nodes, self.infos.w))
-        self.all_indices = np.vstack(
-            (self.all_indices[0].ravel(), self.all_indices[1].ravel())
-        ).T
-        self.sampling_range = range(len(self.all_indices))
-        """
 
     def mutate(self, genotype: Genotype) -> Genotype:
         random_matrix = np.random.random(size=self.nodes_shape)

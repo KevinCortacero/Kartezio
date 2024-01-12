@@ -29,10 +29,6 @@ class LibraryDefaultOpenCV(Library):
     def __init__(self):
         super().__init__(TypeArray)
 
-    def add_by_name(self, name):
-        primitive = Components.instantiate("Primitive", name)
-        self.add_primitive(primitive)
-
 
 @register(Primitive, "max")
 class Max(Primitive):
@@ -219,10 +215,10 @@ class Roberts(Primitive):
 @register(Primitive, "canny")
 class Canny(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeArray, 2)
+        super().__init__([TypeArray], TypeArray, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.Canny(x[0], args[0], args[1])
+        return cv2.Canny(x[0], args[0], args[0] * 3)
 
 
 @register(Primitive, "sharpen")
@@ -335,7 +331,7 @@ class Fill(Primitive):
 @register(Primitive, "rm_small_objects")
 class RmSmallObjects(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeArray, 0)
+        super().__init__([TypeArray], TypeArray, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return remove_small_objects(x[0] > 0, args[0]).astype(np.uint8)
@@ -344,7 +340,7 @@ class RmSmallObjects(Primitive):
 @register(Primitive, "rm_small_holes")
 class RmSmallHoles(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeArray, 0)
+        super().__init__([TypeArray], TypeArray, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return remove_small_holes(x[0] > 0, args[0]).astype(np.uint8)
@@ -375,6 +371,33 @@ class Binarize(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return threshold_binary(x[0], 1)
+
+
+@register(Primitive, "fluo_tophat")
+class FluoTopHat(Primitive):
+    """from https://github.com/cytosmart-bv/tomni"""
+
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def _rescale_intensity(self, img, min_val, max_val):
+        output_img = np.clip(img, min_val, max_val)
+        if max_val - min_val == 0:
+            return (output_img * 255).astype(np.uint8)
+        output_img = (output_img - min_val) / (max_val - min_val) * 255
+        return output_img.astype(np.uint8)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        # kernel = kernel_from_parameters(args)
+        # img = cv2.morphologyEx(x[0], cv2.MORPH_TOPHAT, kernel, iterations=10)
+        kur = np.mean(kurtosis(x[0], fisher=True))
+        skew1 = np.mean(skew(x[0]))
+        if kur > 1 and skew1 > 1:
+            p2, p98 = np.percentile(x[0], (15, 99.5), interpolation="linear")
+        else:
+            p2, p98 = np.percentile(x[0], (15, 100), interpolation="linear")
+
+        return self._rescale_intensity(x[0], p2, p98)
 
 
 def f_distance_transform(x, args=None):
@@ -465,6 +488,7 @@ library_opencv.add_by_name("to_zero_threshold")
 library_opencv.add_by_name("binarize")
 library_opencv.add_by_name("binary_in_range")
 library_opencv.add_by_name("in_range")
+library_opencv.add_by_name("fluo_tophat")
 
 """
 library_opencv.create_primitive("Min", 2, 0, f_min)
@@ -519,11 +543,9 @@ def no_endpoint(x):
 
 
 if __name__ == "__main__":
-    infos = GenotypeInfos()
     library = library_opencv
     library.display()
-    endpoint = NoEndpoint()
-    decoder = SequentialDecoder(2, 30, library, endpoint)
+    decoder = SequentialDecoder(2, 30, library)
     with open("decoder.toml", "w") as toml_file:
         toml.dump(decoder.to_toml(), toml_file)
     print(toml.dumps(decoder.to_toml()))

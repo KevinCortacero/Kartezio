@@ -30,6 +30,10 @@ class Library(Component, ABC):
             library.add_primitive(primitive)
         return library
 
+    def add_by_name(self, name):
+        primitive = Components.instantiate("Primitive", name)
+        self.add_primitive(primitive)
+
     def add_primitive(self, primitive: Primitive):
         self._primitives[len(self._primitives)] = primitive
 
@@ -46,6 +50,9 @@ class Library(Component, ABC):
     def parameters_of(self, i):
         return self._primitives[i].n_parameters
 
+    def inputs_of(self, i):
+        return self._primitives[i].input_types
+
     def execute(self, f_index, x: List[np.ndarray], args: List[int]):
         return self._primitives[f_index].call(x, args)
 
@@ -56,7 +63,7 @@ class Library(Component, ABC):
             one_primitive_infos = [
                 i,
                 self.name_of(i),
-                primitive.input_types,
+                self.inputs_of(i),
                 primitive.rtype,
                 self.arity_of(i),
                 self.parameters_of(i),
