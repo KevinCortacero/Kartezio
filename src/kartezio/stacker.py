@@ -5,9 +5,9 @@ import numpy as np
 from numena.image.morphology import morph_erode
 from numena.image.threshold import threshold_tozero
 
-from kartezio.model.components import Aggregation, KSignature
-from kartezio.model.registry import registry
-from kartezio.model.types import TypeArray
+from kartezio.core.components import Aggregation, KSignature
+from kartezio.core.registry import registry
+from kartezio.core.types import TypeArray
 
 
 def register_stackers():

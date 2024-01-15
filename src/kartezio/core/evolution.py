@@ -1,10 +1,10 @@
-from abc import ABC
-from typing import List
+from abc import ABC, abstractmethod
+from typing import Dict, List
 
 import numpy as np
 
-from kartezio.model.components import Node
-from kartezio.model.types import Score, ScoreList
+from kartezio.core.components.base import Component, Node
+from kartezio.core.types import Score, ScoreList
 
 
 class KartezioMetric(Node, ABC):
@@ -27,9 +27,9 @@ class KMetric(Node, ABC):
 MetricList = List[KartezioMetric]
 
 
-class Fitness(Node, ABC):
-    def __init__(self, fn, reduction="mean", multiprocessing=False):
-        super().__init__(fn)
+class Fitness(Component, ABC):
+    def __init__(self, reduction="mean", multiprocessing=False):
+        super().__init__()
         self.reduction = reduction
         self.multiprocessing = multiprocessing
 
@@ -39,12 +39,9 @@ class Fitness(Node, ABC):
             pass
         else:
             for idx_individual in range(len(y_pred)):
-                for idx_image in range(len(y_true)):
-                    _y_true = y_true[idx_image].copy()
-                    _y_pred = y_pred[idx_individual][idx_image]
-                    population_fitness[idx_individual, idx_image] = self.evaluate(
-                        _y_true, _y_pred
-                    )
+                population_fitness[idx_individual] = self.evaluate(
+                    y_true, y_pred[idx_individual]
+                )
         return self._reduce(population_fitness)
 
     def _reduce(self, population_fitness):
@@ -57,8 +54,13 @@ class Fitness(Node, ABC):
         if self.reduction == "median":
             return np.median(population_fitness, axis=1)
 
+    @abstractmethod
     def evaluate(self, y_true, y_pred):
-        return self._fn(y_true, y_pred)
+        pass
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+        pass
 
 
 class KartezioFitness(Node, ABC):

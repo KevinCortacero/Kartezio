@@ -1,18 +1,8 @@
 from dataclasses import InitVar, dataclass, field
 
-from kartezio.model.base import ModelDraft
-from kartezio.model.components import (
-    Aggregation,
-    Decoder,
-    DecoderIterative,
-    DecoderSequential,
-    Endpoint,
-    GenomeFactory,
-    GenotypeInfos,
-    Library,
-)
-from kartezio.model.evolution import Fitness, KartezioFitness, KartezioMutation
-from kartezio.model.registry import registry
+from kartezio.core.base import ModelDraft
+from kartezio.core.evolution import Fitness, KartezioFitness, KartezioMutation
+from kartezio.core.registry import registry
 from kartezio.mutation import GoldmanWrapper, MutationAllRandom
 from kartezio.stacker import StackerMean, a_mean
 from kartezio.strategy import OnePlusLambda

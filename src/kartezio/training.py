@@ -1,10 +1,10 @@
 import argparse
 
 from kartezio.callback import CallbackSave, CallbackVerbose
+from kartezio.core.base import ModelDraft
+from kartezio.core.helpers import singleton
 from kartezio.dataset import read_dataset
 from kartezio.enums import CSV_DATASET
-from kartezio.model.base import ModelDraft
-from kartezio.model.helpers import singleton
 from kartezio.utils.io import pack_one_directory
 
 

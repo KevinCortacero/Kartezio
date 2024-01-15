@@ -1,7 +1,7 @@
 import ast
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import cv2
 import numpy as np
@@ -18,8 +18,8 @@ from numena.io.image import imread_color, imread_grayscale, imread_tiff
 from numena.io.imagej import read_ellipses_from_csv, read_polygons_from_roi
 from numena.io.json import json_read, json_write
 
+from kartezio.core.components.base import Component, Components, register
 from kartezio.enums import CSV_DATASET, DIR_PREVIEW, JSON_META
-from kartezio.model.registry import registry
 
 
 class Dataset:
@@ -127,8 +127,9 @@ class DatasetMeta:
         return json_read(filepath / meta_filename)
 
 
-class DataReader:
+class DataReader(Component):
     def __init__(self, directory, scale=1.0):
+        super().__init__()
         self.scale = scale
         self.directory = directory
 
@@ -141,6 +142,10 @@ class DataReader:
 
     @abstractmethod
     def _read(self, filepath, shape=None):
+        pass
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
         pass
 
 
@@ -156,7 +161,7 @@ class DataItem:
         return len(self.datalist)
 
 
-@registry.readers.add("image_mask")
+@register(DataReader, "image_mask")
 class ImageMaskReader(DataReader):
     def _read(self, filepath, shape=None):
         if filepath == "":
@@ -167,7 +172,7 @@ class ImageMaskReader(DataReader):
         return DataItem([labels], image.shape[:2], len(np.unique(labels)) - 1, image)
 
 
-@registry.readers.add("image_hsv")
+@register(DataReader, "image_hsv")
 class ImageHSVReader(DataReader):
     def _read(self, filepath, shape=None):
         image_bgr = imread_color(filepath)
@@ -175,7 +180,7 @@ class ImageHSVReader(DataReader):
         return DataItem(image_split(image_hsv), image_bgr.shape[:2], None, image_bgr)
 
 
-@registry.readers.add("image_hed")
+@register(DataReader, "image_hed")
 class ImageHEDReader(DataReader):
     def _read(self, filepath, shape=None):
         image_bgr = imread_color(filepath)
@@ -183,7 +188,7 @@ class ImageHEDReader(DataReader):
         return DataItem(image_split(image_hed), image_bgr.shape[:2], None, image_bgr)
 
 
-@registry.readers.add("image_labels")
+@register(DataReader, "image_labels")
 class ImageLabels(DataReader):
     def _read(self, filepath, shape=None):
         image = cv2.imread(filepath, cv2.IMREAD_ANYDEPTH)
@@ -192,7 +197,7 @@ class ImageLabels(DataReader):
         return DataItem([image], image.shape[:2], image.max(), visual=image)
 
 
-@registry.readers.add("image_rgb")
+@register(DataReader, "image_rgb")
 class ImageRGBReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_color(filepath, rgb=False)
@@ -201,7 +206,7 @@ class ImageRGBReader(DataReader):
         )
 
 
-@registry.readers.add("csv_ellipse")
+@register(DataReader, "csv_ellipse")
 class CsvEllipseReader(DataReader):
     def _read(self, filepath, shape=None):
         dataframe = pd.read_csv(filepath)
@@ -213,7 +218,7 @@ class CsvEllipseReader(DataReader):
         return DataItem([label_mask], shape, len(ellipses))
 
 
-@registry.readers.add("image_grayscale")
+@register(DataReader, "image_grayscale")
 class ImageGrayscaleReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_grayscale(filepath)
@@ -221,7 +226,7 @@ class ImageGrayscaleReader(DataReader):
         return DataItem([image], image.shape, None, visual=visual)
 
 
-@registry.readers.add("roi_polygon")
+@register(DataReader, "roi_polygon")
 class RoiPolygonReader(DataReader):
     def _read(self, filepath, shape=None):
         label_mask = image_new(shape)
@@ -232,14 +237,14 @@ class RoiPolygonReader(DataReader):
         return DataItem([label_mask], shape, len(polygons))
 
 
-@registry.readers.add("one-hot_vector")
+@register(DataReader, "one-hot_vector")
 class OneHotVectorReader(DataReader):
     def _read(self, filepath, shape=None):
         label = np.array(ast.literal_eval(filepath.split("/")[-1]))
         return DataItem([label], shape, None)
 
 
-@registry.readers.add("image_channels")
+@register(DataReader, "image_channels")
 class ImageChannelsReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
@@ -288,11 +293,11 @@ class DatasetReader(Directory):
         self.label_name = meta["label_name"]
         input_reader_name = f"{meta['input']['type']}_{meta['input']['format']}"
         label_reader_name = f"{meta['label']['type']}_{meta['label']['format']}"
-        self.input_reader = registry.readers.instantiate(
-            input_reader_name, directory=self, scale=self.scale
+        self.input_reader = Components.instantiate(
+            "DataReader", input_reader_name, directory=self, scale=self.scale
         )
-        self.label_reader = registry.readers.instantiate(
-            label_reader_name, directory=self, scale=self.scale
+        self.label_reader = Components.instantiate(
+            "DataReader", label_reader_name, directory=self, scale=self.scale
         )
 
     def read_dataset(

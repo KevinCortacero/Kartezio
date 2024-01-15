@@ -1,19 +1,14 @@
-from kartezio.model.components import Decoder
-from kartezio.model.strategy import Strategy
-from kartezio.mutation import MutationAllRandom, MutationClassic
+from kartezio.core.strategy import Strategy
 from kartezio.population import PopulationWithElite
 
 
 class OnePlusLambda(Strategy):
-    def __init__(self, decoder: Decoder):
+    def __init__(self, init, mutation_system):
         self.n_parents = 1
         self.n_children = 4
-        self.fn_init = MutationAllRandom(decoder.infos, decoder.library.size)
-        self.fn_mutation = MutationClassic(
-            decoder.infos, decoder.library.size, 0.1, 0.1
-        )
+        self.mutation_system = mutation_system
+        self.fn_init = init
 
-    @property
     def get_elite(self, population: PopulationWithElite):
         return population.get_elite()
 
@@ -31,8 +26,4 @@ class OnePlusLambda(Strategy):
     def reproduction(self, population: PopulationWithElite):
         elite = population.get_elite()
         for i in range(self.n_parents, population.size):
-            population[i] = self.fn_mutation.mutate(elite.clone())
-
-    def evaluation(self, y_true, y_pred):
-        fitness = self.fitness.batch(y_true, y_pred)
-        self.population.set_fitness(fitness)
+            population[i] = self.mutation_system.mutate(elite.clone())

@@ -4,8 +4,8 @@ from enum import Enum
 from numena.io.drive import Directory
 from numena.time import eventid
 
+from kartezio.core.helpers import Observer
 from kartezio.enums import JSON_ELITE
-from kartezio.model.helpers import Observer
 from kartezio.utils.io import JsonSaver
 
 

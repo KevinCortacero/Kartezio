@@ -2,14 +2,9 @@ import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
 
-from kartezio.model.evolution import KartezioMetric, KMetric
-from kartezio.model.registry import registry
-from kartezio.model.types import Score
-
-
-def register_metrics():
-    """Force decorators to wrap KartezioFitness"""
-    print(f"[Kartezio - INFO] -  {len(registry.metrics.list())} metrics registered.")
+from kartezio.core.components.base import register
+from kartezio.core.evolution import KartezioMetric, KMetric
+from kartezio.core.types import Score
 
 
 @jit(nopython=True)
@@ -59,7 +54,7 @@ def _intersection_over_union(masks_true, masks_pred):
     return iou
 
 
-@registry.metrics.add("CAP")
+@register(KMetric, "mean_average_precision")
 class MetricCellpose(KMetric):
     """
     from MouseLand/cellpose:
@@ -194,7 +189,7 @@ class MetricCellpose(KMetric):
         return tp
 
 
-@registry.metrics.add("IOU")
+@register(KMetric, "intersection_over_union")
 class MetricIOU(KartezioMetric):
     def __init__(self):
         super().__init__("Intersection Over Union", symbol="IOU", arity=1)
@@ -212,7 +207,7 @@ class MetricIOU(KartezioMetric):
         return score
 
 
-@registry.metrics.add("IOU2")
+@register(KMetric, "intersection_over_union_2")
 class MetricIOU2(KartezioMetric):
     def call(self, y_true: np.ndarray, y_pred: np.ndarray) -> Score:
         _y_true = y_true[0]
@@ -226,7 +221,7 @@ class MetricIOU2(KartezioMetric):
         return Score(1.0 - iou[-1, -1])
 
 
-@registry.metrics.add("MSE")
+@register(KMetric, "mean_squared_error")
 class MetricMSE(KartezioMetric):
     def __init__(self):
         super().__init__("Mean Squared Error", symbol="MSE", arity=1)
@@ -235,7 +230,7 @@ class MetricMSE(KartezioMetric):
         return np.square(np.subtract(y_true, y_pred)).mean()
 
 
-@registry.metrics.add("precision")
+@register(KMetric, "precision")
 class MetricPrecision(KartezioMetric):
     def call(self, y_true: np.ndarray, y_pred: np.ndarray):
         _y_pred = y_pred["mask"]

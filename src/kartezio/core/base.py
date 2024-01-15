@@ -2,19 +2,18 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from kartezio.callback import Callback, Event
+from kartezio.core.components.decoder import Decoder
+from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.components.genotype import Genotype
+from kartezio.core.components.initialization import MutationAllRandom
+from kartezio.core.components.library import Library
+from kartezio.core.evolution import Fitness
+from kartezio.core.helpers import Observable
+from kartezio.core.mutation.base import Mutation
+from kartezio.core.mutation.behavior import AccumulateBehavior, MutationBehavior
+from kartezio.core.mutation.decay import FactorDecay, LinearDecay, MutationDecay
 from kartezio.export import GenomeToPython
-from kartezio.model.components import Decoder, Endpoint, Library
-from kartezio.model.evolution import Fitness
-from kartezio.model.helpers import Observable
-from kartezio.model.mutation.base import Mutation
-from kartezio.model.mutation.behavior import AccumulateBehavior, MutationBehavior
-from kartezio.model.mutation.decay import (
-    FactorDecay,
-    LinearDecay,
-    MutationDecay,
-    NoDecay,
-)
-from kartezio.mutation import MutationAllRandom, MutationClassic
+from kartezio.mutation import MutationRandom
 from kartezio.strategy import OnePlusLambda
 from kartezio.utils.io import JsonSaver
 
@@ -34,8 +33,8 @@ class ModelML(ABC):
 
 
 class GeneticAlgorithm:
-    def __init__(self, decoder: Decoder, fitness: Fitness):
-        self.strategy = OnePlusLambda(decoder)
+    def __init__(self, init, mutation, fitness: Fitness):
+        self.strategy = OnePlusLambda(init, mutation)
         self.population = None
         self.fitness = fitness
         self.current_generation = 0
@@ -45,9 +44,6 @@ class GeneticAlgorithm:
         self.current_generation = 0
         self.n_generations = n_generations
         self.population = self.strategy.create_population(n_children)
-
-    def set_mutation_rate(self, rate: float):
-        self.strategy.fn_mutation.node_rate = rate
 
     def update(self):
         pass
@@ -66,9 +62,6 @@ class GeneticAlgorithm:
 
     def reproduction(self):
         self.strategy.reproduction(self.population)
-
-    def mutation(self):
-        self.strategy.mutation()
 
     def evaluation(self, y_true, y_pred):
         fitness = self.fitness.batch(y_true, y_pred)
@@ -124,35 +117,66 @@ class ValidModel(ModelML, Observable):
     def predict(self, x):
         return self.decoder.decode(self.ga.population.get_elite(), x)
 
-    def save_elite(self, filepath, dataset):
-        JsonSaver(dataset, self.parser).save_individual(
-            filepath, self.strategy.population.history().individuals[0]
-        )
-
     def print_python_class(self, class_name):
-        python_writer = GenomeToPython(self.parser)
-        python_writer.to_python_class(class_name, self.strategy.elite)
+        python_writer = GenomeToPython(self.decoder)
+        python_writer.to_python_class(class_name, self.ga.population.get_elite())
+
+    def display_elite(self):
+        elite = self.ga.population.get_elite()
+        print(elite[0])
+        print(elite.outputs)
 
 
 class ModelDraft:
     class MutationSystem:
-        def __init__(
-            self, mutation: Mutation, behavior: MutationBehavior, decay: MutationDecay
-        ):
+        def __init__(self, mutation: Mutation):
             self.mutation = mutation
+            self.behavior = None
+            self.decay = None
+            self.node_rate = 0.15
+            self.out_rate = 0.2
+
+        def set_behavior(self, behavior: MutationBehavior):
             self.behavior = behavior
+
+        def set_decay(self, decay: MutationDecay):
             self.decay = decay
 
-    def __init__(self, decoder: Decoder, fitness: Fitness):
+        def set_mutation_rates(self, node_rate, out_rate):
+            self.node_rate = node_rate
+            self.out_rate = out_rate
+
+        def compile(self):
+            self.mutation.node_rate = self.node_rate
+            self.mutation.out_rate = self.out_rate
+            if self.behavior:
+                self.behavior.set_mutation(self.mutation)
+            if self.decay:
+                self.decay.set_mutation(self.mutation)
+
+        def mutate(self, genotype: Genotype):
+            if self.behavior:
+                return self.behavior.mutate(genotype)
+            else:
+                return self.mutation.mutate(genotype)
+
+    def __init__(self, decoder: Decoder, fitness: Fitness, init=None, mutation=None):
         super().__init__()
         self.decoder = decoder
-        self.init = MutationAllRandom(decoder.infos, decoder.library.size)
-        self.mutation = MutationClassic(decoder.infos, decoder.library.size, 0.1, 0.15)
-        self.behavior = AccumulateBehavior(self.mutation, decoder)
-        self.decay = FactorDecay(self.mutation, 0.99)
+        if init:
+            self.init = init
+        else:
+            self.init = MutationAllRandom(decoder)
+        if mutation:
+            self.mutation = self.MutationSystem(mutation)
+        else:
+            self.mutation = self.MutationSystem(MutationRandom(decoder, 0.05, 0.1))
+        # self.mutation.set_behavior(AccumulateBehavior(decoder))
+        # self.mutation.set_decay(FactorDecay(0.9999))
+        # self.mutation.set_decay(LinearDecay((0.15 - 0.05) / 200.0))
         # self.decay = LinearDecay(self.mutation, 0.2, 0.05, 200)
         self.fitness = fitness
-        self.updatable = [self.decay]
+        self.updatable = []
 
     def set_endpoint(self, endpoint: Endpoint):
         self.decoder.endpoint = endpoint
@@ -160,11 +184,17 @@ class ModelDraft:
     def set_library(self, library: Library):
         self.decoder.library = library
 
-    def set_n_inputs(self, n_inputs: int):
-        self.decoder.infos.n_inputs = n_inputs
+    def set_decay(self, decay: MutationDecay):
+        self.mutation.set_decay(decay)
+
+    def set_mutation_rates(self, node_rate, out_rate):
+        self.mutation.set_mutation_rates(node_rate, out_rate)
 
     def compile(self, n_generations: int, n_children: int, callbacks: List[Callback]):
-        ga = GeneticAlgorithm(self.decoder, self.fitness)
+        self.mutation.compile()
+        if self.mutation.decay:
+            self.updatable.append(self.mutation.decay)
+        ga = GeneticAlgorithm(self.init, self.mutation, self.fitness)
         ga.init(n_generations, n_children)
         model = ValidModel(self.decoder, ga)
         for updatable in self.updatable:
@@ -172,4 +202,5 @@ class ModelDraft:
         for callback in callbacks:
             callback.set_decoder(model.decoder)
             model.attach(callback)
+
         return model

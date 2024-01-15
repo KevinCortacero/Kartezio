@@ -7,60 +7,45 @@ from numena.image.basics import image_new
 from numena.image.contour import contours_find
 from numena.image.morphology import WatershedSkimage
 from numena.image.threshold import threshold_tozero
+from skimage.segmentation import watershed
 
-from kartezio.model.components import Endpoint, Components
-from kartezio.model.registry import registry
-from kartezio.model.types import TypeArray
-
-
-def register_endpoints():
-    print(
-        f"[Kartezio - INFO] -  {len(registry.endpoints.list())} endpoints registered."
-    )
+from kartezio.core.components.base import Components, register
+from kartezio.core.components.endpoint import Endpoint
+from kartezio.core.types import TypeArray
 
 
-def f_labels(x, connectivity=4):
-    return [
-        x[0],
-        cv2.connectedComponents(x[0], connectivity=connectivity, ltype=cv2.CV_16U)[1],
-    ]
-
-
-def f_e_threshold(x: List, threshold=2, mode="binary"):
-    if mode == "binary":
-        return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_BINARY)[1]]
-    return [cv2.threshold(x[0], threshold, 255, cv2.THRESH_TOZERO)[1]]
-
-
-endpoint_labels = Endpoint("labels", f_labels, [TypeArray], connectivity=4)
-endpoint_threshold = Endpoint("threshold", f_e_threshold, [TypeArray], mode="binary")
-
-
-print(Components.instantiate("Endpoint", "threshold"))
-
-
-# @registry.endpoints.add("LABELS")
-class EndpointLabels(Endpoint, component="Endpoint", name="Labels"):
-    def __init__(self, connectivity=4):
-        super().__init__(f"Labels", "LABELS", 1, ["labels"])
-        self.connectivity = connectivity
-
-    def call(self, x, args=None):
-        return {
-            "mask": x[0],
-            "labels": cv2.connectedComponents(
+@register(Endpoint, "to_labels")
+class ToLabels(Endpoint):
+    def call(self, x):
+        return [
+            x[0],
+            cv2.connectedComponents(
                 x[0], connectivity=self.connectivity, ltype=cv2.CV_16U
             )[1],
-        }
+        ]
 
-    def _to_json_kwargs(self) -> dict:
-        return {"connectivity": self.connectivity}
+    def __init__(self, connectivity=4):
+        super().__init__([TypeArray])
+        self.connectivity = connectivity
 
 
-@registry.endpoints.add("HCT")
+@register(Endpoint, "threshold")
+class EndpointThreshold(Endpoint):
+    def call(self, x):
+        if self.mode == "binary":
+            return [cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_BINARY)[1]]
+        return [cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_TOZERO)[1]]
+
+    def __init__(self, threshold, mode="binary"):
+        super().__init__([TypeArray])
+        self.threshold = threshold
+        self.mode = mode
+
+
+@register(Endpoint, "hough_circle")
 class EndpointHoughCircle(Endpoint):
     def __init__(self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120):
-        super().__init__("Hough Circle Transform", "HCT", 1, ["labels"])
+        super().__init__([TypeArray])
         self.min_dist = min_dist
         self.p1 = p1
         self.p2 = p2
@@ -76,7 +61,7 @@ class EndpointHoughCircle(Endpoint):
             "max_radius": self.max_radius,
         }
 
-    def call(self, x, args=None):
+    def call(self, x):
         mask = x[0]
         n = 0
         new_mask = image_new(mask.infos)
@@ -106,7 +91,7 @@ class EndpointHoughCircle(Endpoint):
         }
 
 
-@registry.endpoints.add("ELPS")
+@register(Endpoint, "fit_ellipse")
 class EndpointEllipse(Endpoint):
     def _to_json_kwargs(self) -> dict:
         return {
@@ -115,7 +100,7 @@ class EndpointEllipse(Endpoint):
         }
 
     def __init__(self, min_axis=10, max_axis=30):
-        super().__init__("Fit Ellipse", "ELPS", 1, [""])
+        super().__init__([TypeArray])
         self.min_axis = min_axis
         self.max_axis = max_axis
 
@@ -151,69 +136,29 @@ class EndpointEllipse(Endpoint):
         }
 
 
-@registry.endpoints.add("TRSH")
-class EndpointThreshold(Endpoint):
-    def __init__(self, threshold=1):
-        super().__init__(f"Threshold (t={threshold})", "TRSH", 1, ["mask"])
-        self.threshold = threshold
-
-    def call(self, x, args=None):
-        mask = x[0].copy()
-        mask[mask < self.threshold] = 0
-        return {"mask": mask}
-
-    def _to_json_kwargs(self) -> dict:
-        return {"threshold": self.threshold}
-
-
-def marker_controlled_watershed(x: List):
-    mask_raw = x[0]
-    markers_raw = x[1]
-    wt = WatershedSkimage(use_dt=False, markers_distance=21, markers_area=None)
-    mask, markers, labels = wt.apply(mask_raw, markers=markers_raw, mask=mask_raw > 0)
-    return {
-        "mask_raw": mask_raw,
-        "markers_raw": markers_raw,
-        "mask": mask,
-        "markers": markers,
-        "count": labels.max(),
-        "labels": labels,
-    }
-
-
-e_mcw = Endpoint(marker_controlled_watershed, [TypeArray, TypeArray])
-
-
-@registry.endpoints.add("WSHD")
+@register(Endpoint, "marker_controlled_watershed")
 class EndpointWatershed(Endpoint):
-    def __init__(self, use_dt=False, markers_distance=21, markers_area=None):
-        super().__init__("Marker-Based Watershed", "WSHD", 2, [])
-        self.wt = WatershedSkimage(
-            use_dt=use_dt, markers_distance=markers_distance, markers_area=markers_area
-        )
+    def __init__(self, backend="opencv"):
+        super().__init__([TypeArray, TypeArray])
+        self.backend = backend
 
-    def call(self, x, args=None):
-        mask = x[0]
-        markers = x[1]
-        mask, markers, labels = self.wt.apply(mask, markers=markers, mask=mask > 0)
-        return {
-            "mask_raw": x[0],
-            "markers_raw": x[1],
-            "mask": mask,
-            "markers": markers,
-            "count": len(np.unique(labels)) - 1,
-            "labels": labels,
-        }
-
-    def _to_json_kwargs(self) -> dict:
-        return {
-            "use_dt": self.wt.use_dt,
-            "markers_distance": self.wt.markers_distance,
-            "markers_area": self.wt.markers_area,
-        }
+    def call(self, x):
+        marker_labels = cv2.connectedComponents(x[1], connectivity=8)[1]
+        if self.backend == "skimage":
+            labels = watershed(
+                -x[0], markers=marker_labels, mask=x[0], watershed_line=True
+            )
+            return [labels]
+        elif self.backend == "opencv":
+            background = x[0] == 0
+            image = cv2.merge((x[0], x[0], x[0]))
+            cv2.watershed(image, marker_labels)
+            marker_labels[marker_labels == -1] = 0
+            marker_labels[background] = 0
+            return [marker_labels]
 
 
-@registry.endpoints.add("LMW")
+@register(Endpoint, "local-max_watershed")
 class LocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the distance transform of the mask
@@ -221,11 +166,11 @@ class LocalMaxWatershed(Endpoint):
     """
 
     def __init__(self, threshold=1, markers_distance=21):
-        super().__init__("Local-Max Watershed", "LMW", 1, [])
+        super().__init__([TypeArray])
         self.wt = WatershedSkimage(use_dt=True, markers_distance=markers_distance)
         self.threshold = threshold
 
-    def call(self, x, args=None):
+    def call(self, x):
         mask = threshold_tozero(x[0], self.threshold)
         mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
         return {
@@ -243,7 +188,7 @@ class LocalMaxWatershed(Endpoint):
         }
 
 
-@registry.endpoints.add("RLMW")
+@register(Endpoint, "raw_watershed")
 class RawLocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the mask
@@ -251,11 +196,11 @@ class RawLocalMaxWatershed(Endpoint):
     """
 
     def __init__(self, threshold=1, markers_distance=21):
-        super().__init__("Raw Local-Max Watershed", "RLMW", 1, [])
+        super().__init__([TypeArray])
         self.wt = WatershedSkimage(markers_distance=markers_distance)
         self.threshold = threshold
 
-    def call(self, x, args=None):
+    def call(self, x):
         mask = threshold_tozero(x[0], self.threshold)
         mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
         return {

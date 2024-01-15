@@ -6,7 +6,7 @@ from kartezio.utils.viewer import KartezioViewer
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("model", help="Path to the genome", type=str)
+    parser.add_argument("core", help="Path to the genome", type=str)
     parser.add_argument(
         "--inputs",
         help="List of the names of the inputs",

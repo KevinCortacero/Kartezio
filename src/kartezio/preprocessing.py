@@ -2,7 +2,8 @@ import cv2
 from numena.image.basics import image_split
 from numena.image.color import bgr2hed, bgr2hsv, rgb2bgr, rgb2hed
 
-from kartezio.model.components import Preprocessing
+from kartezio.core.components.base import register
+from kartezio.core.components.preprocessing import Preprocessing
 
 
 class TransformToHSV(Preprocessing):
@@ -45,28 +46,22 @@ class TransformToHED(Preprocessing):
         pass
 
 
-def select_channels(x, channels):
-    new_x = []
-    for i in range(len(x)):
-        one_item = [x[i][channel] for channel in channels]
-        new_x.append(one_item)
-    return new_x
-
-
-p_select_channels = Preprocessing(select_channels)
-
-
+@register(Preprocessing, "select_channels")
 class SelectChannels(Preprocessing):
-    def __init__(self, channels):
-        super().__init__(select_channels)
+    def __init__(self, channels, scalars=None):
+        super().__init__()
         self.channels = channels
+        self.scalars = scalars
 
-    def __call__(self, *args, **kwargs):
-        kwargs["channels"] = self.channels
-        return self._fn(*args, **kwargs)
-
-    def to_toml(self) -> dict:
-        pass
+    def call(self, x):
+        new_x = []
+        for i in range(len(x)):
+            one_item = [x[i][channel] for channel in self.channels]
+            if self.scalars:
+                new_x.append([one_item, self.scalars])
+            else:
+                new_x.append(one_item)
+        return new_x
 
 
 class Format3D(Preprocessing):
