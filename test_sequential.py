@@ -12,7 +12,8 @@ from kartezio.vision.primitives import library_opencv
 
 if __name__ == "__main__":
     path = r"dataset\1-cell_image_library\dataset"
-    n_iterations = 2000
+    n_children = 2
+    n_iterations = 500
     preprocessing = SelectChannels([1, 2])
     dataset = read_dataset(
         path,
@@ -27,9 +28,9 @@ if __name__ == "__main__":
         EndpointWatershed(backend="opencv"),
     )
     draft.set_mutation_rates(0.05, 0.1)
-    # draft.set_decay(LinearDecay((0.15 - 0.05) / n_iterations))
+    draft.set_decay(LinearDecay((0.05 - 0.01) / n_iterations))
     # draft.set_decay(LinearDecay(0))
-    model = draft.compile(n_iterations, 2, callbacks=[CallbackVerbose()])
+    model = draft.compile(n_iterations, n_children, callbacks=[CallbackVerbose()])
     train_x = preprocessing.call(dataset.train_x)
     test_x = preprocessing.call(dataset.test_x)
     elite, history = model.fit(train_x, dataset.train_y)

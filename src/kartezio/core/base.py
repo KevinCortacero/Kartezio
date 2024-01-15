@@ -170,8 +170,8 @@ class ModelDraft:
         if mutation:
             self.mutation = self.MutationSystem(mutation)
         else:
-            self.mutation = self.MutationSystem(MutationRandom(decoder, 0.15, 0.2))
-        self.mutation.set_behavior(AccumulateBehavior(decoder))
+            self.mutation = self.MutationSystem(MutationRandom(decoder, 0.05, 0.1))
+        # self.mutation.set_behavior(AccumulateBehavior(decoder))
         # self.mutation.set_decay(FactorDecay(0.9999))
         # self.mutation.set_decay(LinearDecay((0.15 - 0.05) / 200.0))
         # self.decay = LinearDecay(self.mutation, 0.2, 0.05, 200)
@@ -202,4 +202,5 @@ class ModelDraft:
         for callback in callbacks:
             callback.set_decoder(model.decoder)
             model.attach(callback)
+
         return model

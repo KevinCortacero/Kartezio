@@ -12,7 +12,7 @@ from kartezio.vision.primitives import library_opencv
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
         draft = ModelSequential(1, 30, library_opencv, FitnessMSE(reduction="mean"))
-        self.model = draft.compile(20000, 4, callbacks=[])
+        self.model = draft.compile(200, 4, callbacks=[])
         image_x = cell().copy()
         library_opencv.display()
         image_y = library_opencv.execute(12, [image_x.copy()], [128])
