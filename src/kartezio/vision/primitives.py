@@ -20,7 +20,7 @@ from kartezio.vision.kernel import (
     SHARPEN_KERNEL,
     correct_ksize,
     gabor_kernel,
-    kernel_from_parameters,
+    kernel_from_parameters, KERNEL_KIRSCH_COMPASS, KERNEL_EMBOSS, HITMISS_KERNEL,
 )
 
 
@@ -319,6 +319,15 @@ class BlackHat(Primitive):
         return cv2.morphologyEx(x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args))
 
 
+@register(Primitive, "hit_miss")
+class HitMiss(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.morphologyEx(x[0], cv2.MORPH_HITMISS, HITMISS_KERNEL)
+
+
 @register(Primitive, "fill")
 class Fill(Primitive):
     def __init__(self):
@@ -449,6 +458,67 @@ class InRange(Primitive):
         )
 
 
+@register(Primitive, "kirsch")
+class Kirsch(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x, args=None):
+        compass_gradients = [
+            cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=kernel)
+            for kernel in KERNEL_KIRSCH_COMPASS
+        ]
+        return cv2.convertScaleAbs(np.max(compass_gradients, axis=0))
+
+
+@register(Primitive, "embossing")
+class Embossing(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x, args=None):
+        return cv2.convertScaleAbs(cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=KERNEL_EMBOSS))
+
+
+@register(Primitive, "normalize")
+class Normalize(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x, args=None):
+        return cv2.normalize(x[0],  None, 0, 255, cv2.NORM_MINMAX)
+
+
+@register(Primitive, "denoize")
+class Denoize(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x, args=None):
+        return cv2.fastNlMeansDenoising(x[0], None, h=int(args[0]))
+
+
+@register(Primitive, "pyr_up")
+class PyrUpPrimitive(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x, args=None):
+        h, w = x[0].shape
+        scaled_twice = cv2.pyrUp(x[0])
+        return cv2.resize(scaled_twice, (w, h))
+
+@register(Primitive, "pyr_down")
+class PyrDown(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x, args=None):
+        h, w = x[0].shape
+        scaled_half = cv2.pyrDown(x[0])
+        return cv2.resize(scaled_half, (w, h))
+
+
 library_opencv = LibraryDefaultOpenCV()
 library_opencv.add_by_name("max")
 library_opencv.add_by_name("min")
@@ -480,6 +550,7 @@ library_opencv.add_by_name("close")
 library_opencv.add_by_name("gradient")
 library_opencv.add_by_name("top_hat")
 library_opencv.add_by_name("black_hat")
+library_opencv.add_by_name("hit_miss")
 library_opencv.add_by_name("fill")
 library_opencv.add_by_name("rm_small_objects")
 library_opencv.add_by_name("rm_small_holes")
@@ -488,7 +559,14 @@ library_opencv.add_by_name("to_zero_threshold")
 library_opencv.add_by_name("binarize")
 library_opencv.add_by_name("binary_in_range")
 library_opencv.add_by_name("in_range")
-library_opencv.add_by_name("fluo_tophat")
+# library_opencv.add_by_name("fluo_tophat")
+library_opencv.add_by_name("kirsch")
+# library_opencv.add_by_name("embossing")
+library_opencv.add_by_name("normalize")
+# library_opencv.add_by_name("denoize")
+library_opencv.add_by_name("pyr_up")
+library_opencv.add_by_name("pyr_down")
+
 
 """
 library_opencv.create_primitive("Min", 2, 0, f_min)

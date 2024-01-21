@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 from numena.image.basics import image_split
 from numena.image.color import bgr2hed, bgr2hsv, rgb2bgr, rgb2hed
 
@@ -58,6 +59,8 @@ class SelectChannels(Preprocessing):
         for i in range(len(x)):
             one_item = [x[i][channel] for channel in self.channels]
             if self.scalars:
+                # labels = [np.zeros_like(channel, dtype=np.int16) for channel in self.channels]
+                # new_x.append([one_item, self.scalars, labels])
                 new_x.append([one_item, self.scalars])
             else:
                 new_x.append(one_item)

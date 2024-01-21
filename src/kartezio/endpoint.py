@@ -11,7 +11,7 @@ from skimage.segmentation import watershed
 
 from kartezio.core.components.base import Components, register
 from kartezio.core.components.endpoint import Endpoint
-from kartezio.core.types import TypeArray
+from kartezio.core.types import TypeArray, TypeLabels
 
 
 @register(Endpoint, "to_labels")
@@ -158,6 +158,20 @@ class EndpointWatershed(Endpoint):
             return [marker_labels]
 
 
+@register(Endpoint, "raw_watershed")
+class EndpointRawWatershed(Endpoint):
+    def __init__(self):
+        super().__init__([TypeArray, TypeLabels])
+
+    def call(self, x):
+        background = x[0] == 0
+        image = cv2.merge((x[0], x[0], x[0]))
+        labels = cv2.watershed(image, x[1])
+        labels[labels == -1] = 0
+        labels[background] = 0
+        return [labels]
+
+
 @register(Endpoint, "local-max_watershed")
 class LocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
@@ -188,7 +202,7 @@ class LocalMaxWatershed(Endpoint):
         }
 
 
-@register(Endpoint, "raw_watershed")
+@register(Endpoint, "raw_watershed_old")
 class RawLocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the mask

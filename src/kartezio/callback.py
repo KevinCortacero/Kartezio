@@ -1,6 +1,7 @@
 from abc import ABC
 from enum import Enum
 
+import numpy as np
 from numena.io.drive import Directory
 from numena.time import eventid
 
@@ -96,3 +97,18 @@ class CallbackSave(Callback):
         if e_name == Event.END_STEP or e_name == Event.END_LOOP:
             self.save_population(e_content.get_individuals(), n)
             self.save_elite(e_content.individuals[0])
+
+
+class CallbackSaveFitness(Callback):
+    def __init__(self, filename):
+        super().__init__()
+        self.filename = filename
+        self.data = []
+
+    def on_generation_end(self, n, e_content):
+        fitness, time = e_content.get_best_fitness()
+        self.data.append([fitness, time])
+
+    def on_evolution_end(self, n, e_content):
+        np.save(self.filename, np.array(self.data))
+        print(f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}")
