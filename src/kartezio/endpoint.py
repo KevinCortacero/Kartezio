@@ -143,19 +143,20 @@ class EndpointWatershed(Endpoint):
         self.backend = backend
 
     def call(self, x):
-        marker_labels = cv2.connectedComponents(x[1], connectivity=8)[1]
+        marker_labels = cv2.connectedComponents(x[1], connectivity=8, ltype=cv2.CV_16U)[1]
+        marker_labels[marker_labels > 255] = 0
         if self.backend == "skimage":
             labels = watershed(
-                -x[0], markers=marker_labels, mask=x[0], watershed_line=True
+                -x[0], markers=marker_labels, mask=x[0] > 0, watershed_line=True
             )
             return [labels]
         elif self.backend == "opencv":
-            background = x[0] == 0
+            background = x[0] <= 0
             image = cv2.merge((x[0], x[0], x[0]))
-            cv2.watershed(image, marker_labels)
-            marker_labels[marker_labels == -1] = 0
-            marker_labels[background] = 0
-            return [marker_labels]
+            labels = cv2.watershed(image, marker_labels.astype(np.int32))
+            labels[labels <= -1] = 0
+            labels[background] = 0
+            return [labels]
 
 
 @register(Endpoint, "raw_watershed")

@@ -1,8 +1,5 @@
-import cv2
-import numpy as np
 
 from kartezio.callback import CallbackVerbose
-from kartezio.core.mutation.decay import FactorDecay, LinearDecay
 from kartezio.core.sequential import ModelSequential
 from kartezio.dataset import read_dataset
 from kartezio.endpoint import EndpointWatershed
@@ -11,24 +8,24 @@ from kartezio.preprocessing import SelectChannels
 from kartezio.vision.primitives import library_opencv
 
 if __name__ == "__main__":
-    path = r"dataset\1-cell_image_library\dataset"
-    n_children = 2
-    n_iterations = 500
+    path = r"/home/kevin.cortacero/Repositories/KartezioPaper/cell_image_library/dataset"
+    n_children = 5
+    n_iterations = 200
     preprocessing = SelectChannels([1, 2])
     dataset = read_dataset(
         path,
-        indices=[50, 5, 0, 82, 3, 86, 48, 32, 39, 8, 55, 10, 53, 49, 38]
-        # indices=range(4),
+        # indices=[50, 5, 0, 82, 3, 86, 48, 32, 39, 8, 55, 10, 53, 49, 38]
+        indices=range(2),
     )
     draft = ModelSequential(
         2,
-        30,
+        60,
         library_opencv,
         FitnessAP(reduction="mean"),
         EndpointWatershed(backend="opencv"),
     )
     draft.set_mutation_rates(0.05, 0.1)
-    draft.set_decay(LinearDecay((0.05 - 0.01) / n_iterations))
+    # draft.set_decay(LinearDecay((0.1 - 0.01) / n_iterations))
     # draft.set_decay(LinearDecay(0))
     model = draft.compile(n_iterations, n_children, callbacks=[CallbackVerbose()])
     train_x = preprocessing.call(dataset.train_x)

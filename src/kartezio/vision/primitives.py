@@ -15,12 +15,15 @@ from kartezio.core.components.primitive import Primitive
 from kartezio.core.types import TypeArray
 from kartezio.vision.common import convolution, gradient_magnitude
 from kartezio.vision.kernel import (
+    HITMISS_KERNEL,
+    KERNEL_EMBOSS,
+    KERNEL_KIRSCH_COMPASS,
     KERNEL_ROBERTS_X,
     KERNEL_ROBERTS_Y,
     SHARPEN_KERNEL,
     correct_ksize,
     gabor_kernel,
-    kernel_from_parameters, KERNEL_KIRSCH_COMPASS, KERNEL_EMBOSS, HITMISS_KERNEL,
+    kernel_from_parameters,
 )
 
 
@@ -218,6 +221,7 @@ class Canny(Primitive):
         super().__init__([TypeArray], TypeArray, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
+        # return cv2.Canny(x[0], args[0], args[1])
         return cv2.Canny(x[0], args[0], args[0] * 3)
 
 
@@ -477,7 +481,9 @@ class Embossing(Primitive):
         super().__init__([TypeArray], TypeArray, 0)
 
     def call(self, x, args=None):
-        return cv2.convertScaleAbs(cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=KERNEL_EMBOSS))
+        return cv2.convertScaleAbs(
+            cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=KERNEL_EMBOSS)
+        )
 
 
 @register(Primitive, "normalize")
@@ -486,7 +492,7 @@ class Normalize(Primitive):
         super().__init__([TypeArray], TypeArray, 0)
 
     def call(self, x, args=None):
-        return cv2.normalize(x[0],  None, 0, 255, cv2.NORM_MINMAX)
+        return cv2.normalize(x[0], None, 0, 255, cv2.NORM_MINMAX)
 
 
 @register(Primitive, "denoize")
@@ -507,6 +513,7 @@ class PyrUpPrimitive(Primitive):
         h, w = x[0].shape
         scaled_twice = cv2.pyrUp(x[0])
         return cv2.resize(scaled_twice, (w, h))
+
 
 @register(Primitive, "pyr_down")
 class PyrDown(Primitive):
@@ -559,7 +566,7 @@ library_opencv.add_by_name("to_zero_threshold")
 library_opencv.add_by_name("binarize")
 library_opencv.add_by_name("binary_in_range")
 library_opencv.add_by_name("in_range")
-# library_opencv.add_by_name("fluo_tophat")
+library_opencv.add_by_name("fluo_tophat")
 library_opencv.add_by_name("kirsch")
 # library_opencv.add_by_name("embossing")
 library_opencv.add_by_name("normalize")

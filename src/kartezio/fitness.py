@@ -60,8 +60,18 @@ def _intersection_over_union(masks_true, masks_pred):
 
 @register(Fitness, "average_precision")
 class FitnessAP(Fitness):
+    def __init__(self, reduction="mean", threshold=0.5, iou_factor=0.0):
+        super().__init__(reduction)
+        self.threshold = threshold
+        self.iou_factor = iou_factor
+        self.iou_fitness = FitnessIOU(reduction)
+
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
-        return 1.0 - self.average_precision(y_true, y_pred)
+        ap = 1.0 - self.average_precision(y_true, y_pred)
+        if self.iou_factor > 0.0:
+            iou = self.iou_fitness.evaluate(y_true, y_pred) * self.iou_factor
+            return ap + iou
+        return ap
 
     def mask_ious(self, masks_true, masks_pred):
         """return best-matched masks"""
@@ -97,9 +107,8 @@ class FitnessAP(Fitness):
         fn: array [len(masks_true) x len(threshold)]
             number of false negatives at thresholds
         """
-        threshold = 0.5
-        n_images = len(y_true)
 
+        n_images = len(y_true)
         ap = np.zeros(n_images, np.float32)
         tp = np.zeros(n_images, np.float32)
         fp = np.zeros(n_images, np.float32)
@@ -111,9 +120,9 @@ class FitnessAP(Fitness):
                 iou = _intersection_over_union(y_true[n][0], y_pred[n][0])[1:, 1:]
                 # tp[n, 0] = self._true_positive(iou, 0.5)
                 n_min = min(iou.shape[0], iou.shape[1])
-                costs = -(iou >= threshold).astype(float) - iou / (2 * n_min)
+                costs = -(iou >= self.threshold).astype(float) - iou / (2 * n_min)
                 true_ind, pred_ind = linear_sum_assignment(costs)
-                match_ok = iou[true_ind, pred_ind] >= threshold
+                match_ok = iou[true_ind, pred_ind] >= self.threshold
                 tp[n] = match_ok.sum()
             fp[n] = n_pred[n] - tp[n]
             fn[n] = n_true[n] - tp[n]
@@ -125,9 +134,6 @@ class FitnessAP(Fitness):
             else:
                 ap[n] = tp[n] / (tp[n] + fp[n] + fn[n])
         return ap
-
-    def __init__(self, reduction="mean", multiprocessing=False):
-        super().__init__(reduction, multiprocessing)
 
 
 @register(Fitness, "count")

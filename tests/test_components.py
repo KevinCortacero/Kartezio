@@ -1,6 +1,6 @@
 import unittest
 
-from kartezio.model.components.base import Component, register, Components
+from kartezio.model.components.base import Component, Components, register
 
 
 class Geometry(Component):

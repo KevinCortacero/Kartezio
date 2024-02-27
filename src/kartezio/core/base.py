@@ -54,11 +54,11 @@ class GeneticAlgorithm:
     def is_satisfying(self):
         return (
             self.current_generation >= self.n_generations
-            or self.population.fitness[0] == 0.0
+            or self.population.get_fitness()[0] == 0.0
         )
 
     def selection(self):
-        self.strategy.selection(self.population)
+        return self.strategy.selection(self.population)
 
     def reproduction(self):
         self.strategy.reproduction(self.population)
@@ -87,25 +87,28 @@ class ValidModel(ModelML, Observable):
         y,
     ):
         self.evaluation(x, y)
-        self.ga.selection()
-        self.send_event(Event.START_LOOP, force=True)
+        changed, state = self.ga.selection()
+        if changed:
+            self.send_event(Event.NEW_PARENT, state, force=True)
+        self.send_event(Event.START_LOOP, state, force=True)
         while not self.ga.is_satisfying():
-            self.send_event(Event.START_STEP)
+            self.send_event(Event.START_STEP, state)
             self.ga.reproduction()
             self.evaluation(x, y)
-            self.ga.selection()
+            changed, state = self.ga.selection()
+            if changed or self.ga.current_generation % 100 == 0:
+                self.send_event(Event.NEW_PARENT, state, force=True)
+            self.send_event(Event.END_STEP, state)
             self.ga.next()
-            self.send_event(Event.END_STEP)
-        self.send_event(Event.END_LOOP, force=True)
-        history = self.ga.population.history()
+        self.send_event(Event.END_LOOP, state, force=True)
         elite = self.ga.population.get_elite()
-        return elite, history
+        return elite, state
 
-    def send_event(self, name, force=False):
+    def send_event(self, name, state, force=False):
         event = {
             "n": self.ga.current_generation,
             "name": name,
-            "content": self.ga.population.history(),
+            "content": state,
             "force": force,
         }
         self.notify(event)
@@ -171,10 +174,7 @@ class ModelDraft:
             self.mutation = self.MutationSystem(mutation)
         else:
             self.mutation = self.MutationSystem(MutationRandom(decoder, 0.05, 0.1))
-        # self.mutation.set_behavior(AccumulateBehavior(decoder))
-        # self.mutation.set_decay(FactorDecay(0.9999))
-        # self.mutation.set_decay(LinearDecay((0.15 - 0.05) / 200.0))
-        # self.decay = LinearDecay(self.mutation, 0.2, 0.05, 200)
+        self.mutation.set_behavior(AccumulateBehavior(decoder))
         self.fitness = fitness
         self.updatable = []
 

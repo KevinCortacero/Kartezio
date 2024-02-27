@@ -11,6 +11,7 @@ from kartezio.utils.io import JsonSaver
 
 
 class Event(Enum):
+    NEW_PARENT = "on_new_parent"
     START_STEP = "on_step_start"
     END_STEP = "on_step_end"
     START_LOOP = "on_loop_start"
@@ -34,11 +35,16 @@ class Callback(Observer, ABC):
             self.on_generation_end(event["n"], event["content"])
         elif event["name"] == Event.END_LOOP:
             self.on_evolution_end(event["n"], event["content"])
+        elif event["name"] == Event.NEW_PARENT:
+            self.on_new_parent(event["n"], event["content"])
 
         """
         if event["n"] % self.frequency == 0 or event["force"]:
             self._notify(event["n"], event["name"], event["content"])
         """
+
+    def on_new_parent(self, iteration, event_content):
+        pass
 
     def on_evolution_start(self, iteration, event_content):
         pass
@@ -55,7 +61,7 @@ class Callback(Observer, ABC):
 
 class CallbackVerbose(Callback):
     def _compute_metrics(self, e_content):
-        fitness, time = e_content.get_best_fitness()
+        _, fitness, time = e_content.get_best_fitness()
         if time == 0:
             fps = "'inf' "
         else:
@@ -106,8 +112,8 @@ class CallbackSaveFitness(Callback):
         self.data = []
 
     def on_generation_end(self, n, e_content):
-        fitness, time = e_content.get_best_fitness()
-        self.data.append([fitness, time])
+        fitness = e_content.individuals[0].fitness["fitness"]
+        self.data.append(fitness)
 
     def on_evolution_end(self, n, e_content):
         np.save(self.filename, np.array(self.data))

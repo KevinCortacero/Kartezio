@@ -32,6 +32,7 @@ class Fitness(Component, ABC):
         super().__init__()
         self.reduction = reduction
         self.multiprocessing = multiprocessing
+        self.mode = "train"
 
     def batch(self, y_true, y_pred):
         population_fitness = np.zeros((len(y_pred), len(y_true)), dtype=np.float32)
