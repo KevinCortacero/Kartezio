@@ -1,5 +1,5 @@
-<h2 align="center"> Kartezio Framework </h2>
-<h5 align="center"> Evolutionary design of explainable algorithms for biomedical image segmentation </h5>
+<h2 align="center"> Evolutionary design of explainable algorithms for biomedical image segmentation </h5>
+<h5 align="center"> Kartezio Official Python Package </h2>
 
 ## Package Description
 Kartezio is a modular Cartesian Genetic Programming framework that generates fully transparent and easily interpretable image processing pipelines.
