@@ -2,18 +2,17 @@ name: Python package
 
 on:
   push:
-    branches: [ main, master, dev-* ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        python-version: [3.10]
+        python-version: [3.10]  # Correctly specifying Python 3.10
 
     steps:
     - uses: actions/checkout@v3
@@ -21,19 +20,31 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+
+    - name: Configure Poetry
+      run: |
+        echo "poetry config virtualenvs.create false" >> $GITHUB_ENV
+
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
         poetry install
-    - name: Run type checking with mypy
-      run: |
-        poetry run mypy my_package
-    - name: Check formatting with black
-      run: |
-        poetry run black --check .
-    - name: Lint with flake8
-      run: |
-        poetry run flake8 my_package
+
     - name: Test with pytest
       run: |
         poetry run pytest
+
+    - name: Check formatting with black
+      run: |
+        poetry run black --check .
+
+    - name: Run type checking with mypy
+      run: |
+        poetry run mypy my_package
+
+    - name: Lint with flake8
+      run: |
+        poetry run flake8 my_package
