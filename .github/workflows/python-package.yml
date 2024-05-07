@@ -2,7 +2,7 @@ name: Python package
 
 on:
   push:
-    branches: [ main, master, dev* ]
+    branches: [ main, master, dev-* ]
   pull_request:
     branches: [ main ]
 
@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.11.5]
+        python-version: [3.10]
 
     steps:
     - uses: actions/checkout@v3
