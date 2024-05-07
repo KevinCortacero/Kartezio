@@ -19,10 +19,6 @@ jobs:
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
 
-    - name: Configure Poetry
-      run: |
-        echo "poetry config virtualenvs.create false" >> $GITHUB_ENV
-
     - name: Install dependencies
       run: |
         poetry install
