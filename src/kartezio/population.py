@@ -55,7 +55,6 @@ class PopulationWithElite(Population):
             self._fitness["fitness"][0] = fitness[best_fitness_idx]
             self._fitness["time"][0] = times[best_fitness_idx]
 
-
         state = PopulationHistory(self.size)
 
         for i in range(len(self.individuals)):
@@ -76,4 +75,3 @@ class PopulationWithElite(Population):
             state.individuals[i].time = times[i]
         return state
     """
-

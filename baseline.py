@@ -1,4 +1,3 @@
-
 from kartezio.callback import CallbackVerbose
 from kartezio.core.sequential import ModelSequential
 from kartezio.dataset import read_dataset
@@ -8,7 +7,9 @@ from kartezio.preprocessing import SelectChannels
 from kartezio.vision.primitives import library_opencv
 
 if __name__ == "__main__":
-    path = r"/home/kevin.cortacero/Repositories/KartezioPaper/cell_image_library/dataset"
+    path = (
+        r"/home/kevin.cortacero/Repositories/KartezioPaper/cell_image_library/dataset"
+    )
     n_children = 5
     n_iterations = 200
     preprocessing = SelectChannels([1, 2])

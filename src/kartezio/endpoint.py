@@ -143,7 +143,9 @@ class EndpointWatershed(Endpoint):
         self.backend = backend
 
     def call(self, x):
-        marker_labels = cv2.connectedComponents(x[1], connectivity=8, ltype=cv2.CV_16U)[1]
+        marker_labels = cv2.connectedComponents(x[1], connectivity=8, ltype=cv2.CV_16U)[
+            1
+        ]
         marker_labels[marker_labels > 255] = 0
         if self.backend == "skimage":
             labels = watershed(

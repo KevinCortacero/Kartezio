@@ -59,9 +59,9 @@ class GenomeToPython:
                     ]
                     c_names = "[" + ", ".join(c_names) + "]"
                     list_of_nodes.append(node)
-                    map_of_nodes[
-                        node
-                    ] = f'{self.indent_2}node_{node} = self.call_node("{f_name}", {c_names}, {list(parameters)})\n'
+                    map_of_nodes[node] = (
+                        f'{self.indent_2}node_{node} = self.call_node("{f_name}", {c_names}, {list(parameters)})\n'
+                    )
             list_of_outputs.append(i)
             map_of_outputs[i] = f"{self.indent_2}y_{i} = node_{node}\n"
         for input_node in sorted(set(list_of_inputs)):
