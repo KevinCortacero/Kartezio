@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "kartezio"
+version = "0.1.0"
+description = ""
+authors = ["Kevin Cortacero <twarz.lab@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<3.12"
+opencv-python = "^4.9.0.80"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+black = "^24.4.2"
+mypy = "^1.10.0"
+flake8 = "^7.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
