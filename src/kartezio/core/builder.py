@@ -27,9 +27,16 @@ class ModelContext:
     parameters: InitVar[int] = 2
 
     def __post_init__(
-        self, inputs: int, nodes: int, outputs: int, arity: int, parameters: int
+        self,
+        inputs: int,
+        nodes: int,
+        outputs: int,
+        arity: int,
+        parameters: int,
     ):
-        self.genome_shape = GenotypeInfos(inputs, nodes, outputs, arity, parameters)
+        self.genome_shape = GenotypeInfos(
+            inputs, nodes, outputs, arity, parameters
+        )
         self.genome_factory = GenomeFactory(self.genome_shape.prototype)
 
     def set_bundle(self, bundle: Library):
@@ -55,7 +62,9 @@ class ModelContext:
                 self.genome_shape, self.library, series_stacker, self.endpoint
             )
         else:
-            parser = DecoderSequential(self.genome_shape, self.library, self.endpoint)
+            parser = DecoderSequential(
+                self.genome_shape, self.library, self.endpoint
+            )
         self.decoder = parser
         self.series_mode = series_mode
 
@@ -76,7 +85,9 @@ class ModelBuilder:
         series_mode=False,
         series_stacker=a_mean,
     ):
-        self.__context = ModelContext(inputs, nodes, outputs, arity, parameters)
+        self.__context = ModelContext(
+            inputs, nodes, outputs, arity, parameters
+        )
         self.__context.set_endpoint(endpoint)
         self.__context.set_bundle(bundle)
         self.__context.compile_parser(series_mode, series_stacker)
@@ -90,13 +101,21 @@ class ModelBuilder:
         self.__context.set_instance_method(instance_method)
 
     def set_mutation_method(
-        self, mutation, node_mutation_rate, output_mutation_rate, use_goldman=True
+        self,
+        mutation,
+        node_mutation_rate,
+        output_mutation_rate,
+        use_goldman=True,
     ):
         if type(mutation) == str:
             shape = self.__context.genome_shape
             n_nodes = self.__context.library.size
             mutation = registry.mutations.instantiate(
-                mutation, shape, n_nodes, node_mutation_rate, output_mutation_rate
+                mutation,
+                shape,
+                n_nodes,
+                node_mutation_rate,
+                output_mutation_rate,
             )
         if use_goldman:
             parser = self.__context.decoder
@@ -108,7 +127,9 @@ class ModelBuilder:
             fitness = registry.fitness.instantiate(fitness)
         self.__context.set_fitness(fitness)
 
-    def compile(self, generations, _lambda, callbacks=None, dataset_inputs=None):
+    def compile(
+        self, generations, _lambda, callbacks=None, dataset_inputs=None
+    ):
         factory = self.__context.genome_factory
         instance_method = self.__context.instance_method
         mutation_method = self.__context.mutation_method
@@ -122,7 +143,9 @@ class ModelBuilder:
 
         if self.__context.series_mode:
             if not isinstance(parser.stacker, Aggregation):
-                raise ValueError(f"Stacker {parser.stacker} has not been properly set.")
+                raise ValueError(
+                    f"Stacker {parser.stacker} has not been properly set."
+                )
 
             if parser.stacker.arity != parser.infos.outputs:
                 raise ValueError(
@@ -133,7 +156,9 @@ class ModelBuilder:
             raise ValueError(f"Fitness {fitness} has not been properly set.")
 
         if not isinstance(mutation_method, KartezioMutation):
-            raise ValueError(f"Mutation {mutation_method} has not been properly set.")
+            raise ValueError(
+                f"Mutation {mutation_method} has not been properly set."
+            )
 
         if dataset_inputs and (dataset_inputs != parser.infos.inputs):
             raise ValueError(

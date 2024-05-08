@@ -5,7 +5,9 @@ from kartezio.vision.primitives import library_opencv
 
 ENDPOINT_DEFAULT_INSTANCE_SEGMENTATION = e_mcw
 BUNDLE_DEFAULT_INSTANCE_SEGMENTATION = library_opencv
-STACKER_DEFAULT_INSTANCE_SEGMENTATION = None  # MeanKartezioStackerForWatershed()
+STACKER_DEFAULT_INSTANCE_SEGMENTATION = (
+    None  # MeanKartezioStackerForWatershed()
+)
 
 
 def create_instance_segmentation_model(
@@ -50,6 +52,9 @@ def create_instance_segmentation_model(
     )
     builder.set_fitness(fitness)
     model = builder.compile(
-        generations, _lambda, callbacks=callbacks, dataset_inputs=dataset_inputs
+        generations,
+        _lambda,
+        callbacks=callbacks,
+        dataset_inputs=dataset_inputs,
     )
     return model

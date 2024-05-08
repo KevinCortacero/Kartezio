@@ -52,7 +52,9 @@ def main():
     args = parser.parse_args()
 
     history_directory = Directory(args.history)
-    model = KartezioModel(f"{history_directory._path}/elite.json", fitness=FitnessAP())
+    model = KartezioModel(
+        f"{history_directory._path}/elite.json", fitness=FitnessAP()
+    )
     viewer = KartezioViewer(
         model._model.decoder.infos,
         model._model.decoder.library,
@@ -62,7 +64,9 @@ def main():
     cols_std = ["Parent", "Child", "Child"]
     cols_first = ["Child", "Child", "Child"]
 
-    idx_to_frame = list(range(1, 201)) + list(range(575, 626)) + list(range(1575, 1626))
+    idx_to_frame = (
+        list(range(1, 201)) + list(range(575, 626)) + list(range(1575, 1626))
+    )
     frame_name_count = 1
     for i in idx_to_frame:
         frame_name = f"frame_{frame_name_count:04}.png"
@@ -77,7 +81,9 @@ def main():
             )
             genome = BaseGenotype(sequence=sequence)
             model._model.genome = genome
-            p, f, t = model.eval(dataset, subset="train", reformat_x=reformat_x)
+            p, f, t = model.eval(
+                dataset, subset="train", reformat_x=reformat_x
+            )
             fitness.append(1.0 - f)
             model_graph = viewer.get_graph(
                 model._model.genome,

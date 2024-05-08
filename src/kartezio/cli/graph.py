@@ -22,7 +22,10 @@ def main():
         default=None,
     )
     parser.add_argument(
-        "--filename", help="Name of the file", type=str, default="model_graph.png"
+        "--filename",
+        help="Name of the file",
+        type=str,
+        default="model_graph.png",
     )
 
     args = parser.parse_args()

@@ -17,14 +17,20 @@ def save_prediction(
     cv2.imwrite(filename, rgb2bgr(mask_overlay))
 
 
-def plot_mask(original, mask, gt=None, color=[0, 255, 255], alpha=1.0, thickness=1):
+def plot_mask(
+    original, mask, gt=None, color=[0, 255, 255], alpha=1.0, thickness=1
+):
     mask_overlay = draw_overlay(
         original.copy(), mask, color=color, alpha=alpha, thickness=thickness
     )
     offset = 0
     if gt is not None:
         gt_overlay = draw_overlay(
-            original.copy(), gt, color=[0, 255, 0], alpha=alpha, thickness=thickness
+            original.copy(),
+            gt,
+            color=[0, 255, 0],
+            alpha=alpha,
+            thickness=thickness,
         )
         fig = Figure(title="Mask Prediction", size=(12, 3))
         fig.create_panels(rows=1, cols=4)
@@ -60,7 +66,9 @@ def plot_markers(original, markers, color=[255, 0, 0], use_centroid=True):
             cnt_y = cnt[:, 0, 1]
             centroid_x = cnt_x.mean()
             centroid_y = cnt_y.mean()
-            cv2.circle(overlayed, (int(centroid_x), int(centroid_y)), 10, color, -1)
+            cv2.circle(
+                overlayed, (int(centroid_x), int(centroid_y)), 10, color, -1
+            )
     else:
         overlayed = draw_overlay(overlayed, markers, color=color)
     overlay_panel = fig.get_panel(2)

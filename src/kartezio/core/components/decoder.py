@@ -15,7 +15,11 @@ from kartezio.core.population import Population
 
 class Decoder(Component, ABC):
     def __init__(
-        self, n_inputs: int, n_nodes: int, library: Library, endpoint: Endpoint = None
+        self,
+        n_inputs: int,
+        n_nodes: int,
+        library: Library,
+        endpoint: Endpoint = None,
     ):
         super().__init__()
         if endpoint is None:
@@ -48,7 +52,9 @@ class Decoder(Component, ABC):
         whole_time = np.mean(np.array(all_times))
         return all_y_pred, whole_time
 
-    def decode_population(self, population: Population, x: List[np.ndarray]) -> List:
+    def decode_population(
+        self, population: Population, x: List[np.ndarray]
+    ) -> List:
         y_pred = []
         for i in range(1, population.size):
             y, t = self.decode(population.individuals[i], x)
@@ -83,7 +89,9 @@ class Decoder(Component, ABC):
             active_connections = self.library.arity_of(function_index)
             next_connections = set(
                 self.adapter.read_active_connections(
-                    genotype, next_index - self.adapter.n_inputs, active_connections
+                    genotype,
+                    next_index - self.adapter.n_inputs,
+                    active_connections,
                 )
             )
             next_indices = next_indices.union(next_connections)
@@ -92,7 +100,9 @@ class Decoder(Component, ABC):
 
     def parse_to_graphs(self, genotype: Genotype):
         outputs = self.adapter.read_outputs(genotype)
-        graphs_list = [self._parse_one_graph(genotype, {output}) for output in outputs]
+        graphs_list = [
+            self._parse_one_graph(genotype, {output}) for output in outputs
+        ]
         return graphs_list
 
     def _x_to_output_map(self, genotype: Genotype, graphs_list: List, x: List):
@@ -104,7 +114,9 @@ class Decoder(Component, ABC):
                     continue
                 node_index = node - self.adapter.n_inputs
                 # fill the map with active nodes
-                function_index = self.adapter.read_function(genotype, node_index)
+                function_index = self.adapter.read_function(
+                    genotype, node_index
+                )
                 arity = self.library.arity_of(function_index)
                 connections = self.adapter.read_active_connections(
                     genotype, node_index, arity
@@ -131,7 +143,9 @@ class SequentialDecoder(Decoder):
         pass
 
     def to_iterative_decoder(self, aggregation):
-        return DecoderIterative(self.infos, self.library, aggregation, self.endpoint)
+        return DecoderIterative(
+            self.infos, self.library, aggregation, self.endpoint
+        )
 
     def to_toml(self) -> Dict:
         return {
@@ -217,7 +231,9 @@ class SequentialDecoder(Decoder):
                 function_index = self.read_function(genome, node_index)
                 function_name = self.library.name_of(function_index)
                 arity = self.library.arity_of(function_index)
-                connections = self.read_active_connections(genome, node_index, arity)
+                connections = self.read_active_connections(
+                    genome, node_index, arity
+                )
                 for c in connections:
                     if c < self.infos.inputs:
                         input_functions.append(function_name)
@@ -235,7 +251,9 @@ class SequentialDecoder(Decoder):
                 function_index = self.read_function(genome, node_index)
                 fname = self.library.name_of(function_index)
                 arity = self.library.arity_of(function_index)
-                connections = self.read_active_connections(genome, node_index, arity)
+                connections = self.read_active_connections(
+                    genome, node_index, arity
+                )
                 for k, c in enumerate(connections):
                     if c < self.infos.inputs:
                         in_name = f"IN-{c}"
@@ -248,7 +266,9 @@ class SequentialDecoder(Decoder):
                         """
 
                     else:
-                        f2_index = self.read_function(genome, c - self.infos.inputs)
+                        f2_index = self.read_function(
+                            genome, c - self.infos.inputs
+                        )
                         f2_name = self.library.name_of(f2_index)
                         """
                         if arity == 1:
@@ -259,7 +279,9 @@ class SequentialDecoder(Decoder):
                         pair = (f"{fname}", f2_name)
                     bigram_list.append(pair)
 
-            f_last = self.read_function(genome, outputs[i][1] - self.infos.inputs)
+            f_last = self.read_function(
+                genome, outputs[i][1] - self.infos.inputs
+            )
             fname = self.library.name_of(f_last)
             pair = (f"OUT-{i}", fname)
             bigram_list.append(pair)

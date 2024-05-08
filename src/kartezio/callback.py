@@ -117,4 +117,6 @@ class CallbackSaveFitness(Callback):
 
     def on_evolution_end(self, n, e_content):
         np.save(self.filename, np.array(self.data))
-        print(f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}")
+        print(
+            f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}"
+        )

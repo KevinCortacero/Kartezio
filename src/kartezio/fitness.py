@@ -117,10 +117,14 @@ class FitnessAP(Fitness):
         n_pred = np.array(list(map(np.max, y_pred)))
         for n in range(n_images):
             if n_pred[n]:
-                iou = _intersection_over_union(y_true[n][0], y_pred[n][0])[1:, 1:]
+                iou = _intersection_over_union(y_true[n][0], y_pred[n][0])[
+                    1:, 1:
+                ]
                 # tp[n, 0] = self._true_positive(iou, 0.5)
                 n_min = min(iou.shape[0], iou.shape[1])
-                costs = -(iou >= self.threshold).astype(float) - iou / (2 * n_min)
+                costs = -(iou >= self.threshold).astype(float) - iou / (
+                    2 * n_min
+                )
                 true_ind, pred_ind = linear_sum_assignment(costs)
                 match_ok = iou[true_ind, pred_ind] >= self.threshold
                 tp[n] = match_ok.sum()
@@ -170,7 +174,9 @@ class FitnessIOU(Fitness):
 @register(Fitness, "intersection_over_union_2")
 class FitnessIOU2(KartezioFitness):
     def __init__(self):
-        super().__init__("IOU2", default_metric=registry.metrics.instantiate("IOU2"))
+        super().__init__(
+            "IOU2", default_metric=registry.metrics.instantiate("IOU2")
+        )
 
 
 @register(Fitness, "mean_squared_error")
@@ -200,4 +206,6 @@ class FitnessMCC(KartezioFitness):
     """
 
     def __init__(self):
-        super().__init__("MCC", default_metric=registry.metrics.instantiate("MCC"))
+        super().__init__(
+            "MCC", default_metric=registry.metrics.instantiate("MCC")
+        )

@@ -35,7 +35,9 @@ class Fitness(Component, ABC):
         self.mode = "train"
 
     def batch(self, y_true, y_pred):
-        population_fitness = np.zeros((len(y_pred), len(y_true)), dtype=np.float32)
+        population_fitness = np.zeros(
+            (len(y_pred), len(y_true)), dtype=np.float32
+        )
         if self.multiprocessing:
             pass
         else:

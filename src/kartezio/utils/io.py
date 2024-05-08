@@ -20,14 +20,18 @@ def pack_one_directory(directory_path):
         generations.append(int(g.name.replace("G", "").split(".")[0]))
     generations.sort()
     for generation in generations:
-        current_generation = json_read(filepath=f"{directory_path}/G{generation}.json")
+        current_generation = json_read(
+            filepath=f"{directory_path}/G{generation}.json"
+        )
         generation_json = {
             "generation": generation,
             "population": current_generation["population"],
         }
         packed_history["generations"].append(generation_json)
     json_write(
-        filepath=f"{directory_path}/history.json", json_data=packed_history, indent=None
+        filepath=f"{directory_path}/history.json",
+        json_data=packed_history,
+        indent=None,
     )
     print(f"All generations packed in {directory_path}.")
     for generation in generations:

@@ -33,7 +33,9 @@ class ToLabels(Endpoint):
 class EndpointThreshold(Endpoint):
     def call(self, x):
         if self.mode == "binary":
-            return [cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_BINARY)[1]]
+            return [
+                cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_BINARY)[1]
+            ]
         return [cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_TOZERO)[1]]
 
     def __init__(self, threshold, mode="binary"):
@@ -44,7 +46,9 @@ class EndpointThreshold(Endpoint):
 
 @register(Endpoint, "hough_circle")
 class EndpointHoughCircle(Endpoint):
-    def __init__(self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120):
+    def __init__(
+        self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120
+    ):
         super().__init__([TypeArray])
         self.min_dist = min_dist
         self.p1 = p1
@@ -143,13 +147,16 @@ class EndpointWatershed(Endpoint):
         self.backend = backend
 
     def call(self, x):
-        marker_labels = cv2.connectedComponents(x[1], connectivity=8, ltype=cv2.CV_16U)[
-            1
-        ]
+        marker_labels = cv2.connectedComponents(
+            x[1], connectivity=8, ltype=cv2.CV_16U
+        )[1]
         marker_labels[marker_labels > 255] = 0
         if self.backend == "skimage":
             labels = watershed(
-                -x[0], markers=marker_labels, mask=x[0] > 0, watershed_line=True
+                -x[0],
+                markers=marker_labels,
+                mask=x[0] > 0,
+                watershed_line=True,
             )
             return [labels]
         elif self.backend == "opencv":
@@ -184,12 +191,16 @@ class LocalMaxWatershed(Endpoint):
 
     def __init__(self, threshold=1, markers_distance=21):
         super().__init__([TypeArray])
-        self.wt = WatershedSkimage(use_dt=True, markers_distance=markers_distance)
+        self.wt = WatershedSkimage(
+            use_dt=True, markers_distance=markers_distance
+        )
         self.threshold = threshold
 
     def call(self, x):
         mask = threshold_tozero(x[0], self.threshold)
-        mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
+        mask, markers, labels = self.wt.apply(
+            mask, markers=None, mask=mask > 0
+        )
         return {
             "mask_raw": x[0],
             "mask": mask,
@@ -219,7 +230,9 @@ class RawLocalMaxWatershed(Endpoint):
 
     def call(self, x):
         mask = threshold_tozero(x[0], self.threshold)
-        mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
+        mask, markers, labels = self.wt.apply(
+            mask, markers=None, mask=mask > 0
+        )
         return {
             "mask_raw": x[0],
             "mask": mask,

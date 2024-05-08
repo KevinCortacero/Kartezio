@@ -18,7 +18,9 @@ def load_model(filepath, series=False):
     return SingleModel(elite, parser)
 
 
-def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False):
+def show_graph(
+    model, inputs=None, outputs=None, only_active=True, jupyter=False
+):
     from kartezio.utils.viewer import KartezioViewer
 
     viewer = KartezioViewer(

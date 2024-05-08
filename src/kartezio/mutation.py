@@ -26,12 +26,16 @@ class MutationRandom(Mutation):
         for idx, mutation_parameter_index in np.transpose(sampling_indices):
             if mutation_parameter_index == 0:
                 self.mutate_function(genotype, idx)
-            elif mutation_parameter_index <= self.decoder.adapter.n_connections:
+            elif (
+                mutation_parameter_index <= self.decoder.adapter.n_connections
+            ):
                 connection_idx = mutation_parameter_index - 1
                 self.mutate_connections(genotype, idx, only_one=connection_idx)
             else:
                 parameter_idx = (
-                    mutation_parameter_index - self.decoder.adapter.n_connections - 1
+                    mutation_parameter_index
+                    - self.decoder.adapter.n_connections
+                    - 1
                 )
                 self.mutate_parameters(genotype, idx, only_one=parameter_idx)
 

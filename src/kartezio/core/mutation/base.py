@@ -36,15 +36,21 @@ class Mutation(Component, ABC):
     def mutate_function(self, genome: Genotype, idx: int):
         self.decoder.adapter.write_function(genome, idx, self.random_functions)
 
-    def mutate_connections(self, genome: Genotype, idx: int, only_one: int = None):
+    def mutate_connections(
+        self, genome: Genotype, idx: int, only_one: int = None
+    ):
         new_connections = self.random_connections(idx)
         if only_one is not None:
             new_value = new_connections[only_one]
-            new_connections = self.decoder.adapter.read_connections(genome, idx)
+            new_connections = self.decoder.adapter.read_connections(
+                genome, idx
+            )
             new_connections[only_one] = new_value
         self.decoder.adapter.write_connections(genome, idx, new_connections)
 
-    def mutate_parameters(self, genome: Genotype, idx: int, only_one: int = None):
+    def mutate_parameters(
+        self, genome: Genotype, idx: int, only_one: int = None
+    ):
         new_parameters = self.random_parameters
         if only_one is not None:
             old_parameters = self.decoder.adapter.read_parameters(genome, idx)
@@ -53,7 +59,9 @@ class Mutation(Component, ABC):
         self.decoder.adapter.write_parameters(genome, idx, new_parameters)
 
     def mutate_output(self, genome: Genotype, idx: int):
-        self.decoder.adapter.write_output_connection(genome, idx, self.random_output)
+        self.decoder.adapter.write_output_connection(
+            genome, idx, self.random_output
+        )
 
     @abstractmethod
     def mutate(self, genome: Genotype):

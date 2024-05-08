@@ -10,8 +10,15 @@ from kartezio.core.components.library import Library
 from kartezio.core.evolution import Fitness
 from kartezio.core.helpers import Observable
 from kartezio.core.mutation.base import Mutation
-from kartezio.core.mutation.behavior import AccumulateBehavior, MutationBehavior
-from kartezio.core.mutation.decay import FactorDecay, LinearDecay, MutationDecay
+from kartezio.core.mutation.behavior import (
+    AccumulateBehavior,
+    MutationBehavior,
+)
+from kartezio.core.mutation.decay import (
+    FactorDecay,
+    LinearDecay,
+    MutationDecay,
+)
 from kartezio.export import GenomeToPython
 from kartezio.mutation import MutationRandom
 from kartezio.strategy import OnePlusLambda
@@ -122,7 +129,9 @@ class ValidModel(ModelML, Observable):
 
     def print_python_class(self, class_name):
         python_writer = GenomeToPython(self.decoder)
-        python_writer.to_python_class(class_name, self.ga.population.get_elite())
+        python_writer.to_python_class(
+            class_name, self.ga.population.get_elite()
+        )
 
     def display_elite(self):
         elite = self.ga.population.get_elite()
@@ -163,7 +172,9 @@ class ModelDraft:
             else:
                 return self.mutation.mutate(genotype)
 
-    def __init__(self, decoder: Decoder, fitness: Fitness, init=None, mutation=None):
+    def __init__(
+        self, decoder: Decoder, fitness: Fitness, init=None, mutation=None
+    ):
         super().__init__()
         self.decoder = decoder
         if init:
@@ -173,7 +184,9 @@ class ModelDraft:
         if mutation:
             self.mutation = self.MutationSystem(mutation)
         else:
-            self.mutation = self.MutationSystem(MutationRandom(decoder, 0.05, 0.1))
+            self.mutation = self.MutationSystem(
+                MutationRandom(decoder, 0.05, 0.1)
+            )
         self.mutation.set_behavior(AccumulateBehavior(decoder))
         self.fitness = fitness
         self.updatable = []
@@ -190,7 +203,9 @@ class ModelDraft:
     def set_mutation_rates(self, node_rate, out_rate):
         self.mutation.set_mutation_rates(node_rate, out_rate)
 
-    def compile(self, n_generations: int, n_children: int, callbacks: List[Callback]):
+    def compile(
+        self, n_generations: int, n_children: int, callbacks: List[Callback]
+    ):
         self.mutation.compile()
         if self.mutation.decay:
             self.updatable.append(self.mutation.decay)

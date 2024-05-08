@@ -8,7 +8,9 @@ from kartezio.vision.primitives import library_opencv
 
 class TestModel(unittest.TestCase):
     def setUp(self) -> None:
-        draft = ModelSequential(1, 5, library_opencv, FitnessIOU(reduction="mean"))
+        draft = ModelSequential(
+            1, 5, library_opencv, FitnessIOU(reduction="mean")
+        )
         Components.display()
         self.model = draft.compile(200, 4, callbacks=[])
 

@@ -37,7 +37,9 @@ def main():
     args = parser.parse_args()
 
     history_directory = Directory(args.history)
-    model = KartezioModel(f"{history_directory._path}/elite.json", fitness=FitnessAP())
+    model = KartezioModel(
+        f"{history_directory._path}/elite.json", fitness=FitnessAP()
+    )
     viewer = KartezioViewer(
         model._model.decoder.infos,
         model._model.decoder.library,

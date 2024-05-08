@@ -11,7 +11,9 @@ from kartezio.core.types import TypeArray
 
 
 def register_stackers():
-    print(f"[Kartezio - INFO] -  {len(registry.stackers.list())} stackers registered.")
+    print(
+        f"[Kartezio - INFO] -  {len(registry.stackers.list())} stackers registered."
+    )
 
 
 def a_f_mean(x: List, args):
@@ -26,7 +28,9 @@ class StackerMean(Aggregation):
     def _to_json_kwargs(self) -> dict:
         return {}
 
-    def __init__(self, name="mean_stacker", symbol="MEAN", arity=1, threshold=4):
+    def __init__(
+        self, name="mean_stacker", symbol="MEAN", arity=1, threshold=4
+    ):
         super().__init__(name, symbol, arity)
         self.threshold = threshold
 
@@ -43,7 +47,9 @@ class StackerSum(Aggregation):
     def _to_json_kwargs(self) -> dict:
         return {}
 
-    def __init__(self, name="Sum KartezioStacker", symbol="SUM", arity=1, threshold=4):
+    def __init__(
+        self, name="Sum KartezioStacker", symbol="SUM", arity=1, threshold=4
+    ):
         super().__init__(name, symbol, arity)
         self.threshold = threshold
 
@@ -99,10 +105,15 @@ class StackerMax(Aggregation):
 @registry.stackers.add("MEANW")
 class MeanKartezioStackerForWatershed(Aggregation):
     def _to_json_kwargs(self) -> dict:
-        return {"half_kernel_size": self.half_kernel_size, "threshold": self.threshold}
+        return {
+            "half_kernel_size": self.half_kernel_size,
+            "threshold": self.threshold,
+        }
 
     def __init__(self, half_kernel_size=1, threshold=4):
-        super().__init__(name="mean_stacker_watershed", symbol="MEANW", arity=2)
+        super().__init__(
+            name="mean_stacker_watershed", symbol="MEANW", arity=2
+        )
         self.half_kernel_size = half_kernel_size
         self.threshold = threshold
 

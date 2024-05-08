@@ -24,7 +24,9 @@ class AdapterMono(Adapter):
     def new(self):
         return self.prototype.clone()
 
-    def __init__(self, n_inputs, n_nodes, n_outputs, n_connections, n_parameters):
+    def __init__(
+        self, n_inputs, n_nodes, n_outputs, n_connections, n_parameters
+    ):
         super().__init__()
         self.n_inputs = n_inputs
         self.n_nodes = n_nodes

@@ -31,9 +31,13 @@ class MyTestCase(unittest.TestCase):
         library.add_primitive(PrimitiveTest())
         self.assertEqual(library.size, 1)
         library.display()
-        self.assertEqual(library.execute(0, [np.array([21]), np.array([21])], []), 42)
+        self.assertEqual(
+            library.execute(0, [np.array([21]), np.array([21])], []), 42
+        )
         library_2 = Library.__from_dict__(library.__to_dict__())
-        self.assertEqual(library_2.execute(0, [np.array([12]), np.array([30])], []), 42)
+        self.assertEqual(
+            library_2.execute(0, [np.array([12]), np.array([30])], []), 42
+        )
 
 
 if __name__ == "__main__":

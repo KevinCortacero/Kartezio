@@ -35,4 +35,6 @@ class Population(Component, ABC):
 
     def get_score(self):
         score_list = list(zip(self.get_fitness(), self.get_time()))
-        return np.array(score_list, dtype=[("fitness", float), ("time", float)])
+        return np.array(
+            score_list, dtype=[("fitness", float), ("time", float)]
+        )

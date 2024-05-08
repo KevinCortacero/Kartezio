@@ -50,6 +50,9 @@ def create_classification_model(
     )
     builder.set_fitness(fitness)
     model = builder.compile(
-        generations, _lambda, callbacks=callbacks, dataset_inputs=dataset_inputs
+        generations,
+        _lambda,
+        callbacks=callbacks,
+        dataset_inputs=dataset_inputs,
     )
     return model

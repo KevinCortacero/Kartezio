@@ -43,7 +43,9 @@ class Components:
     @staticmethod
     def add(group_name: str, component_name: str, component: type):
         assert isinstance(component, type), f"{component} is not a Class!"
-        assert issubclass(component, Component), f"{component} is not a Component!"
+        assert issubclass(
+            component, Component
+        ), f"{component} is not a Component!"
 
         if group_name not in Components._registry.keys():
             Components._registry[group_name] = {}
@@ -52,7 +54,9 @@ class Components:
             Components._registry[group_name][component_name] = component
 
         Components._registry[group_name][component_name] = component
-        Components._reverse[component.__name__] = f"{group_name}/{component_name}"
+        Components._reverse[component.__name__] = (
+            f"{group_name}/{component_name}"
+        )
 
     @staticmethod
     def instantiate(group_name: str, component_name: str, *args, **kwargs):
@@ -60,7 +64,9 @@ class Components:
             raise KeyError(
                 f"Component '{group_name}', called '{component_name}' not found in the registry!"
             )
-        component = Components._registry[group_name][component_name](*args, **kwargs)
+        component = Components._registry[group_name][component_name](
+            *args, **kwargs
+        )
         return component
 
     @staticmethod

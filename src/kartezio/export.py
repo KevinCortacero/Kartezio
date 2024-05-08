@@ -40,21 +40,31 @@ class GenomeToPython:
                     continue
                 if node < self.decoder.adapter.n_inputs:
                     list_of_inputs.append(node)
-                    map_of_input[node] = f"{self.indent_2}x_{node} = X[{node}]\n"
+                    map_of_input[node] = (
+                        f"{self.indent_2}x_{node} = X[{node}]\n"
+                    )
                 elif node < self.decoder.adapter.out_idx:
                     function_index = self.decoder.adapter.read_function(
                         genome, node - self.decoder.adapter.n_inputs
                     )
-                    active_connections = self.decoder.library.arity_of(function_index)
+                    active_connections = self.decoder.library.arity_of(
+                        function_index
+                    )
                     connections = self.decoder.adapter.read_active_connections(
-                        genome, node - self.decoder.adapter.n_inputs, active_connections
+                        genome,
+                        node - self.decoder.adapter.n_inputs,
+                        active_connections,
                     )
                     parameters = self.decoder.adapter.read_parameters(
                         genome, node - self.decoder.adapter.n_inputs
                     )
                     f_name = self.decoder.library.name_of(function_index)
                     c_names = [
-                        f"x_{c}" if c < self.decoder.adapter.n_inputs else f"node_{c}"
+                        (
+                            f"x_{c}"
+                            if c < self.decoder.adapter.n_inputs
+                            else f"node_{c}"
+                        )
                         for c in connections
                     ]
                     c_names = "[" + ", ".join(c_names) + "]"

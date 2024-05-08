@@ -45,7 +45,9 @@ class Dataset:
         def xyv(self):
             return self.x, self.y, self.v
 
-    def __init__(self, train_set, test_set, name, label_name, inputs, indices=None):
+    def __init__(
+        self, train_set, test_set, name, label_name, inputs, indices=None
+    ):
         self.train_set = train_set
         self.test_set = test_set
         self.name = name
@@ -169,7 +171,9 @@ class ImageMaskReader(DataReader):
             return DataItem([mask], shape, 0)
         image = imread_grayscale(filepath)
         _, labels = cv2.connectedComponents(image)
-        return DataItem([labels], image.shape[:2], len(np.unique(labels)) - 1, image)
+        return DataItem(
+            [labels], image.shape[:2], len(np.unique(labels)) - 1, image
+        )
 
 
 @register(DataReader, "image_hsv")
@@ -177,7 +181,9 @@ class ImageHSVReader(DataReader):
     def _read(self, filepath, shape=None):
         image_bgr = imread_color(filepath)
         image_hsv = bgr2hsv(image_bgr)
-        return DataItem(image_split(image_hsv), image_bgr.shape[:2], None, image_bgr)
+        return DataItem(
+            image_split(image_hsv), image_bgr.shape[:2], None, image_bgr
+        )
 
 
 @register(DataReader, "image_hed")
@@ -185,7 +191,9 @@ class ImageHEDReader(DataReader):
     def _read(self, filepath, shape=None):
         image_bgr = imread_color(filepath)
         image_hed = bgr2hed(image_bgr)
-        return DataItem(image_split(image_hed), image_bgr.shape[:2], None, image_bgr)
+        return DataItem(
+            image_split(image_hed), image_bgr.shape[:2], None, image_bgr
+        )
 
 
 @register(DataReader, "image_labels")
@@ -291,8 +299,12 @@ class DatasetReader(Directory):
         self.scale = meta["scale"]
         self.mode = meta["mode"]
         self.label_name = meta["label_name"]
-        input_reader_name = f"{meta['input']['type']}_{meta['input']['format']}"
-        label_reader_name = f"{meta['label']['type']}_{meta['label']['format']}"
+        input_reader_name = (
+            f"{meta['input']['type']}_{meta['input']['format']}"
+        )
+        label_reader_name = (
+            f"{meta['label']['type']}_{meta['label']['format']}"
+        )
         self.input_reader = Components.instantiate(
             "DataReader", input_reader_name, directory=self, scale=self.scale
         )
@@ -301,7 +313,10 @@ class DatasetReader(Directory):
         )
 
     def read_dataset(
-        self, dataset_filename=CSV_DATASET, meta_filename=JSON_META, indices=None
+        self,
+        dataset_filename=CSV_DATASET,
+        meta_filename=JSON_META,
+        indices=None,
     ):
         self._read_meta(meta_filename)
         if self.mode == "dataframe":
@@ -325,24 +340,34 @@ class DatasetReader(Directory):
                 f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
             )
             """
-            print(f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}")
+            print(
+                f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
+            )
 
         if self.preview:
             for i in range(len(training.x)):
                 visual = training.v[i]
                 label = training.y[i][0]
                 preview = draw_overlay(
-                    visual, label.astype(np.uint8), color=[224, 255, 255], alpha=0.5
+                    visual,
+                    label.astype(np.uint8),
+                    color=[224, 255, 255],
+                    alpha=0.5,
                 )
                 self.preview_dir.write(f"train_{i}.png", preview)
             for i in range(len(testing.x)):
                 visual = testing.v[i]
                 label = testing.y[i][0]
                 preview = draw_overlay(
-                    visual, label.astype(np.uint8), color=[224, 255, 255], alpha=0.5
+                    visual,
+                    label.astype(np.uint8),
+                    color=[224, 255, 255],
+                    alpha=0.5,
                 )
                 self.preview_dir.write(f"test_{i}.png", preview)
-        return Dataset(training, testing, self.name, self.label_name, inputs, indices)
+        return Dataset(
+            training, testing, self.name, self.label_name, inputs, indices
+        )
 
     def _read_auto(self, dataset):
         pass
@@ -380,7 +405,9 @@ def read_dataset(
     preview=False,
     reader=None,
 ):
-    dataset_reader = DatasetReader(dataset_path, counting=counting, preview=preview)
+    dataset_reader = DatasetReader(
+        dataset_path, counting=counting, preview=preview
+    )
     if reader is not None:
         dataset_reader.add_reader(reader)
     return dataset_reader.read_dataset(
