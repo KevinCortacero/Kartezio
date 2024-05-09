@@ -1,10 +1,15 @@
 import cv2
 import numpy as np
-from numena.image.basics import image_split
-from numena.image.color import bgr2hed, bgr2hsv, rgb2bgr, rgb2hed
 
 from kartezio.core.components.base import register
 from kartezio.core.components.preprocessing import Preprocessing
+from kartezio.vision.common import (
+    bgr2hed,
+    bgr2hsv,
+    image_split,
+    rgb2bgr,
+    rgb2hed,
+)
 
 
 class TransformToHSV(Preprocessing):

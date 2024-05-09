@@ -1,13 +1,29 @@
 from abc import ABC
+from datetime import datetime
 from enum import Enum
+from uuid import uuid4
 
 import numpy as np
-from numena.io.drive import Directory
-from numena.time import eventid
 
 from kartezio.core.helpers import Observer
+from kartezio.drive.directory import Directory
 from kartezio.enums import JSON_ELITE
 from kartezio.utils.io import JsonSaver
+
+
+def timestamp(ms=True):
+    dt = datetime.now()
+    if ms:
+        return dt.microsecond
+    return dt
+
+
+def uuid():
+    return str(uuid4())
+
+
+def eventid():
+    return f"{timestamp()}-{uuid()}".replace(" ", "-")
 
 
 class Event(Enum):

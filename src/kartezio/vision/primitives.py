@@ -2,18 +2,20 @@ from typing import List
 
 import cv2
 import numpy as np
-import toml
-from numena.image.morphology import morph_fill
-from numena.image.threshold import threshold_binary, threshold_tozero
 from scipy.stats import kurtosis, skew
 from skimage.morphology import remove_small_holes, remove_small_objects
 
-from kartezio.core.components.base import Components, register
-from kartezio.core.components.decoder import SequentialDecoder
+from kartezio.core.components.base import register
 from kartezio.core.components.library import Library
 from kartezio.core.components.primitive import Primitive
 from kartezio.core.types import TypeArray
-from kartezio.vision.common import convolution, gradient_magnitude
+from kartezio.vision.common import (
+    convolution,
+    gradient_magnitude,
+    morph_fill,
+    threshold_binary,
+    threshold_tozero,
+)
 from kartezio.vision.kernel import (
     HITMISS_KERNEL,
     KERNEL_EMBOSS,
@@ -639,16 +641,3 @@ library_opencv.create_primitive("In Range", 1, 2, f_inrange)
 
 def no_endpoint(x):
     return x
-
-
-if __name__ == "__main__":
-    library = library_opencv
-    library.display()
-    decoder = SequentialDecoder(2, 30, library)
-    with open("decoder.toml", "w") as toml_file:
-        toml.dump(decoder.to_toml(), toml_file)
-    print(toml.dumps(decoder.to_toml()))
-
-    with open("decoder.toml", "r") as toml_file:
-        toml_data = toml.load(toml_file)
-        print(toml_data)

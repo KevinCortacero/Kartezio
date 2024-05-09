@@ -9,7 +9,7 @@ from numena.io.image import imread_color
 from numena.io.json import json_read
 
 from kartezio.core.components import BaseGenotype
-from kartezio.dataset import read_dataset
+from kartezio.data import read_dataset
 from kartezio.fitness import FitnessAP
 from kartezio.inference import KartezioModel
 from kartezio.preprocessing import SelectChannels

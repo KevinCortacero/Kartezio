@@ -1,6 +1,6 @@
 import argparse
 
-from kartezio.dataset import DatasetMeta
+from kartezio.data import DatasetMeta
 
 
 def main():

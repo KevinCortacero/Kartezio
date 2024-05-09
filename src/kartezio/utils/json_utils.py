@@ -1,8 +1,8 @@
 import ast
+import json
 from typing import List
 
 import numpy as np
-import simplejson
 
 from kartezio.core.components.adapter import Adapter
 from kartezio.population import IndividualHistory
@@ -27,7 +27,7 @@ def to_genome(json_data):
 
 def from_individual(individual: IndividualHistory):
     return {
-        "sequence": simplejson.dumps(individual.sequence.tolist()),
+        "sequence": json.dumps(individual.sequence.tolist()),
         "fitness": individual.fitness,
     }
 

@@ -2,16 +2,17 @@ from typing import List
 
 import cv2
 import numpy as np
-from numena.enums import IMAGE_UINT8_COLOR_1C
-from numena.image.basics import image_new
-from numena.image.contour import contours_find
-from numena.image.morphology import WatershedSkimage
-from numena.image.threshold import threshold_tozero
 from skimage.segmentation import watershed
 
-from kartezio.core.components.base import Components, register
+from kartezio.core.components.base import register
 from kartezio.core.components.endpoint import Endpoint
 from kartezio.core.types import TypeArray, TypeLabels
+from kartezio.vision.common import (
+    WatershedSkimage,
+    contours_find,
+    image_new,
+    threshold_tozero,
+)
 
 
 @register(Endpoint, "to_labels")
@@ -131,7 +132,7 @@ class EndpointEllipse(Endpoint):
                     labels.append((center, (MA, ma), angle))
                     n += 1
         new_mask = new_labels.copy().astype(np.uint8)
-        new_mask[new_mask > 0] = IMAGE_UINT8_COLOR_1C
+        new_mask[new_mask > 0] = 255
         return {
             "mask_raw": mask,
             "mask": new_mask,

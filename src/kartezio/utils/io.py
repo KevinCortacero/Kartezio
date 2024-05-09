@@ -1,10 +1,8 @@
 import os
 
-from numena.io.drive import Directory
-from numena.io.json import json_read, json_write
-
-import kartezio.utils.json_utils as json
 from kartezio.core.components.decoder import Decoder, SequentialDecoder
+from kartezio.drive.directory import Directory
+from kartezio.serialization.json import json_read, json_write
 
 
 def pack_one_directory(directory_path):
