@@ -1,6 +1,6 @@
 import unittest
 
-from kartezio.model.components.base import Component, Components, register
+from kartezio.core.components.base import Component, Components, register
 
 
 class Geometry(Component):
@@ -28,11 +28,11 @@ class AnotherSquare(Geometry):
 
 class TestComponents(unittest.TestCase):
     def test_contains(self):
-        self.assertEqual(Components.contains(Geometry, "circle"), True)
-        self.assertEqual(Components.contains(Geometry, "triangle"), False)
-        self.assertEqual(Components.contains(Line, "line"), False)
+        self.assertTrue(Components.contains(Geometry, "circle"))
+        self.assertFalse(Components.contains(Geometry, "triangle"))
+        self.assertFalse(Components.contains(Line, "line"))
         register(Line, "line")(Line)
-        self.assertEqual(Components.contains(Line, "line"), False)
+        self.assertTrue(Components.contains(Line, "line"))
 
 
 if __name__ == "__main__":

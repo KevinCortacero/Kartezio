@@ -1,11 +1,11 @@
 import unittest
 
-from numena.image.color import gray2rgb
 from skimage.data import cell
 
 from kartezio.core.sequential import ModelSequential
-from kartezio.dataset import DataItem
+from kartezio.data.dataset import DataItem
 from kartezio.fitness import FitnessIOU, FitnessMSE
+from kartezio.vision.common import rgb2gray
 from kartezio.vision.primitives import library_opencv
 
 
