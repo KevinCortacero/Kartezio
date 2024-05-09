@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.4.2  # Use the specific version that works for your project
+    hooks:
+      - id: black
+        language_version: python3.10  # Ensure this matches your project's Python version
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2  # Use the specific version that works for your project
+    hooks:
+      - id: isort
+        args: ['--profile', 'black']
+        language_version: python3.10  # Ensure this matches your project's Python version
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0  # Use the specific version that works for your project
+    hooks:
+      - id: flake8
+        additional_dependencies: ['flake8-bugbear', 'flake8-docstrings']  # Optional: Add plugins as needed
+        language_version: python3.10  # Ensure this matches your project's Python version
