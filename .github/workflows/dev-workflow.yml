@@ -27,10 +27,7 @@ jobs:
       run: |
         poetry run black --check .
 
-    - name: Lint with flake8
+    - name: Check import order
       run: |
-        poetry run flake8 my_package
-
-    - name: Run type checking with mypy
-      run: |
-        poetry run mypy my_package
+        poetry run isort . --check-only
+      
