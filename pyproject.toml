@@ -9,17 +9,17 @@ readme = "README.md"
 packages = [{include = "kartezio", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = ">=3.9"
 opencv-python = "^4.9.0.80"
 pandas = "^2.2.2"
 czifile = "^2019.7.2"
 tabulate = "^0.9.0"
 numpy = "^1.26.4"
-scikit-image = "^0.23.2"
 numba = "^0.59.1"
 tomli = "^2.0.1"
 tomli-w = "^1.0.0"
 roifile = "^2024.3.20"
+scikit-image = ">=0.22.0"
 
 
 [tool.poetry.group.dev.dependencies]
