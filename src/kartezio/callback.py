@@ -128,7 +128,7 @@ class CallbackSaveFitness(Callback):
         self.data = []
 
     def on_generation_end(self, n, e_content):
-        fitness = e_content.individuals[0].fitness["fitness"]
+        fitness = e_content.individuals[0].fitness
         self.data.append(fitness)
 
     def on_evolution_end(self, n, e_content):
