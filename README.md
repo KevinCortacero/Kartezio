@@ -1,3 +1,5 @@
+[![Discord Channel](https://dcbadge.limes.pink/api/server/uwFwHyRxub)](https://discord.gg/uwFwHyRxub)
+
 <h2 align="center"> Evolutionary design of explainable algorithms for biomedical image segmentation </h5>
 <h5 align="center"> Kartezio Official Python Package </h2>
 
