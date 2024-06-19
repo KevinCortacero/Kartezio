@@ -32,26 +32,6 @@ class ImageMaskReader(DataReader):
         )
 
 
-@register(DataReader, "image_hsv")
-class ImageHSVReader(DataReader):
-    def _read(self, filepath, shape=None):
-        image_bgr = imread_rgb(filepath)
-        image_hsv = bgr2hsv(image_bgr)
-        return DataItem(
-            image_split(image_hsv), image_bgr.shape[:2], None, image_bgr
-        )
-
-
-@register(DataReader, "image_hed")
-class ImageHEDReader(DataReader):
-    def _read(self, filepath, shape=None):
-        image_bgr = imread_rgb(filepath)
-        image_hed = bgr2hed(image_bgr)
-        return DataItem(
-            image_split(image_hed), image_bgr.shape[:2], None, image_bgr
-        )
-
-
 @register(DataReader, "image_labels")
 class ImageLabels(DataReader):
     def _read(self, filepath, shape=None):
@@ -61,25 +41,13 @@ class ImageLabels(DataReader):
         return DataItem([image], image.shape[:2], image.max(), visual=image)
 
 
-@register(DataReader, "image_rgb")
+@register(DataReader, "image_color")
 class ImageRGBReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_rgb(filepath)
         return DataItem(
             image_split(image), image.shape[:2], None, visual=image
         )
-
-
-@register(DataReader, "csv_ellipse")
-class CsvEllipseReader(DataReader):
-    def _read(self, filepath, shape=None):
-        dataframe = pd.read_csv(filepath)
-        ellipses = read_ellipses_from_csv(
-            dataframe, scale=self.scale, ellipse_scale=1.0
-        )
-        label_mask = image_new(shape)
-        fill_ellipses_as_labels(label_mask, ellipses)
-        return DataItem([label_mask], shape, len(ellipses))
 
 
 @register(DataReader, "image_grayscale")
@@ -134,5 +102,4 @@ class ImageChannelsReader(DataReader):
                     image_new(channels[0][0].shape, dtype=np.uint8),
                 )
             )
-            cv2.imwrite("rgb_image.png", preview)
         return DataItem(channels, shape, None, visual=preview)

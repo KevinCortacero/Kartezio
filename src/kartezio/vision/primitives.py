@@ -141,6 +141,15 @@ class Pow(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.convertScaleAbs(cv2.pow(x[0], 2))
+    
+
+@register(Primitive, "pow2")
+class Pow2(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.convertScaleAbs(cv2.pow(x[0], 2))
 
 
 @register(Primitive, "exp")
@@ -208,8 +217,32 @@ class Sobel(Primitive):
         return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
 
 
+@register(Primitive, "deriche")
+class Deriche(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+        self.alpha = 1.0
+        self.omega = 1.0
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        gx = cv2.ximgproc.GradientDericheX(x[0], self.alpha, self.omega)
+        gy = cv2.ximgproc.GradientDericheY(x[0], self.alpha, self.omega)
+        return gradient_magnitude(gx, gy)
+
+
 @register(Primitive, "roberts")
 class Roberts(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        gx = convolution(x[0], KERNEL_ROBERTS_X)
+        gy = convolution(x[0], KERNEL_ROBERTS_Y)
+        return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
+    
+
+@register(Primitive, "robert_cross")
+class Roberts2(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeArray, 0)
 
@@ -258,6 +291,15 @@ class AbsDiff(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.absdiff(x[0], x[1])
+    
+
+@register(Primitive, "abs_diff2")
+class AbsoluteDifference2(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return 255 - cv2.absdiff(x[0], x[1])
 
 
 @register(Primitive, "erode")
@@ -309,12 +351,17 @@ class Gradient(Primitive):
         return cv2.morphologyEx(
             x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args)
         )
+    
 
+@register(Primitive, "morph_gradient")
+class MorphGradient(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
 
-def f_morph_gradient(x, args=None):
-    return cv2.morphologyEx(
-        x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args)
-    )
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.morphologyEx(
+            x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args)
+        )
 
 
 @register(Primitive, "top_hat")
@@ -327,9 +374,30 @@ class TopHat(Primitive):
             x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args)
         )
 
+@register(Primitive, "morph_tophat")
+class MorphTopHat(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.morphologyEx(
+            x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args)
+        )
+
 
 @register(Primitive, "black_hat")
 class BlackHat(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.morphologyEx(
+            x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args)
+        )
+
+
+@register(Primitive, "morph_blackhat")
+class MorphBlackHat(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeArray, 2)
 
@@ -355,6 +423,15 @@ class Fill(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return morph_fill(x[0])
+    
+
+@register(Primitive, "fill_holes")
+class FillHoles(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return morph_fill(x[0])
 
 
 @register(Primitive, "rm_small_objects")
@@ -368,6 +445,24 @@ class RmSmallObjects(Primitive):
 
 @register(Primitive, "rm_small_holes")
 class RmSmallHoles(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return remove_small_holes(x[0] > 0, args[0]).astype(np.uint8)
+    
+
+@register(Primitive, "remove_small_objects")
+class RemSmallObjects(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return remove_small_objects(x[0] > 0, args[0]).astype(np.uint8)
+
+
+@register(Primitive, "remove_small_holes")
+class RemSmallHoles(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeArray, 1)
 
@@ -402,6 +497,28 @@ class Binarize(Primitive):
         return threshold_binary(x[0], 1)
 
 
+@register(Primitive, "threshold")
+class Threshold(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+
+    def call(self, x, args=None):
+        if args[0] < 128:
+            return threshold_binary(x[0], args[1])
+        return threshold_tozero(x[0], args[1])
+    
+
+@register(Primitive, "threshold_at_1")
+class ThresholdAt1(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x, args=None):
+        if args[0] < 128:
+            return threshold_binary(x[0], 1)
+        return threshold_tozero(x[0], 1)
+
+
 @register(Primitive, "fluo_tophat")
 class FluoTopHat(Primitive):
     """from https://github.com/cytosmart-bv/tomni"""
@@ -429,27 +546,59 @@ class FluoTopHat(Primitive):
         return self._rescale_intensity(x[0], p2, p98)
 
 
-def f_distance_transform(x, args=None):
-    return cv2.normalize(
-        cv2.distanceTransform(x[0].copy(), cv2.DIST_L2, 3),
-        None,
-        0,
-        255,
-        cv2.NORM_MINMAX,
-        cv2.CV_8U,
-    )
+@register(Primitive, "rel_diff")
+class RelativeDifference(Primitive):
+    """from https://github.com/cytosmart-bv/tomni"""
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x, args=None):
+        img = x[0]
+        max_img = np.max(img)
+        min_img = np.min(img)
+
+        ksize = correct_ksize(args[0])
+        gb = cv2.GaussianBlur(img, (ksize, ksize), 0)
+        gb = np.float32(gb)
+
+        img = np.divide(img, gb + 1e-15, dtype=np.float32)
+        img = cv2.normalize(img, img, max_img, min_img, cv2.NORM_MINMAX)
+        return img.astype(np.uint8)
 
 
-def f_distance_transform_thresh(x, args=None):
-    d = cv2.normalize(
-        cv2.distanceTransform(x[0].copy(), cv2.DIST_L2, 3),
-        None,
-        0,
-        255,
-        cv2.NORM_MINMAX,
-        cv2.CV_8U,
-    )
-    return threshold_binary(d, args[0])
+@register(Primitive, "distance_transform")
+class DistanceTransform(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x, args=None):
+        return cv2.normalize(
+            cv2.distanceTransform(x[0].copy(), cv2.DIST_L2, 3),
+            None,
+            0,
+            255,
+            cv2.NORM_MINMAX,
+            cv2.CV_8U,
+        )
+
+
+
+
+@register(Primitive, "distance_transform_and_thresh")
+class DistanceTransformAndThresh(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x, args=None):
+        d = cv2.normalize(
+            cv2.distanceTransform(x[0].copy(), cv2.DIST_L2, 3),
+            None,
+            0,
+            255,
+            cv2.NORM_MINMAX,
+            cv2.CV_8U,
+        )
+        return threshold_binary(d, args[0])
 
 
 @register(Primitive, "binary_in_range")
@@ -461,10 +610,36 @@ class BinaryInRange(Primitive):
         lower = int(min(args[0], args[1]))
         upper = int(max(args[0], args[1]))
         return cv2.inRange(x[0], lower, upper)
+    
+
+@register(Primitive, "inrange_bin")
+class BinaryInRange2(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        lower = int(min(args[0], args[1]))
+        upper = int(max(args[0], args[1]))
+        return cv2.inRange(x[0], lower, upper)
 
 
 @register(Primitive, "in_range")
 class InRange(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        lower = int(min(args[0], args[1]))
+        upper = int(max(args[0], args[1]))
+        return cv2.bitwise_and(
+            x[0],
+            x[0],
+            mask=cv2.inRange(x[0], lower, upper),
+        )
+    
+
+@register(Primitive, "inrange")
+class InRange2(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeArray, 2)
 
@@ -542,6 +717,100 @@ class PyrDown(Primitive):
         return cv2.resize(scaled_half, (w, h))
 
 
+@register(Primitive, "gabor")
+class GaborFilter(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+        self.ksize = 11
+
+    def call(self, x, args=None):
+        gabor_k = gabor_kernel(self.ksize, args[0], args[1])
+        return cv2.filter2D(x[0], -1, gabor_k)
+    
+
+@register(Primitive, "gabor_11")
+class Gabor11(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+        self.ksize = 11
+        self.sigma = 2.0
+        self.angles = [0, np.pi/4, np.pi/2, 3*np.pi/4]
+
+    def call(self, x, args=None):
+        lambd = args[0] / 255.
+        gamma = args[1] // 16
+        gabored = []
+        for angle in self.angles:
+            gabor_kernel = cv2.getGaborKernel((self.ksize, self.ksize), self.sigma, angle, lambd, gamma, psi=0)
+            gabored.append(cv2.filter2D(x[0], -1, gabor_kernel))
+        return np.max(gabored, axis=0)
+
+
+@register(Primitive, "gabor_7")
+class Gabor7(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+        self.ksize = 7
+        self.sigma = 1.0
+        self.angles = [0, np.pi/4, np.pi/2, 3*np.pi/4]
+
+    def call(self, x, args=None):
+        lambd = args[0] / 255.
+        gamma = args[1] // 16
+        gabored = []
+        for angle in self.angles:
+            gabor_kernel = cv2.getGaborKernel((self.ksize, self.ksize), self.sigma, angle, lambd, gamma, psi=0)
+            gabored.append(cv2.filter2D(x[0], -1, gabor_kernel))
+        return np.max(gabored, axis=0)
+
+
+@register(Primitive, "gabor_3")
+class Gabor3(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 2)
+        self.ksize = 3
+        self.sigma = 1.0
+        self.angles = [0, np.pi/4, np.pi/2, 3*np.pi/4]
+
+    def call(self, x, args=None):
+        lambd = args[0] / 255.
+        gamma = args[1] // 16
+        gabored = []
+        for angle in self.angles:
+            gabor_kernel = cv2.getGaborKernel((self.ksize, self.ksize), self.sigma, angle, lambd, gamma, psi=0)
+            gabored.append(cv2.filter2D(x[0], -1, gabor_kernel))
+        return np.max(gabored, axis=0)
+
+
+
+from skimage.feature import local_binary_pattern
+
+@register(Primitive, "local_binary_pattern")
+class LocalBinaryPattern(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x, args=None):
+        return local_binary_pattern(x[0], 8, args[0] // 16, method='uniform').astype(np.uint8)
+
+
+
+@register(Primitive, "laplacian_of_gaussian")
+class LaplacianOfGaussian(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x, args=None):
+        image = x[0]
+        sigma = 2.0
+        size = (args[0] // 16) + 1
+
+        x, y = np.meshgrid(np.arange(-size//2+1, size//2+1), np.arange(-size//2+1, size//2+1))
+        kernel = -(1/(np.pi * sigma**4)) * (1 - ((x**2 + y**2) / (2 * sigma**2))) * np.exp(-(x**2 + y**2) / (2 * sigma**2))
+        kernel = kernel / np.sum(np.abs(kernel))
+
+        return cv2.convertScaleAbs(cv2.filter2D(image, -1, kernel))
+
 library_opencv = LibraryDefaultOpenCV()
 library_opencv.add_by_name("max")
 library_opencv.add_by_name("min")
@@ -561,6 +830,7 @@ library_opencv.add_by_name("median_blur")
 library_opencv.add_by_name("gaussian_blur")
 library_opencv.add_by_name("laplacian")
 library_opencv.add_by_name("sobel")
+library_opencv.add_by_name("deriche")
 library_opencv.add_by_name("roberts")
 library_opencv.add_by_name("canny")
 library_opencv.add_by_name("sharpen")
@@ -589,55 +859,8 @@ library_opencv.add_by_name("normalize")
 # library_opencv.add_by_name("denoize")
 library_opencv.add_by_name("pyr_up")
 library_opencv.add_by_name("pyr_down")
-
-
-"""
-library_opencv.create_primitive("Min", 2, 0, f_min)
-library_opencv.create_primitive("Mean", 2, 0, f_mean)
-library_opencv.create_primitive("Add", 2, 0, f_add)
-library_opencv.create_primitive("Subtract", 2, 0, f_sub)
-library_opencv.create_primitive("Bitwise Not", 1, 0, f_bitwise_not)
-library_opencv.create_primitive("Bitwise Or", 2, 0, f_bitwise_or)
-library_opencv.create_primitive("Bitwise And", 2, 0, f_bitwise_and)
-library_opencv.create_primitive("Bitwise And Mask", 2, 0, f_bitwise_and_mask)
-library_opencv.create_primitive("Bitwise Xor", 2, 0, f_bitwise_xor)
-library_opencv.create_primitive("Square Root", 1, 0, f_sqrt)
-library_opencv.create_primitive("Power 2", 1, 0, f_pow)
-library_opencv.create_primitive("Exp", 1, 0, f_exp)
-library_opencv.create_primitive("Log", 1, 0, f_log)
-library_opencv.create_primitive("Median Blur", 1, 1, f_median_blur)
-library_opencv.create_primitive("Gaussian Blur", 1, 1, f_gaussian_blur)
-library_opencv.create_primitive("Laplacian", 1, 0, f_laplacian)
-library_opencv.create_primitive("Sobel", 1, 2, f_sobel)
-library_opencv.create_primitive("Roberts", 1, 1, f_roberts)
-library_opencv.create_primitive("Canny", 1, 2, f_canny)
-library_opencv.create_primitive("Sharpen", 1, 0, f_sharpen)
-library_opencv.create_primitive("Gabor", 1, 2, f_gabor)
-library_opencv.create_primitive("Subtract Gaussian", 1, 2, f_diff_gaussian)
-library_opencv.create_primitive("Absolute Difference", 2, 0, f_absdiff)
-library_opencv.create_primitive("Fluo TopHat", 1, 2, f_fluo_tophat)
-library_opencv.create_primitive("Relative Difference", 1, 1, f_relative_diff)
-library_opencv.create_primitive("Erode", 1, 2, f_erode)
-library_opencv.create_primitive("Dilate", 1, 2, f_dilate)
-library_opencv.create_primitive("Open", 1, 2, f_open)
-library_opencv.create_primitive("Close", 1, 2, f_close)
-library_opencv.create_primitive("Morph Gradient", 1, 2, f_morph_gradient)
-library_opencv.create_primitive("Morph Tophat", 1, 2, f_morph_tophat)
-library_opencv.create_primitive("Morph BlackHat", 1, 2, f_morph_blackhat)
-library_opencv.create_primitive("Morph Fill", 1, 0, f_fill)
-library_opencv.create_primitive("Remove Small Objects", 1, 1, f_remove_small_objects)
-library_opencv.create_primitive("Remove Small Holes", 1, 1, f_remove_small_holes)
-library_opencv.create_primitive("Threshold", 1, 2, f_threshold)
-library_opencv.create_primitive("Threshold at 1", 1, 1, f_threshold_at_1)
-library_opencv.create_primitive("Distance Transform", 1, 1, f_distance_transform)
-library_opencv.create_primitive(
-    "Distance Transform Threshold", 1, 2, f_distance_transform_thresh
-)
-library_opencv.create_primitive("Binary In Range", 1, 2, f_bin_inrange)
-library_opencv.create_primitive("In Range", 1, 2, f_inrange)
-
-"""
-
-
-def no_endpoint(x):
-    return x
+library_opencv.add_by_name("local_binary_pattern")
+library_opencv.add_by_name("gabor_3")
+library_opencv.add_by_name("gabor_7")
+library_opencv.add_by_name("gabor_11")
+library_opencv.add_by_name("laplacian_of_gaussian")

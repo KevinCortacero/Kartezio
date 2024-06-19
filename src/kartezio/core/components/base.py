@@ -102,10 +102,13 @@ def register(component_group: type, component_name: str, replace=False):
                 """
                 )
         Components.add(group_name, component_name, item_cls)
-
-        def wrapper(*args, **kwargs):
-            return item_cls(*args, **kwargs)
-
-        return wrapper
-
+        return item_cls
+        # def wrapper(*args, **kwargs):
+        #   return item_cls(*args, **kwargs)
+        # return wrapper
     return inner
+
+
+def load_component(component_class, json_data: dict) -> Component:
+    return component_class.__from_dict__(json_data)
+    

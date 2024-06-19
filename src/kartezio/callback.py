@@ -43,6 +43,8 @@ class Callback(Observer, ABC):
         self.decoder = parser
 
     def update(self, event):
+        if event["n"] % self.frequency !=0 and not event["force"]:
+            return
         if event["name"] == Event.START_LOOP:
             self.on_evolution_start(event["n"], event["content"])
         elif event["name"] == Event.START_STEP:

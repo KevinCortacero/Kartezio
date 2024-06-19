@@ -78,7 +78,7 @@ class GeneticAlgorithm:
         self.current_generation += 1
 
 
-class ValidModel(ModelML, Observable):
+class ModelCGP(ModelML, Observable):
     def __init__(self, decoder: Decoder, ga: GeneticAlgorithm):
         super().__init__()
         self.decoder = decoder
@@ -103,7 +103,7 @@ class ValidModel(ModelML, Observable):
             self.ga.reproduction()
             self.evaluation(x, y)
             changed, state = self.ga.selection()
-            if changed or self.ga.current_generation % 100 == 0:
+            if changed:
                 self.send_event(Event.NEW_PARENT, state, force=True)
             self.send_event(Event.END_STEP, state)
             self.ga.next()
@@ -139,14 +139,12 @@ class ValidModel(ModelML, Observable):
         print(elite.outputs)
 
 
-class ModelDraft:
+class ModelBuilder:
     class MutationSystem:
         def __init__(self, mutation: Mutation):
             self.mutation = mutation
             self.behavior = None
             self.decay = None
-            self.node_rate = 0.15
-            self.out_rate = 0.2
 
         def set_behavior(self, behavior: MutationBehavior):
             self.behavior = behavior
@@ -173,7 +171,12 @@ class ModelDraft:
                 return self.mutation.mutate(genotype)
 
     def __init__(
-        self, decoder: Decoder, fitness: Fitness, init=None, mutation=None
+        self,
+        decoder: Decoder,
+        fitness: Fitness,
+        init=None,
+        mutation=None,
+        behavior=None,
     ):
         super().__init__()
         self.decoder = decoder
@@ -187,7 +190,8 @@ class ModelDraft:
             self.mutation = self.MutationSystem(
                 MutationRandom(decoder, 0.05, 0.1)
             )
-        self.mutation.set_behavior(AccumulateBehavior(decoder))
+        if behavior == "accumulate":
+            self.mutation.set_behavior(AccumulateBehavior(decoder))
         self.fitness = fitness
         self.updatable = []
 
@@ -200,6 +204,9 @@ class ModelDraft:
     def set_decay(self, decay: MutationDecay):
         self.mutation.set_decay(decay)
 
+    def set_behavior(self, behavior: MutationBehavior):
+        self.mutation.set_behavior(behavior)
+
     def set_mutation_rates(self, node_rate, out_rate):
         self.mutation.set_mutation_rates(node_rate, out_rate)
 
@@ -211,7 +218,7 @@ class ModelDraft:
             self.updatable.append(self.mutation.decay)
         ga = GeneticAlgorithm(self.init, self.mutation, self.fitness)
         ga.init(n_generations, n_children)
-        model = ValidModel(self.decoder, ga)
+        model = ModelCGP(self.decoder, ga)
         for updatable in self.updatable:
             model.attach(updatable)
         for callback in callbacks:

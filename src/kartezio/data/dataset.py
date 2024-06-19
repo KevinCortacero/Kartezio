@@ -4,6 +4,7 @@ from kartezio.core.components.base import Components
 from kartezio.core.components.dataset import DatasetMeta
 from kartezio.drive.directory import Directory
 from kartezio.readers import *
+from kartezio.vision.common import draw_overlay
 
 CSV_DATASET = "dataset.csv"
 JSON_META = "meta.json"
@@ -96,7 +97,7 @@ class DatasetReader(Directory):
     def __post_init__(self, path):
         super().__post_init__(path)
         if self.preview:
-            self.preview_dir = self.next(DIR_PREVIEW)
+            self.preview_dir = self.next("__preview__")
 
     def _read_meta(self, meta_filename):
         meta = DatasetMeta.read(self._path, meta_filename=meta_filename)

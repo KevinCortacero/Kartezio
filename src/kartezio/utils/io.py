@@ -3,6 +3,8 @@ import os
 from kartezio.core.components.decoder import Decoder, SequentialDecoder
 from kartezio.drive.directory import Directory
 from kartezio.serialization.json import json_read, json_write
+from kartezio.core.components.base import load_component
+from kartezio.core.components.genotype import MonoChromosome
 
 
 def pack_one_directory(directory_path):
@@ -42,15 +44,11 @@ class JsonLoader:
     def read_individual(self, filepath):
         json_data = json_read(filepath=filepath)
         dataset = json_data["dataset"]
-        parser = SequentialDecoder.from_json(json_data["decoding"])
-        try:
-            individual = KGenotypeArray.from_json(json_data["individual"])
-        except KeyError:
-            try:
-                individual = BaseGenotype.from_json(json_data)
-            except KeyError:
-                individual = BaseGenotype.from_json(json_data["population"][0])
-        return dataset, individual, parser
+        decoder = load_component(SequentialDecoder, json_data["decoding"])
+        if decoder is None:
+            raise ValueError("Decoder not found.")
+        individual = load_component(MonoChromosome, json_data["individual"])
+        return dataset, individual, decoder
 
 
 class JsonSaver:

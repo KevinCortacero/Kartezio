@@ -25,7 +25,10 @@ class Genotype(Component, ABC):
 class MonoChromosome(Genotype):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "MonoChromosome":
-        pass
+        genes = np.asarray(ast.literal_eval(dict_infos["sequence"]))
+        chromosome = genes[:-1]
+        outputs = [genes[-1][1]]
+        return MonoChromosome.from_ndarray(chromosome, outputs)
 
     def __init__(self, n_outputs, chromosome: np.ndarray):
         super().__init__()
@@ -49,8 +52,3 @@ class MonoChromosome(Genotype):
         genotype = MonoChromosome(len(outputs), chromosome)
         genotype.outputs = outputs
         return genotype
-
-    @classmethod
-    def from_json(cls, json_data):
-        genes = np.asarray(ast.literal_eval(json_data["sequence"]))
-        return cls.from_ndarray(genes)

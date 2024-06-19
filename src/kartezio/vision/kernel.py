@@ -5,7 +5,7 @@ SHARPEN_KERNEL = np.array(([0, -1, 0], [-1, 5, -1], [0, -1, 0]), dtype="int")
 KERNEL_ROBERTS_X = np.array(([0, 1], [-1, 0]), dtype="int")
 KERNEL_ROBERTS_Y = np.array(([1, 0], [0, -1]), dtype="int")
 OPENCV_MIN_KERNEL_SIZE = 3
-OPENCV_MAX_KERNEL_SIZE = 31
+OPENCV_MAX_KERNEL_SIZE = 21
 OPENCV_KERNEL_RANGE = OPENCV_MAX_KERNEL_SIZE - OPENCV_MIN_KERNEL_SIZE
 OPENCV_MIN_INTENSITY = 0
 OPENCV_MAX_INTENSITY = 255
@@ -152,6 +152,6 @@ def kernel_from_parameters(p):
         return ellipse_kernel(p[0])
     # 25%
     if p[1] < 192:
-        return cross_kernel(p[0])
+        return ellipse_kernel(p[0])
     # 25%
-    return rect_kernel(p[0])
+    return ellipse_kernel(p[0])

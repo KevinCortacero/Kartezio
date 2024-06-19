@@ -13,6 +13,8 @@ from kartezio.vision.common import (
     image_new,
     threshold_tozero,
 )
+from kartezio.vision.primitives import Kirsch, Sobel
+from skimage.transform import hough_circle, hough_circle_peaks, hough_ellipse
 
 
 @register(Endpoint, "to_labels")
@@ -32,6 +34,11 @@ class ToLabels(Endpoint):
 
 @register(Endpoint, "threshold")
 class EndpointThreshold(Endpoint):
+    def __init__(self, threshold, mode="binary"):
+        super().__init__([TypeArray])
+        self.threshold = threshold
+        self.mode = mode
+
     def call(self, x):
         if self.mode == "binary":
             return [
@@ -39,10 +46,39 @@ class EndpointThreshold(Endpoint):
             ]
         return [cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_TOZERO)[1]]
 
-    def __init__(self, threshold, mode="binary"):
+
+@register(Endpoint, "detect_ellipses")
+class DetectEllipses(Endpoint):
+    def __init__(self):
         super().__init__([TypeArray])
-        self.threshold = threshold
-        self.mode = mode
+        self.edge_detector = cv2.ximgproc.EdgeDrawing()
+        print("EdgeDetector", self.edge_detector)
+
+    def call(self, x):
+        import faulthandler
+        faulthandler.enable()
+        mask = x[0]
+        # self.edge_detector.clear()
+        print("ok")
+        # self.edge_detector.detectEdges(mask.astype(np.uint8))
+        # ellipses = self.edge_detector.detectEllipses()
+        n = 0
+        new_mask = image_new(mask.shape)
+        if ellipses is not None:
+            for i, ellipse in enumerate(ellipses):
+                print(ellipse)
+                center = (ellipse[0], ellipse[1])
+                axis = (ellipse[2], ellipse[3])
+                angle = ellipse[4]
+                cv2.ellipse(
+                    new_mask,
+                    (center, axis, angle),
+                    n + 1,
+                    thickness=-1,
+                )
+                n += 1
+
+        return [new_mask]
 
 
 @register(Endpoint, "hough_circle")
@@ -57,19 +93,10 @@ class EndpointHoughCircle(Endpoint):
         self.min_radius = min_radius
         self.max_radius = max_radius
 
-    def _to_json_kwargs(self) -> dict:
-        return {
-            "min_dist": self.min_dist,
-            "p1": self.p1,
-            "p2": self.p2,
-            "min_radius": self.min_radius,
-            "max_radius": self.max_radius,
-        }
-
     def call(self, x):
         mask = x[0]
         n = 0
-        new_mask = image_new(mask.infos)
+        new_mask = image_new(mask.shape)
         circles = cv2.HoughCircles(
             mask,
             cv2.HOUGH_GRADIENT,
@@ -89,21 +116,11 @@ class EndpointHoughCircle(Endpoint):
                 cv2.circle(new_mask, center, radius, (i + 1), -1)
                 n += 1
 
-        return {
-            "mask_raw": mask,
-            "labels": new_mask,
-            "count": n,
-        }
+        return [new_mask]
 
 
 @register(Endpoint, "fit_ellipse")
 class EndpointEllipse(Endpoint):
-    def _to_json_kwargs(self) -> dict:
-        return {
-            "min_axis": self.min_axis,
-            "max_axis": self.max_axis,
-        }
-
     def __init__(self, min_axis=10, max_axis=30):
         super().__init__([TypeArray])
         self.min_axis = min_axis
@@ -112,7 +129,7 @@ class EndpointEllipse(Endpoint):
     def call(self, x, args=None):
         mask = x[0]
         n = 0
-        new_labels = image_new(mask.infos)
+        new_labels = image_new(mask.shape)
         labels = []
 
         cnts = contours_find(x[0], exclude_holes=True)
@@ -133,12 +150,7 @@ class EndpointEllipse(Endpoint):
                     n += 1
         new_mask = new_labels.copy().astype(np.uint8)
         new_mask[new_mask > 0] = 255
-        return {
-            "mask_raw": mask,
-            "mask": new_mask,
-            "labels": new_labels,
-            "count": n,
-        }
+        return [new_labels]
 
 
 @register(Endpoint, "marker_controlled_watershed")
@@ -190,7 +202,7 @@ class LocalMaxWatershed(Endpoint):
 
     """
 
-    def __init__(self, threshold=1, markers_distance=21):
+    def __init__(self, threshold: int =1, markers_distance:int =21):
         super().__init__([TypeArray])
         self.wt = WatershedSkimage(
             use_dt=True, markers_distance=markers_distance
@@ -202,6 +214,7 @@ class LocalMaxWatershed(Endpoint):
         mask, markers, labels = self.wt.apply(
             mask, markers=None, mask=mask > 0
         )
+        return [labels]
         return {
             "mask_raw": x[0],
             "mask": mask,
@@ -247,3 +260,50 @@ class RawLocalMaxWatershed(Endpoint):
             "threshold": self.threshold,
             "markers_distance": self.wt.markers_distance,
         }
+
+
+@register(Endpoint, "hough_circle_small")
+class EndpointHoughCircleSmall(Endpoint):
+    def __init__(
+        self, min_dist=4, p1=256, p2=8, min_radius=2, max_radius=12
+    ):
+        super().__init__([TypeArray])
+        self.min_dist = min_dist
+        self.p1 = p1
+        self.p2 = p2
+        self.min_radius = min_radius
+        self.max_radius = max_radius
+        self.edge_detector =  Sobel()
+
+    def _to_json_kwargs(self) -> dict:
+        return {
+            "min_dist": self.min_dist,
+            "p1": self.p1,
+            "p2": self.p2,
+            "min_radius": self.min_radius,
+            "max_radius": self.max_radius,
+        }
+
+    def call(self, x):
+        mask_raw = x[0]
+        new_mask = image_new(mask_raw.shape)
+        mask = self.edge_detector.call([mask_raw], [3, 3])
+        circles = cv2.HoughCircles(
+            mask,
+            cv2.HOUGH_GRADIENT,
+            1,
+            self.min_dist,
+            param1=self.p1,
+            param2=self.p2,
+            minRadius=self.min_radius,
+            maxRadius=self.max_radius,
+        )
+
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for i, circle in enumerate(circles[0, :]):
+                center = (circle[0], circle[1])
+                # circle outline
+                radius = circle[2]
+                cv2.circle(new_mask, center, radius, (i + 1), -1)
+        return [new_mask]

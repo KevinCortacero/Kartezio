@@ -42,10 +42,10 @@ class Directory(DriveEntity):
     def __post_init__(self, path):
         super().__post_init__(path)
         if not self.exists():
-            _err = f"The directory {self._path} does not exist!"
+            _err = f"The directory '{self._path}' does not exist!"
             raise ValueError(_err)
         if not self.is_dir():
-            _err = f"The path {self._path} is not pointing to a directory!"
+            _err = f"The path '{self._path}' is not pointing to a directory!"
             raise ValueError(_err)
 
     def write(self, filename, filedata):

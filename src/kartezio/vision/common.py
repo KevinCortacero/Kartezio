@@ -6,6 +6,10 @@ from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
 
 
+def rgb2hsv(image):
+    return cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
+
 def bgr2hsv(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -220,3 +224,20 @@ def fill_polygons_as_labels(mask, polygons):
 def morph_fill(image):
     cnts = contours_find(image, exclude_holes=True)
     return contours_fill(image, cnts)
+
+
+def draw_overlay(image, mask, color=None, alpha=1.0, border_color="same", thickness=1):
+    if color is None:
+        color = IMAGE_UINT8_COLOR_3C
+    out = image.copy()
+    img_layer = image.copy()
+    img_layer[np.where(mask)] = color
+    overlayed = cv2.addWeighted(img_layer, alpha, out, 1 - alpha, 0, out)
+    contours = contours_find(mask, exclude_holes=False)
+    if border_color == "same":
+        overlayed = contours_draw(overlayed, contours, thickness=thickness, color=color)
+    elif border_color is not None:
+        overlayed = contours_draw(
+            overlayed, contours, thickness=thickness, color=border_color
+        )
+    return overlayed

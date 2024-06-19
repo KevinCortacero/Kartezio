@@ -5,15 +5,9 @@ import numpy as np
 from numena.image.morphology import morph_erode
 from numena.image.threshold import threshold_tozero
 
-from kartezio.core.components import Aggregation, KSignature
-from kartezio.core.registry import registry
+from kartezio.core.components.aggregation import Aggregation
+from kartezio.core.components.base import register
 from kartezio.core.types import TypeArray
-
-
-def register_stackers():
-    print(
-        f"[Kartezio - INFO] -  {len(registry.stackers.list())} stackers registered."
-    )
 
 
 def a_f_mean(x: List, args):
@@ -23,7 +17,7 @@ def a_f_mean(x: List, args):
 a_mean = Aggregation(a_f_mean, [TypeArray])
 
 
-@registry.stackers.add("MEAN")
+@register(Aggregation, "average")
 class StackerMean(Aggregation):
     def _to_json_kwargs(self) -> dict:
         return {}

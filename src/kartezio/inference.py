@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from numena.image.color import bgr2rgb
-from numena.io.drive import Directory
+from kartezio.vision.common import bgr2rgb
+from kartezio.drive.directory import Directory
 
-from kartezio.core.registry import registry
-from kartezio.plot import plot_mask
+from kartezio.core.components.base import register
+# from kartezio.plot import plot_mask
 from kartezio.utils.io import JsonLoader
 
 

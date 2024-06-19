@@ -7,6 +7,7 @@ from tabulate import tabulate
 
 from kartezio.core.components.base import Component, Components, register
 from kartezio.core.components.primitive import Primitive
+from kartezio.core.types import TypeArray
 
 
 class Library(Component, ABC):
@@ -23,11 +24,12 @@ class Library(Component, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Library":
-        library = LibraryEmpty(dict_infos["rtype"])
-        for i in range(len(dict_infos["primitives"])):
-            p_name = dict_infos["primitives"][str(i)]
-            primitive = Components.instantiate("Primitive", p_name)
-            library.add_primitive(primitive)
+        from kartezio.vision.primitives import Normalize
+        rtype = dict_infos.get("rtype", TypeArray)
+        library = LibraryEmpty(rtype)
+        # for i in range(len(dict_infos["primitives"])):
+        for p_name in dict_infos["functions"]:
+            library.add_by_name(p_name)
         return library
 
     def add_by_name(self, name):
