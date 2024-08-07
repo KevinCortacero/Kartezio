@@ -4,6 +4,7 @@ import numpy as np
 
 from kartezio.core.components.base import Component
 from kartezio.core.components.genotype import Genotype
+from kartezio.core.mutation.effect import MutationUniform
 
 
 class Mutation(Component, ABC):
@@ -12,6 +13,7 @@ class Mutation(Component, ABC):
         self.decoder = decoder
         self.n_functions = decoder.library.size
         self.parameter_max_value = 256
+        self.effect = MutationUniform()
 
     @property
     def random_parameters(self):
@@ -51,9 +53,11 @@ class Mutation(Component, ABC):
     def mutate_parameters(
         self, genome: Genotype, idx: int, only_one: int = None
     ):
-        new_parameters = self.random_parameters
+        old_parameters = self.decoder.adapter.read_parameters(genome, idx)
+        new_random_parameters = self.random_parameters
+
+        new_parameters = self.effect.call(old_parameters, new_random_parameters)
         if only_one is not None:
-            old_parameters = self.decoder.adapter.read_parameters(genome, idx)
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
         self.decoder.adapter.write_parameters(genome, idx, new_parameters)
