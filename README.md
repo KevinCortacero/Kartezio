@@ -8,6 +8,7 @@ Kartezio is a modular Cartesian Genetic Programming framework that generates ful
 
 Link to retated python scripts: [Kartezio scripts](https://github.com/KevinCortacero/KartezioPaper)\
 Link to retated datasets and trained models: [Datasets & Trained Models](https://figshare.com/s/251b1f7cc55e6600826f)\
+Link to include the cellpose dataset: [Cellpose Dataset](https://www.cellpose.org/dataset)\
 Link to publication: [Evolutionary design of explainable algorithms for biomedical image segmentation](https://www.nature.com/articles/s41467-023-42664-x)\
 Link to official website: [kartezio.com](https://www.kartezio.com)
 
