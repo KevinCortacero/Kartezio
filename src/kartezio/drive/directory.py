@@ -9,7 +9,7 @@ from kartezio.drive.image import (
     imread_czi,
     imread_rgb,
     imread_tiff,
-    imwrite,
+    imwrite_rgb,
     imwrite_tiff,
 )
 
@@ -53,7 +53,7 @@ class Directory(DriveEntity):
         extension = filepath.suffix
         filepath = str(filepath)
         if extension == EXTENSION_IMAGE_PNG:
-            imwrite(filepath, filedata)
+            imwrite_rgb(filepath, filedata)
         if (
             extension == EXTENSION_IMAGE_TIF
             or extension == EXTENSION_IMAGE_LSM

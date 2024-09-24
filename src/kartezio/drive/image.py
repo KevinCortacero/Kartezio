@@ -23,9 +23,11 @@ def imread_czi(filename):
     return czifile.imread(filename)
 
 
-def imwrite(filename, image):
-    cv2.imwrite(filename, image)
+def imwrite_rgb(filename, image):
+    imwrite_bgr(filename, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
+def imwrite_bgr(filename, image):
+    cv2.imwrite(filename, image)
 
 def imwrite_tiff(filename, image, imagej=True, luts=None):
     if luts:
