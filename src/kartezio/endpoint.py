@@ -32,53 +32,32 @@ class ToLabels(Endpoint):
         self.connectivity = connectivity
 
 
+@register(Endpoint, "subtract")
+class EndpointSubtract(Endpoint):
+    def __init__(self):
+        super().__init__([TypeArray, TypeArray])
+
+    def call(self, x):
+        return [cv2.subtract(x[0], x[1])]
+
+
 @register(Endpoint, "threshold")
 class EndpointThreshold(Endpoint):
-    def __init__(self, threshold, mode="binary"):
+    def __init__(self, threshold, normalize=False, mode="binary"):
         super().__init__([TypeArray])
         self.threshold = threshold
+        self.normalize = normalize
         self.mode = mode
 
     def call(self, x):
+        image = x[0]
+        if self.normalize:
+            image = cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
         if self.mode == "binary":
             return [
-                cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_BINARY)[1]
+                cv2.threshold(image, self.threshold, 255, cv2.THRESH_BINARY)[1]
             ]
-        return [cv2.threshold(x[0], self.threshold, 255, cv2.THRESH_TOZERO)[1]]
-
-
-@register(Endpoint, "detect_ellipses")
-class DetectEllipses(Endpoint):
-    def __init__(self):
-        super().__init__([TypeArray])
-        self.edge_detector = cv2.ximgproc.EdgeDrawing()
-        print("EdgeDetector", self.edge_detector)
-
-    def call(self, x):
-        import faulthandler
-        faulthandler.enable()
-        mask = x[0]
-        # self.edge_detector.clear()
-        print("ok")
-        # self.edge_detector.detectEdges(mask.astype(np.uint8))
-        # ellipses = self.edge_detector.detectEllipses()
-        n = 0
-        new_mask = image_new(mask.shape)
-        if ellipses is not None:
-            for i, ellipse in enumerate(ellipses):
-                print(ellipse)
-                center = (ellipse[0], ellipse[1])
-                axis = (ellipse[2], ellipse[3])
-                angle = ellipse[4]
-                cv2.ellipse(
-                    new_mask,
-                    (center, axis, angle),
-                    n + 1,
-                    thickness=-1,
-                )
-                n += 1
-
-        return [new_mask]
+        return [cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]]
 
 
 @register(Endpoint, "hough_circle")
@@ -121,35 +100,54 @@ class EndpointHoughCircle(Endpoint):
 
 @register(Endpoint, "fit_ellipse")
 class EndpointEllipse(Endpoint):
-    def __init__(self, min_axis=10, max_axis=30):
+    def __init__(self, min_axis=10, max_axis=30, backend="opencv"):
         super().__init__([TypeArray])
         self.min_axis = min_axis
         self.max_axis = max_axis
+        self.backend = backend
+        self.edge_detector = Sobel()
 
     def call(self, x, args=None):
         mask = x[0]
         n = 0
         new_labels = image_new(mask.shape)
         labels = []
+        edges = self.edge_detector.call([mask], [3, 3])
+        if self.backend == "opencv":
+            cnts = contours_find(edges, exclude_holes=True)
+            for cnt in cnts:
+                if len(cnt) >= 5:
+                    center, (MA, ma), angle = cv2.fitEllipse(cnt)
+                    if (
+                        self.min_axis <= MA <= self.max_axis
+                        and self.min_axis <= ma <= self.max_axis
+                    ):
+                        cv2.ellipse(
+                            new_labels,
+                            (center, (MA, ma), angle),
+                            n + 1,
+                            thickness=-1,
+                        )
+                        labels.append((center, (MA, ma), angle))
+                        n += 1
 
-        cnts = contours_find(x[0], exclude_holes=True)
-        for cnt in cnts:
-            if len(cnt) >= 5:
-                center, (MA, ma), angle = cv2.fitEllipse(cnt)
-                if (
-                    self.min_axis <= MA <= self.max_axis
-                    and self.min_axis <= ma <= self.max_axis
-                ):
-                    cv2.ellipse(
-                        new_labels,
-                        (center, (MA, ma), angle),
-                        n + 1,
-                        thickness=-1,
-                    )
-                    labels.append((center, (MA, ma), angle))
-                    n += 1
-        new_mask = new_labels.copy().astype(np.uint8)
-        new_mask[new_mask > 0] = 255
+        elif self.backend == "skimage":
+            print("skimage")
+            
+            print("edges", edges)
+            ellipses = hough_ellipse(edges, threshold=128, min_size=self.min_axis, max_size=self.max_axis)
+            for ellipse in ellipses:
+                print(ellipse)
+                _, y0, x0, a, b, o = ellipse
+                cv2.ellipse(
+                    new_labels,
+                    ((x0, y0), (a, b), o),
+                    n + 1,
+                    thickness=-1,
+                )
+                labels.append((x0, y0, a, b))
+                n += 1
+    
         return [new_labels]
 
 
