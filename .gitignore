@@ -161,3 +161,16 @@ cython_debug/
 
 *.png
 *.npy
+*.npz
+*.json
+*.zip
+*.PNG
+*.tif
+*.tiff
+*.jpg
+*.DS_Store
+*.csv
+*.xls
+*.xlsx
+*.ipynb
+*.roi
