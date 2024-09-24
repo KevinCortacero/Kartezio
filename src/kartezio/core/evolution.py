@@ -56,6 +56,8 @@ class Fitness(Component, ABC):
             return np.max(population_fitness, axis=1)
         if self.reduction == "median":
             return np.median(population_fitness, axis=1)
+        if self.reduction is None:
+            return population_fitness
 
     @abstractmethod
     def evaluate(self, y_true, y_pred):
