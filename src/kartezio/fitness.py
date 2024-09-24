@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 from kartezio.core.components.base import register
 from kartezio.core.evolution import Fitness, KartezioFitness, KartezioMetric
 from kartezio.metric import MetricMSE
+from kartezio.vision.metrics import iou, iou_precision, iou_recall
 
 # TODO: clear the fitness process
 
@@ -152,23 +153,33 @@ class FitnessCount(KartezioFitness):
 
 @register(Fitness, "intersection_over_union")
 class FitnessIOU(Fitness):
+    def __init__(self, reduction="mean", secondary=None, multiprocessing=False):
+        super().__init__(reduction, multiprocessing)
+        self.secondary = secondary
+
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
         n_images = len(y_true)
         ious = np.zeros(n_images, np.float32)
         for n in range(n_images):
-            _y_true = y_true[n][0]
-            _y_pred = y_pred[n][0]
+            _y_true = y_true[n][0].ravel()
+            _y_pred = y_pred[n][0].ravel()
             _y_pred[_y_pred > 0] = 1
+
+            """
             if np.sum(_y_true) == 0:
                 _y_true = 1 - _y_true
                 _y_pred = 1 - _y_pred
             intersection = np.logical_and(_y_true, _y_pred)
             union = np.logical_or(_y_true, _y_pred)
             ious[n] = np.sum(intersection) / np.sum(union)
-        return 1.0 - ious
-
-    def __init__(self, reduction="mean", multiprocessing=False):
-        super().__init__(reduction, multiprocessing)
+            """
+            if self.secondary is None:
+                ious[n] = 1.0 - iou(_y_true, _y_pred)
+            elif self.secondary == "sensitivity":
+                ious[n] = 2.0 - iou_recall(_y_true, _y_pred)
+            elif self.secondary == "specificity":
+                ious[n] = 2.0 - iou_precision(_y_true, _y_pred)
+        return ious
 
 
 @register(Fitness, "intersection_over_union_2")
@@ -182,7 +193,17 @@ class FitnessIOU2(KartezioFitness):
 @register(Fitness, "mean_squared_error")
 class FitnessMSE(Fitness):
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
-        return np.square(np.subtract(y_true, y_pred)).mean()
+        n_images = len(y_true)
+        mse_values = np.zeros(n_images, np.float32)
+        
+        for n in range(n_images):
+            _y_true = y_true[n][0]
+            _y_pred = y_pred[n][0]
+
+            # Compute Mean Squared Error
+            mse_values[n] = np.mean((_y_true - _y_pred) ** 2)
+
+        return mse_values
 
     def __init__(self, reduction="mean", multiprocessing=False):
         super().__init__(reduction, multiprocessing)
