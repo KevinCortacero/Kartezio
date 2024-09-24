@@ -4,7 +4,7 @@ import numpy as np
 from kartezio.vision.common import bgr2rgb
 from kartezio.drive.directory import Directory
 
-from kartezio.core.components.base import register
+from kartezio.core.components.base import Components
 # from kartezio.plot import plot_mask
 from kartezio.utils.io import JsonLoader
 
@@ -20,7 +20,7 @@ class CodeModel(InferenceModel, ABC):
         self.endpoint = endpoint
 
     def call_node(self, node_name, x, args):
-        return registry.primitives.instantiate(node_name).call(x, args)
+        return Components.instantiate("Primitive", node_name).call(x, args)
 
     @abstractmethod
     def _parse(self, X):
