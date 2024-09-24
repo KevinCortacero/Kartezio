@@ -233,11 +233,16 @@ def draw_overlay(image, mask, color=None, alpha=1.0, border_color="same", thickn
     img_layer = image.copy()
     img_layer[np.where(mask)] = color
     overlayed = cv2.addWeighted(img_layer, alpha, out, 1 - alpha, 0, out)
-    contours = contours_find(mask, exclude_holes=False)
-    if border_color == "same":
-        overlayed = contours_draw(overlayed, contours, thickness=thickness, color=color)
-    elif border_color is not None:
-        overlayed = contours_draw(
-            overlayed, contours, thickness=thickness, color=border_color
-        )
+    
+    n_labels = np.max(mask)
+    # compute contours for each label
+    for i in range(1, n_labels + 1):
+        mask_i = mask == i
+        contours = contours_find(mask_i.astype(np.uint8), exclude_holes=False)
+        if border_color == "same":
+            overlayed = contours_draw(overlayed, contours, thickness=thickness, color=color)
+        elif border_color is not None:
+            overlayed = contours_draw(
+                overlayed, contours, thickness=thickness, color=border_color
+            )
     return overlayed
