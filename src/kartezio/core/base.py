@@ -152,6 +152,9 @@ class ModelBuilder:
         def set_decay(self, decay: MutationDecay):
             self.decay = decay
 
+        def set_effect(self, effect):
+            self.mutation.effect = effect
+
         def set_mutation_rates(self, node_rate, out_rate):
             self.node_rate = node_rate
             self.out_rate = out_rate
@@ -210,10 +213,14 @@ class ModelBuilder:
     def set_mutation_rates(self, node_rate, out_rate):
         self.mutation.set_mutation_rates(node_rate, out_rate)
 
+    def set_mutation_effect(self, effect):
+        self.mutation.set_effect(effect)
+
     def compile(
         self, n_generations: int, n_children: int, callbacks: List[Callback]
     ):
         self.mutation.compile()
+        self.updatable.append(self.mutation.mutation.effect)
         if self.mutation.decay:
             self.updatable.append(self.mutation.decay)
         ga = GeneticAlgorithm(self.init, self.mutation, self.fitness)
