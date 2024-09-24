@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from scipy.stats import kurtosis, skew
 from skimage.morphology import remove_small_holes, remove_small_objects
+from skimage.filters import meijering, sato, frangi, hessian
 
 from kartezio.core.components.base import register
 from kartezio.core.components.library import Library
@@ -715,6 +716,46 @@ class PyrDown(Primitive):
         h, w = x[0].shape
         scaled_half = cv2.pyrDown(x[0])
         return cv2.resize(scaled_half, (w, h))
+    
+
+@register(Primitive, "meijiring")
+class Meijiring(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+        self.sigmas = [1.0]
+
+    def call(self, x, args=None):
+        return cv2.convertScaleAbs(meijering(x[0], sigmas=self.sigmas) * 255)
+    
+
+@register(Primitive, "sato")
+class Sato(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+        self.sigmas = [1.0]
+
+    def call(self, x, args=None):
+        return cv2.convertScaleAbs(sato(x[0], sigmas=self.sigmas) * 255)
+
+
+@register(Primitive, "frangi")
+class Frangi(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+        self.sigmas = [1.0]
+
+    def call(self, x, args=None):
+        return cv2.convertScaleAbs(frangi(x[0], sigmas=self.sigmas) * 255)
+
+
+@register(Primitive, "hessian")
+class Hessian(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+        self.sigmas = [1.0]
+
+    def call(self, x, args=None):
+        return cv2.convertScaleAbs(hessian(x[0], sigmas=self.sigmas) * 255)
 
 
 @register(Primitive, "gabor")
@@ -844,23 +885,26 @@ library_opencv.add_by_name("gradient")
 library_opencv.add_by_name("top_hat")
 library_opencv.add_by_name("black_hat")
 library_opencv.add_by_name("hit_miss")
+library_opencv.add_by_name("binary_threshold")
+library_opencv.add_by_name("to_zero_threshold")
+library_opencv.add_by_name("binary_in_range")
+library_opencv.add_by_name("pyr_up")
+library_opencv.add_by_name("pyr_down")
+library_opencv.add_by_name("gabor_3")
 library_opencv.add_by_name("fill")
 library_opencv.add_by_name("rm_small_objects")
 library_opencv.add_by_name("rm_small_holes")
-library_opencv.add_by_name("binary_threshold")
-library_opencv.add_by_name("to_zero_threshold")
 library_opencv.add_by_name("binarize")
-library_opencv.add_by_name("binary_in_range")
 library_opencv.add_by_name("in_range")
-library_opencv.add_by_name("fluo_tophat")
 library_opencv.add_by_name("kirsch")
-# library_opencv.add_by_name("embossing")
+library_opencv.add_by_name("embossing")
 library_opencv.add_by_name("normalize")
-# library_opencv.add_by_name("denoize")
-library_opencv.add_by_name("pyr_up")
-library_opencv.add_by_name("pyr_down")
+library_opencv.add_by_name("denoize")
 library_opencv.add_by_name("local_binary_pattern")
-library_opencv.add_by_name("gabor_3")
 library_opencv.add_by_name("gabor_7")
 library_opencv.add_by_name("gabor_11")
 library_opencv.add_by_name("laplacian_of_gaussian")
+library_opencv.add_by_name("meijiring")
+library_opencv.add_by_name("sato")
+library_opencv.add_by_name("frangi")
+library_opencv.add_by_name("hessian")
