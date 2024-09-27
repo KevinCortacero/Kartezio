@@ -1,20 +1,18 @@
-from typing import List
-
 import cv2
 import numpy as np
 from skimage.segmentation import watershed
+from skimage.transform import hough_ellipse
 
 from kartezio.core.components.base import register
 from kartezio.core.components.endpoint import Endpoint
 from kartezio.core.types import TypeArray, TypeLabels
+from kartezio.libraries.array import Sobel
 from kartezio.vision.common import (
     WatershedSkimage,
     contours_find,
     image_new,
     threshold_tozero,
 )
-from kartezio.vision.primitives import Kirsch, Sobel
-from skimage.transform import hough_circle, hough_circle_peaks, hough_ellipse
 
 
 @register(Endpoint, "to_labels")
@@ -57,7 +55,9 @@ class EndpointThreshold(Endpoint):
             return [
                 cv2.threshold(image, self.threshold, 255, cv2.THRESH_BINARY)[1]
             ]
-        return [cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]]
+        return [
+            cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]
+        ]
 
 
 @register(Endpoint, "hough_circle")
@@ -133,9 +133,14 @@ class EndpointEllipse(Endpoint):
 
         elif self.backend == "skimage":
             print("skimage")
-            
+
             print("edges", edges)
-            ellipses = hough_ellipse(edges, threshold=128, min_size=self.min_axis, max_size=self.max_axis)
+            ellipses = hough_ellipse(
+                edges,
+                threshold=128,
+                min_size=self.min_axis,
+                max_size=self.max_axis,
+            )
             for ellipse in ellipses:
                 print(ellipse)
                 _, y0, x0, a, b, o = ellipse
@@ -147,7 +152,7 @@ class EndpointEllipse(Endpoint):
                 )
                 labels.append((x0, y0, a, b))
                 n += 1
-    
+
         return [new_labels]
 
 
@@ -200,7 +205,7 @@ class LocalMaxWatershed(Endpoint):
 
     """
 
-    def __init__(self, threshold: int =1, markers_distance:int =21):
+    def __init__(self, threshold: int = 1, markers_distance: int = 21):
         super().__init__([TypeArray])
         self.wt = WatershedSkimage(
             use_dt=True, markers_distance=markers_distance
@@ -262,16 +267,14 @@ class RawLocalMaxWatershed(Endpoint):
 
 @register(Endpoint, "hough_circle_small")
 class EndpointHoughCircleSmall(Endpoint):
-    def __init__(
-        self, min_dist=4, p1=256, p2=8, min_radius=2, max_radius=12
-    ):
+    def __init__(self, min_dist=4, p1=256, p2=8, min_radius=2, max_radius=12):
         super().__init__([TypeArray])
         self.min_dist = min_dist
         self.p1 = p1
         self.p2 = p2
         self.min_radius = min_radius
         self.max_radius = max_radius
-        self.edge_detector =  Sobel()
+        self.edge_detector = Sobel()
 
     def _to_json_kwargs(self) -> dict:
         return {

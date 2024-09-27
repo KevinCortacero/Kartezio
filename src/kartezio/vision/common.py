@@ -226,21 +226,25 @@ def morph_fill(image):
     return contours_fill(image, cnts)
 
 
-def draw_overlay(image, mask, color=None, alpha=1.0, border_color="same", thickness=1):
+def draw_overlay(
+    image, mask, color=None, alpha=1.0, border_color="same", thickness=1
+):
     if color is None:
-        color = IMAGE_UINT8_COLOR_3C
+        color = [255, 255, 255]
     out = image.copy()
     img_layer = image.copy()
     img_layer[np.where(mask)] = color
     overlayed = cv2.addWeighted(img_layer, alpha, out, 1 - alpha, 0, out)
-    
+
     n_labels = np.max(mask)
     # compute contours for each label
     for i in range(1, n_labels + 1):
         mask_i = mask == i
         contours = contours_find(mask_i.astype(np.uint8), exclude_holes=False)
         if border_color == "same":
-            overlayed = contours_draw(overlayed, contours, thickness=thickness, color=color)
+            overlayed = contours_draw(
+                overlayed, contours, thickness=thickness, color=color
+            )
         elif border_color is not None:
             overlayed = contours_draw(
                 overlayed, contours, thickness=thickness, color=border_color

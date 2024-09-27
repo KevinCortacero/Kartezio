@@ -43,7 +43,7 @@ class Callback(Observer, ABC):
         self.decoder = parser
 
     def update(self, event):
-        if event["n"] % self.frequency !=0 and not event["force"]:
+        if event["n"] % self.frequency != 0 and not event["force"]:
             return
         if event["name"] == Event.START_LOOP:
             self.on_evolution_start(event["n"], event["content"])
@@ -135,6 +135,4 @@ class CallbackSaveFitness(Callback):
 
     def on_evolution_end(self, n, e_content):
         np.save(self.filename, np.array(self.data))
-        print(
-            f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}"
-        )
+        print(f"{self.filename} saved.")
