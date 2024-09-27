@@ -4,12 +4,10 @@ import numpy as np
 from kartezio.core.components.base import register
 from kartezio.core.components.preprocessing import Preprocessing
 from kartezio.vision.common import (
-    bgr2hed,
-    rgb2hsv,
-    hsv2rgb,
     image_split,
     rgb2bgr,
     rgb2hed,
+    rgb2hsv,
 )
 
 
@@ -24,7 +22,9 @@ class PyrMeanShift(Preprocessing):
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i][:3])
-            filtered = cv2.pyrMeanShiftFiltering(original_image, sp=self.sp, sr=self.sr)
+            filtered = cv2.pyrMeanShiftFiltering(
+                original_image, sp=self.sp, sr=self.sr
+            )
             new_x.append(image_split(filtered))
         return new_x
 
@@ -48,16 +48,22 @@ class PyrScale(Preprocessing):
                 if dsize[1] % 2 != 0:
                     dsize = (dsize[0], dsize[1] + 1)
                 if self.level == 0:
-                    xij = cv2.resize(xij, dsize, interpolation=cv2.INTER_NEAREST)
+                    xij = cv2.resize(
+                        xij, dsize, interpolation=cv2.INTER_NEAREST
+                    )
                 else:
-                    for l in range(self.level):
+                    for _ in range(self.level):
                         if self.preserve_values:
                             if self.scale == "down":
                                 dsize = (dsize[0] // 2, dsize[1] // 2)
-                                xij = cv2.resize(xij, dsize, interpolation=cv2.INTER_NEAREST)
+                                xij = cv2.resize(
+                                    xij, dsize, interpolation=cv2.INTER_NEAREST
+                                )
                             elif self.scale == "up":
                                 dsize = (dsize[0] * 2, dsize[1] * 2)
-                                xij = cv2.resize(xij, dsize, interpolation=cv2.INTER_NEAREST)
+                                xij = cv2.resize(
+                                    xij, dsize, interpolation=cv2.INTER_NEAREST
+                                )
                         else:
                             if self.scale == "down":
                                 xij = cv2.pyrDown(xij.astype(np.uint8))
@@ -86,7 +92,9 @@ class ToColorSpace(Preprocessing):
             elif self.color_space == "bgr":
                 transformed = image_split(rgb2bgr(original_image))
             elif self.color_space == "lab":
-                transformed = image_split(cv2.cvtColor(original_image, cv2.COLOR_RGB2LAB))
+                transformed = image_split(
+                    cv2.cvtColor(original_image, cv2.COLOR_RGB2LAB)
+                )
             elif self.color_space == "gray":
                 transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
             if len(x[i]) > 3:
@@ -114,7 +122,9 @@ class AddColorSpace(Preprocessing):
             elif self.color_space == "bgr":
                 transformed = image_split(rgb2bgr(original_image))
             elif self.color_space == "lab":
-                transformed = image_split(cv2.cvtColor(original_image, cv2.COLOR_RGB2LAB))
+                transformed = image_split(
+                    cv2.cvtColor(original_image, cv2.COLOR_RGB2LAB)
+                )
             elif self.color_space == "gray":
                 transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
             new_x.append(list(x[i]) + transformed)
@@ -125,15 +135,21 @@ class AddColorSpace(Preprocessing):
 class ApplyClahe(Preprocessing):
     def __init__(self, clip_limit=2.0, tile_grid_size=(8, 8)):
         super().__init__()
-        self.clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+        self.clahe = cv2.createCLAHE(
+            clipLimit=clip_limit, tileGridSize=tile_grid_size
+        )
 
     def preprocess(self, x):
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i])
-            transformed = transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+            transformed = transformed = cv2.cvtColor(
+                original_image, cv2.COLOR_RGB2GRAY
+            )
             transformed = self.clahe.apply(transformed)
-            new_x.append(image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB)))
+            new_x.append(
+                image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB))
+            )
         return new_x
 
 

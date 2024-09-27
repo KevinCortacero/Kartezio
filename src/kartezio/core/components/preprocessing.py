@@ -8,6 +8,7 @@ class Preprocessing(Node, ABC):
     """
     Preprocessing node, called before training loop.
     """
+
     def __init__(self):
         super().__init__()
         self.__then = None
@@ -16,7 +17,7 @@ class Preprocessing(Node, ABC):
         if self.__then is not None:
             return self.__then.call(self.preprocess(x), args)
         return self.preprocess(x)
-    
+
     @abstractmethod
     def preprocess(self, x):
         raise NotImplementedError
@@ -26,7 +27,7 @@ class Preprocessing(Node, ABC):
         return Components.instantiate(
             "Preprocessing", dict_infos["name"], *dict_infos["args"]
         )
-    
+
     def then(self, preprocessing: "Preprocessing"):
         if self.__then is not None:
             self.__then.then(preprocessing)
