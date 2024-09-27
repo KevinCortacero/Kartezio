@@ -1,13 +1,10 @@
-from abc import ABC
-
 import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
 
 from kartezio.core.components.base import register
-from kartezio.core.evolution import Fitness, KartezioFitness, KartezioMetric
-from kartezio.metric import MetricMSE
-from kartezio.vision.metrics import iou, iou_precision, iou_recall
+from kartezio.core.evolution import Fitness
+from kartezio.vision.metrics import balanced_metric, iou
 
 # TODO: clear the fitness process
 
@@ -141,21 +138,11 @@ class FitnessAP(Fitness):
         return ap
 
 
-@register(Fitness, "count")
-class FitnessCount(KartezioFitness):
-    def __init__(self, secondary_metric: KartezioMetric = None):
-        super().__init__(
-            "Counting", default_metric=registry.metrics.instantiate("count")
-        )
-        if secondary_metric is not None:
-            self.add_metric(secondary_metric)
-
-
 @register(Fitness, "intersection_over_union")
 class FitnessIOU(Fitness):
-    def __init__(self, reduction="mean", secondary=None, multiprocessing=False):
-        super().__init__(reduction, multiprocessing)
-        self.secondary = secondary
+    def __init__(self, reduction="mean", balance=None):
+        super().__init__(reduction)
+        self.balance = balance
 
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
         n_images = len(y_true)
@@ -164,30 +151,21 @@ class FitnessIOU(Fitness):
             _y_true = y_true[n][0].ravel()
             _y_pred = y_pred[n][0].ravel()
             _y_pred[_y_pred > 0] = 1
-
-            """
-            if np.sum(_y_true) == 0:
-                _y_true = 1 - _y_true
-                _y_pred = 1 - _y_pred
-            intersection = np.logical_and(_y_true, _y_pred)
-            union = np.logical_or(_y_true, _y_pred)
-            ious[n] = np.sum(intersection) / np.sum(union)
-            """
-            if self.secondary is None:
+            if self.balance is None:
                 ious[n] = 1.0 - iou(_y_true, _y_pred)
-            elif self.secondary == "sensitivity":
-                ious[n] = 2.0 - iou_recall(_y_true, _y_pred)
-            elif self.secondary == "specificity":
-                ious[n] = 2.0 - iou_precision(_y_true, _y_pred)
+            elif self.balance == "sensitivity":
+                ious[n] = 2.0 - balanced_metric(
+                    iou, _y_true, _y_pred, sensitivity=1.0, specificity=0.0
+                )
+            elif self.balance == "specificity":
+                ious[n] = 2.0 - balanced_metric(
+                    iou, _y_true, _y_pred, sensitivity=0.0, specificity=1.0
+                )
+            elif self.balance == "balanced":
+                ious[n] = 2.0 - balanced_metric(
+                    iou, _y_true, _y_pred, sensitivity=0.5, specificity=0.5
+                )
         return ious
-
-
-@register(Fitness, "intersection_over_union_2")
-class FitnessIOU2(KartezioFitness):
-    def __init__(self):
-        super().__init__(
-            "IOU2", default_metric=registry.metrics.instantiate("IOU2")
-        )
 
 
 @register(Fitness, "mean_squared_error")
@@ -195,7 +173,7 @@ class FitnessMSE(Fitness):
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
         n_images = len(y_true)
         mse_values = np.zeros(n_images, np.float32)
-        
+
         for n in range(n_images):
             _y_true = y_true[n][0]
             _y_pred = y_pred[n][0]
@@ -207,26 +185,3 @@ class FitnessMSE(Fitness):
 
     def __init__(self, reduction="mean", multiprocessing=False):
         super().__init__(reduction, multiprocessing)
-
-
-@register(Fitness, "cross_entropy")
-class FitnessCrossEntropy(KartezioFitness):
-    def __init__(self, n_classes=2):
-        super().__init__(
-            "Cross-Entropy",
-            "CE",
-            n_classes,
-            default_metric=registry.metrics.instantiate("cross_entropy"),
-        )
-
-
-@register(Fitness, "mcc")
-class FitnessMCC(KartezioFitness):
-    """
-    author: Nghi Nguyen (2022)
-    """
-
-    def __init__(self):
-        super().__init__(
-            "MCC", default_metric=registry.metrics.instantiate("MCC")
-        )
