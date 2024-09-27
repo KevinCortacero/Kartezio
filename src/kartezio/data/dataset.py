@@ -3,8 +3,9 @@ from dataclasses import dataclass, field
 from kartezio.core.components.base import Components
 from kartezio.core.components.dataset import DatasetMeta
 from kartezio.drive.directory import Directory
-from kartezio.readers import *
+from kartezio.readers import DataReader
 from kartezio.vision.common import draw_overlay
+import numpy as np
 
 CSV_DATASET = "dataset.csv"
 JSON_META = "meta.json"
@@ -151,14 +152,16 @@ class DatasetReader(Directory):
             )
 
         if self.preview:
+            color = [98, 36, 97]
             for i in range(len(training.x)):
                 visual = training.v[i]
                 label = training.y[i][0]
                 preview = draw_overlay(
                     visual,
                     label.astype(np.uint8),
-                    color=[224, 255, 255],
+                    color=color,
                     alpha=0.5,
+                    thickness=3,
                 )
                 self.preview_dir.write(f"train_{i}.png", preview)
             for i in range(len(testing.x)):
@@ -167,8 +170,9 @@ class DatasetReader(Directory):
                 preview = draw_overlay(
                     visual,
                     label.astype(np.uint8),
-                    color=[224, 255, 255],
+                    color=color,
                     alpha=0.5,
+                    thickness=3,
                 )
                 self.preview_dir.write(f"test_{i}.png", preview)
         return Dataset(

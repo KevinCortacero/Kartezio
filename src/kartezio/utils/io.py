@@ -1,10 +1,10 @@
 import os
 
+from kartezio.core.components.base import load_component
 from kartezio.core.components.decoder import Decoder, SequentialDecoder
+from kartezio.core.components.genotype import MonoChromosome
 from kartezio.drive.directory import Directory
 from kartezio.serialization.json import json_read, json_write
-from kartezio.core.components.base import load_component
-from kartezio.core.components.genotype import MonoChromosome
 
 
 def pack_one_directory(directory_path):

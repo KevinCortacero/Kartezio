@@ -3,8 +3,9 @@ from typing import Dict
 import numpy as np
 
 from kartezio.core.components.base import register
-from kartezio.core.components.genotype import Genotype
-from kartezio.core.mutation.base import Mutation
+from kartezio.core.components.decoder import Decoder, DecoderPoly
+from kartezio.core.components.genotype import Genotype, MultiChromosomes
+from kartezio.core.mutation.base import Mutation, MutationPoly
 
 
 @register(Mutation, "random")
@@ -13,7 +14,7 @@ class MutationRandom(Mutation):
     def __from_dict__(cls, dict_infos: Dict) -> "Mutation":
         pass
 
-    def __init__(self, decoder, node_rate: float, out_rate: float):
+    def __init__(self, decoder: Decoder, node_rate: float, out_rate: float):
         super().__init__(decoder)
         self.node_rate = node_rate
         self.out_rate = out_rate
@@ -43,4 +44,55 @@ class MutationRandom(Mutation):
         sampling_indices = np.nonzero(random_matrix < self.out_rate)
         for output in sampling_indices:
             self.mutate_output(genotype, output)
+        return genotype
+
+
+@register(Mutation, "random_poly")
+class MutationRandomPoly(MutationPoly):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "MutationRandomPoly":
+        pass
+
+    def __init__(
+        self, decoder: DecoderPoly, node_rate: float, out_rate: float
+    ):
+        super().__init__(decoder)
+        self.node_rate = node_rate
+        self.out_rate = out_rate
+        self.nodes_shapes = [
+            (decoder.adapter.n_nodes, wi) for wi in decoder.adapter.w
+        ]
+        self.outputs_shape = decoder.adapter.n_outputs
+
+    def mutate(self, genotype: MultiChromosomes) -> Genotype:
+        for i, shape in enumerate(self.nodes_shapes):
+            random_matrix = np.random.random(size=shape)
+            sampling_indices = np.nonzero(random_matrix < self.node_rate)
+            for node, mutation_parameter_index in np.transpose(
+                sampling_indices
+            ):
+                if mutation_parameter_index == 0:
+                    self.mutate_function(genotype, i, node)
+                elif (
+                    mutation_parameter_index
+                    <= self.decoder.adapter.n_connections[i]
+                ):
+                    connection_idx = mutation_parameter_index - 1
+                    self.mutate_connections(
+                        genotype, i, node, only_one=connection_idx
+                    )
+                else:
+                    parameter_idx = (
+                        mutation_parameter_index
+                        - self.decoder.adapter.n_connections[i]
+                        - 1
+                    )
+                    self.mutate_parameters(
+                        genotype, i, node, only_one=parameter_idx
+                    )
+
+            random_matrix = np.random.random(size=self.outputs_shape)
+            sampling_indices = np.nonzero(random_matrix < self.out_rate)
+            for output in sampling_indices:
+                self.mutate_output(genotype, output)
         return genotype

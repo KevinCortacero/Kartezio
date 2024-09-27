@@ -1,7 +1,7 @@
 import ast
 import copy
 from abc import ABC
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 
@@ -52,3 +52,30 @@ class MonoChromosome(Genotype):
         genotype = MonoChromosome(len(outputs), chromosome)
         genotype.outputs = outputs
         return genotype
+
+
+@register(Genotype, "multi_chromosomes")
+class MultiChromosomes(Genotype):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "MultiChromosomes":
+        pass
+
+    def __init__(self, n_outputs, chromosomes: List[np.ndarray]):
+        super().__init__()
+        self.chromosomes = chromosomes
+        self.outputs = np.zeros(n_outputs, dtype=np.uint8)
+
+    def __deepcopy__(self, memo):
+        new = self.__class__(
+            len(self.outputs),
+            [chromosome.copy() for chromosome in self.chromosomes],
+        )
+        new.chromosome = [chromosome.copy() for chromosome in self.chromosomes]
+        new.outputs = self.outputs.copy()
+        return new
+
+    def get_chromosome(self, item):
+        return self.chromosomes[item]
+
+    def set_chromosome(self, key, value):
+        self.chromosomes[key] = value

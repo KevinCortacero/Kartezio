@@ -17,8 +17,8 @@ class Endpoint(Node, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Endpoint":
-        from kartezio.endpoint import ToLabels
-        print(Components.display())
         return Components.instantiate(
-            "Endpoint", dict_infos["name"].lower().replace(" ", "_"), **dict_infos["kwargs"]
+            "Endpoint",
+            dict_infos["name"].lower().replace(" ", "_"),
+            **dict_infos["kwargs"]
         )
