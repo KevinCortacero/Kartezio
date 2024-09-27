@@ -1,122 +1,38 @@
 from typing import List
 
-import cv2
 import numpy as np
-from numena.image.morphology import morph_erode
-from numena.image.threshold import threshold_tozero
 
-from kartezio.core.components.aggregation import Aggregation
 from kartezio.core.components.base import register
-from kartezio.core.types import TypeArray
+from kartezio.core.components.reduction import Reduction
+from kartezio.vision.common import threshold_tozero
 
 
-def a_f_mean(x: List, args):
-    return np.mean(np.array(x), axis=0).astype(np.uint8)
-
-
-a_mean = Aggregation(a_f_mean, [TypeArray])
-
-
-@register(Aggregation, "average")
-class StackerMean(Aggregation):
-    def _to_json_kwargs(self) -> dict:
-        return {}
-
-    def __init__(
-        self, name="mean_stacker", symbol="MEAN", arity=1, threshold=4
-    ):
-        super().__init__(name, symbol, arity)
-        self.threshold = threshold
-
-    def stack(self, Y: List):
-        return np.mean(np.array(Y), axis=0).astype(np.uint8)
-
-    def post_stack(self, x, index):
-        yi = x.copy()
-        return threshold_tozero(yi, self.threshold)
-
-
-@registry.stackers.add("SUM")
-class StackerSum(Aggregation):
-    def _to_json_kwargs(self) -> dict:
-        return {}
-
-    def __init__(
-        self, name="Sum KartezioStacker", symbol="SUM", arity=1, threshold=4
-    ):
-        super().__init__(name, symbol, arity)
-        self.threshold = threshold
-
-    def stack(self, Y: List):
-        stack_array = np.array(Y).astype(np.float32)
-        stack_array /= 255.0
-        stack_sum = np.sum(stack_array, axis=0)
-        return stack_sum.astype(np.uint8)
-
-    def post_stack(self, x, index):
-        yi = x.copy()
-        if index == 0:
-            return cv2.GaussianBlur(yi, (7, 7), 1)
-        return yi
-
-
-@registry.stackers.add("MIN")
-class StackerMin(Aggregation):
-    def _to_json_kwargs(self) -> dict:
-        return {}
-
-    def __init__(self, name="min_stacker", symbol="MIN", arity=1, threshold=4):
-        super().__init__(name, symbol, arity)
-        self.threshold = threshold
-
-    def stack(self, Y: List):
-        return np.min(np.array(Y), axis=0).astype(np.uint8)
-
-    def post_stack(self, x, index):
-        yi = x.copy()
-        return threshold_tozero(yi, self.threshold)
-
-
-@registry.stackers.add("MAX")
-class StackerMax(Aggregation):
-    def _to_json_kwargs(self) -> dict:
-        return {}
-
-    def __init__(self, name="max_stacker", symbol="MAX", arity=1, threshold=1):
-        super().__init__(name, symbol, arity)
-        self.threshold = threshold
-
-    def stack(self, Y: List):
-        return np.max(np.array(Y), axis=0).astype(np.uint8)
-
-    def post_stack(self, x, index):
-        yi = x.copy()
-        if index == 0:
-            return cv2.GaussianBlur(yi, (7, 7), 1)
-        return yi
-
-
-@registry.stackers.add("MEANW")
-class MeanKartezioStackerForWatershed(Aggregation):
+@register(Reduction, "basic")
+class BasicReducton(Reduction):
     def _to_json_kwargs(self) -> dict:
         return {
-            "half_kernel_size": self.half_kernel_size,
+            "mode": self.mode,
             "threshold": self.threshold,
         }
 
-    def __init__(self, half_kernel_size=1, threshold=4):
-        super().__init__(
-            name="mean_stacker_watershed", symbol="MEANW", arity=2
-        )
-        self.half_kernel_size = half_kernel_size
+    def __init__(self, mode="mean", threshold=4):
+        super().__init__()
+        self.mode = mode
         self.threshold = threshold
 
-    def stack(self, Y: List):
-        return np.mean(np.array(Y), axis=0).astype(np.uint8)
+    def reduce(self, x: List):
+        if self.mode == "mean":
+            return np.mean(np.array(x), axis=0).astype(np.uint8)
+        elif self.mode == "sum":
+            return np.sum(np.array(x), axis=0).astype(np.uint8)
+        elif self.mode == "min":
+            return np.min(np.array(x), axis=0).astype(np.uint8)
+        elif self.mode == "max":
+            return np.max(np.array(x), axis=0).astype(np.uint8)
+        elif self.mode == "median":
+            return np.median(np.array(x), axis=0).astype(np.uint8)
+        else:
+            raise ValueError(f"Unknown mode {self.mode}")
 
-    def post_stack(self, x, index):
-        yi = x.copy()
-        if index == 1:
-            # supposed markers
-            yi = morph_erode(yi, half_kernel_size=self.half_kernel_size)
-        return threshold_tozero(yi, self.threshold)
+    def post_reduction(self, x, index):
+        return threshold_tozero(x, self.threshold)
