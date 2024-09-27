@@ -44,28 +44,40 @@ def dice(y_true, y_pred):
         if total == 0:
             return 1
     intersection = _intersection(y_true, y_pred)
-    dice = 2. * intersection / total
+    dice = 2.0 * intersection / total
     return dice
 
 
 def precision(y_true, y_pred):
     true_positive = _tp(y_true, y_pred)
     false_positive = _fp(y_true, y_pred)
-    precision = true_positive / (true_positive + false_positive) if (true_positive + false_positive) > 0 else 0
+    precision = (
+        true_positive / (true_positive + false_positive)
+        if (true_positive + false_positive) > 0
+        else 0
+    )
     return precision
 
 
 def recall(y_true, y_pred):
     true_positive = _tp(y_true, y_pred)
     false_negative = _fn(y_true, y_pred)
-    recall = true_positive / (true_positive + false_negative) if (true_positive + false_negative) > 0 else 0
+    recall = (
+        true_positive / (true_positive + false_negative)
+        if (true_positive + false_negative) > 0
+        else 0
+    )
     return recall
 
 
 def f1(y_true, y_pred):
     precision_score = precision(y_true, y_pred)
     recall_score = recall(y_true, y_pred)
-    f1 = 2 * (precision_score * recall_score) / (precision_score + recall_score) if (precision_score + recall_score) > 0 else 0
+    f1 = (
+        2 * (precision_score * recall_score) / (precision_score + recall_score)
+        if (precision_score + recall_score) > 0
+        else 0
+    )
     return f1
 
 
@@ -74,45 +86,29 @@ def accuracy(y_true, y_pred):
     false_positive = _fp(y_true, y_pred)
     false_negative = _fn(y_true, y_pred)
     true_negative = _tn(y_true, y_pred)
-    accuracy = (true_positive + true_negative) / (true_positive + false_positive + false_negative + true_negative) if (true_positive + false_positive + false_negative + true_negative) > 0 else 0
+    accuracy = (
+        (true_positive + true_negative)
+        / (true_positive + false_positive + false_negative + true_negative)
+        if (true_positive + false_positive + false_negative + true_negative)
+        > 0
+        else 0
+    )
     return accuracy
 
 
-def iou_precision(y_true, y_pred):
-    return iou(y_true, y_pred) + precision(y_true, y_pred)
+def mse(y_true, y_pred):
+    return np.mean((y_true - y_pred) ** 2)
 
 
-def iou_recall(y_true, y_pred):
-    return iou(y_true, y_pred) + recall(y_true, y_pred)
-
-
-# Example usage
-if __name__ == "__main__":
-    # Example binary images (ground truth and prediction)
-    y_true = np.random.randint(0, 2, (256, 256), dtype=np.uint8).ravel()
-    y_pred = np.random.randint(0, 2, (256, 256), dtype=np.uint8).ravel()
-    
-    print("IoU:", iou(y_true, y_pred))
-    print("Dice:", dice(y_true, y_pred))
-    print("Precision:", precision(y_true, y_pred))
-    print("Recall:", recall(y_true, y_pred))
-    print("F1:", f1(y_true, y_pred))
-    print("Accuracy:", accuracy(y_true, y_pred))
-    print("IoU + Precision:", iou_precision(y_true, y_pred))
-    print("IoU + Recall:", iou_recall(y_true, y_pred))
-
-    # time the functions
-    import time
-    start = time.time()
-    print("IoU:", iou(y_true, y_pred))
-    print("Time taken:", time.time() - start)
-    print("Dice:", dice(y_true, y_pred))
-    print("Precision:", precision(y_true, y_pred))
-    print("Recall:", recall(y_true, y_pred))
-    print("F1:", f1(y_true, y_pred))
-    print("Accuracy:", accuracy(y_true, y_pred))
-    print("IoU + Precision:", iou_precision(y_true, y_pred))
-    print("IoU + Recall:", iou_recall(y_true, y_pred))
-    print("Time taken:", time.time() - start)
-    
-
+def balanced_metric(metric, y_true, y_pred, sensitivity=0.5, specificity=0.5):
+    if sensitivity == 0 and specificity == 0:
+        return metric(y_true, y_pred)
+    if sensitivity == 0:
+        return metric(y_true, y_pred) + specificity * precision(y_true, y_pred)
+    if specificity == 0:
+        return metric(y_true, y_pred) + sensitivity * recall(y_true, y_pred)
+    return (
+        metric(y_true, y_pred)
+        + sensitivity * recall(y_true, y_pred)
+        + specificity * precision(y_true, y_pred)
+    )

@@ -2,21 +2,19 @@ import ast
 
 import cv2
 import numpy as np
-import pandas as pd
 
 from kartezio.core.components.base import register
 from kartezio.core.components.dataset import DataItem, DataReader
 from kartezio.drive.image import imread_gray, imread_rgb, imread_tiff
 from kartezio.drive.imagej import (
-    read_ellipses_from_csv,
     read_polygons_from_roi,
 )
 from kartezio.vision.common import (
-    fill_ellipses_as_labels,
     fill_polygons_as_labels,
     image_new,
     image_split,
 )
+from kartezio.vision.common import gray2rgb
 
 
 @register(DataReader, "image_mask")

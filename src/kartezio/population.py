@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import Dict
 
 import numpy as np
@@ -34,7 +33,7 @@ class PopulationHistory:
 @register(Population, "one_elite")
 class PopulationWithElite(Population):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+    def __from_dict__(cls, dict_infos: Dict) -> "PopulationWithElite":
         pass
 
     def __init__(self, n_children):

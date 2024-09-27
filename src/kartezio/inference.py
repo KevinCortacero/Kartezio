@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from kartezio.vision.common import bgr2rgb
-from kartezio.drive.directory import Directory
 
 from kartezio.core.components.base import Components
-# from kartezio.plot import plot_mask
+from kartezio.drive.directory import Directory
+
+from kartezio.plot import plot_mask
 from kartezio.utils.io import JsonLoader
+from kartezio.vision.common import bgr2rgb
 
 
 class InferenceModel(ABC):
