@@ -1,15 +1,20 @@
 import unittest
 
 from kartezio.core.components.base import Components
-from kartezio.core.sequential import ModelSequential
+from kartezio.core.sequential import create_sequential_builder
 from kartezio.fitness import FitnessIOU
-from kartezio.vision.primitives import library_opencv
+from kartezio.libraries.array import library_opencv
+from kartezio.endpoint import EndpointThreshold
 
 
 class TestModel(unittest.TestCase):
     def setUp(self) -> None:
-        draft = ModelSequential(
-            1, 5, library_opencv, FitnessIOU(reduction="mean")
+        draft = create_sequential_builder(
+            1,
+            5,
+            library_opencv,
+            FitnessIOU(),
+            EndpointThreshold(128)
         )
         Components.display()
         self.model = draft.compile(200, 4, callbacks=[])

@@ -2,17 +2,21 @@ import unittest
 
 from skimage.data import cell
 
-from kartezio.core.sequential import ModelSequential
-from kartezio.data.dataset import DataItem
-from kartezio.fitness import FitnessIOU, FitnessMSE
-from kartezio.vision.common import rgb2gray
-from kartezio.vision.primitives import library_opencv
+from kartezio.core.components.base import Components
+from kartezio.core.sequential import create_sequential_builder
+from kartezio.fitness import FitnessIOU
+from kartezio.libraries.array import library_opencv
+from kartezio.endpoint import EndpointThreshold
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        draft = ModelSequential(
-            1, 30, library_opencv, FitnessMSE(reduction="mean")
+        draft = create_sequential_builder(
+            1,
+            30,
+            library_opencv,
+            FitnessIOU(),
+            EndpointThreshold(128)
         )
         self.model = draft.compile(200, 4, callbacks=[])
         image_x = cell().copy()

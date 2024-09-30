@@ -145,6 +145,8 @@ class ModelBuilder:
             self.mutation = mutation
             self.behavior = None
             self.decay = None
+            self.node_rate = 0.05
+            self.out_rate = 0.05
 
         def set_behavior(self, behavior: MutationBehavior):
             self.behavior = behavior

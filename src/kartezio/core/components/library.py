@@ -24,12 +24,9 @@ class Library(Component, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Library":
-        from kartezio.vision.primitives import Normalize
-
         rtype = dict_infos.get("rtype", TypeArray)
         library = LibraryEmpty(rtype)
-        # for i in range(len(dict_infos["primitives"])):
-        for p_name in dict_infos["functions"]:
+        for p_name in dict_infos["primitives"].values():
             library.add_by_name(p_name)
         return library
 

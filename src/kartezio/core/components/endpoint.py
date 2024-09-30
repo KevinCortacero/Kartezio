@@ -20,5 +20,5 @@ class Endpoint(Node, ABC):
         return Components.instantiate(
             "Endpoint",
             dict_infos["name"].lower().replace(" ", "_"),
-            **dict_infos["kwargs"]
+            *dict_infos["args"]
         )

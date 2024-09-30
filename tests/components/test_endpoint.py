@@ -23,8 +23,8 @@ class MyTestCase(unittest.TestCase):
     def test_something(self):
         endpoint = EndpointTest(42)
         self.assertEqual(endpoint.call([42])[0], 84)
-        endpoint_2 = Components.instantiate("Endpoint", "add_value", 42)
-        self.assertEqual(endpoint_2.call([42])[0], 84)
+        endpoint_2 = Components.instantiate("Endpoint", "add_value", 21)
+        self.assertEqual(endpoint_2.call([21])[0], 42)
         endpoint_3 = Endpoint.__from_dict__(endpoint.__to_dict__())
         self.assertEqual(endpoint_3.call([42])[0], 84)
 
