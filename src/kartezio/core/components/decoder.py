@@ -4,16 +4,130 @@ from typing import Dict, List
 
 import numpy as np
 
-from kartezio.core.components.adapter import AdapterMono, AdapterPoly
 from kartezio.core.components.base import Component, register
 from kartezio.core.components.endpoint import Endpoint
-from kartezio.core.components.genotype import Genotype, MultiChromosomes
+from kartezio.core.components.genotype import Genotype
 from kartezio.core.components.library import Library
 from kartezio.core.components.reduction import Reduction
 from kartezio.core.population import Population
 from kartezio.core.types import TypeArray, TypeFourier, TypeScalar
 from kartezio.libraries.fourier import FFT
 from kartezio.libraries.scalar import MeanValue
+
+
+class Adapter(Component):
+    """
+    Adpater Design Pattern: https://refactoring.guru/design-patterns/adapter
+    """
+
+    def __init__(
+        self, n_inputs, n_nodes, returns, n_connections, n_parameters, rtypes
+    ):
+        super().__init__()
+        self.n_inputs = n_inputs
+        self.n_nodes = n_nodes
+        self.returns = returns
+        self.n_outputs = len(self.returns)
+        self.n_connections = n_connections
+        self.n_parameters = n_parameters
+        self.types_map = {t: i for i, t in enumerate(rtypes)}
+        self.con_idx = 1
+        self.out_idx = self.n_inputs + self.n_nodes
+        self.para_idx = {
+            t: self.con_idx + self.n_connections[i]
+            for i, t in enumerate(rtypes)
+        }
+        self.w = [
+            1 + self.n_connections[i] + self.n_parameters[i]
+            for i in range(len(self.n_connections))
+        ]
+        self.prototype = self.create_prototype()
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Adapter":
+        pass
+
+    def new_genotype(self):
+        return self.prototype.clone()
+
+    def create_prototype(self):
+        genotype = Genotype(self.n_outputs)
+        for t, _, wi in zip(self.types_map, self.w):
+            genotype[t] = np.zeros((self.n_nodes, wi), dtype=np.uint8)
+        return genotype
+
+    def write_function(
+        self,
+        genotype: Genotype,
+        chromosome: str,
+        node: int,
+        function_id: int,
+    ):
+        genotype[chromosome][node, 0] = function_id
+
+    def write_connections(
+        self,
+        genotype: Genotype,
+        chromosome: str,
+        node: int,
+        connections,
+    ):
+        genotype[chromosome][
+            node, self.con_idx : self.para_idx[chromosome]
+        ] = connections
+
+    def write_parameters(
+        self,
+        genotype: MultiChromosomes,
+        chromosome: int,
+        node: int,
+        parameters,
+    ):
+        genotype.get_chromosome(chromosome)[
+            node, self.para_idx[chromosome] :
+        ] = parameters
+
+    def write_output_connection(
+        self, genotype: MultiChromosomes, output_index, connection
+    ):
+        genotype.outputs[output_index] = connection
+
+    def read_function(
+        self, genotype: MultiChromosomes, chromosome: int, node: int
+    ):
+        return genotype.get_chromosome(chromosome)[node, 0]
+
+    def read_connections(
+        self, genotype: MultiChromosomes, chromosome: int, node: int
+    ):
+        return genotype.get_chromosome(chromosome)[
+            node, self.con_idx : self.para_idx[chromosome]
+        ]
+
+    def read_active_connections(
+        self,
+        genotype: MultiChromosomes,
+        chromosome: int,
+        node: int,
+        n_connections: int,
+    ):
+        return genotype.get_chromosome(chromosome)[
+            node,
+            self.con_idx : self.con_idx + n_connections,
+        ]
+
+    def read_parameters(
+        self, genotype: MultiChromosomes, chromosome: int, node: int
+    ):
+        return genotype.get_chromosome(chromosome)[
+            node, self.para_idx[chromosome] :
+        ]
+
+    def read_outputs(self, genotype: MultiChromosomes):
+        return genotype.outputs
+
+    def to_chromosome_indices(self, types):
+        return [self.types_map[_type] for _type in types]
 
 
 class Decoder(Component, ABC):

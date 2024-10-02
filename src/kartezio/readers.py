@@ -6,15 +6,13 @@ import numpy as np
 from kartezio.core.components.base import register
 from kartezio.core.components.dataset import DataItem, DataReader
 from kartezio.drive.image import imread_gray, imread_rgb, imread_tiff
-from kartezio.drive.imagej import (
-    read_polygons_from_roi,
-)
+from kartezio.drive.imagej import read_polygons_from_roi
 from kartezio.vision.common import (
     fill_polygons_as_labels,
+    gray2rgb,
     image_new,
     image_split,
 )
-from kartezio.vision.common import gray2rgb
 
 
 @register(DataReader, "image_mask")

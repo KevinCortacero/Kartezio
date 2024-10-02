@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
 
+import numpy as np
+
 from kartezio.core.components.base import Components
 from kartezio.core.components.dataset import DatasetMeta
 from kartezio.drive.directory import Directory
 from kartezio.readers import DataReader
 from kartezio.vision.common import draw_overlay
-import numpy as np
 
 CSV_DATASET = "dataset.csv"
 JSON_META = "meta.json"

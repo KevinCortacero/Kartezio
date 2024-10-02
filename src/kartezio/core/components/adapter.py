@@ -1,31 +1,25 @@
 from abc import ABC
-from typing import Dict, List
+from typing import Dict
 
 import numpy as np
 
 from kartezio.core.components.base import Component, register
-from kartezio.core.components.genotype import MonoChromosome, MultiChromosomes
+from kartezio.core.components.genotype import Genotype
 
 
 class Adapter(Component, ABC):
-    pass
-
-
-@register(Adapter, "mono")
-class AdapterMono(Adapter):
     """
     Adpater Design Pattern: https://refactoring.guru/design-patterns/adapter
+
     """
 
-    @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "Component":
-        pass
-
-    def new(self):
-        return self.prototype.clone()
-
     def __init__(
-        self, n_inputs, n_nodes, n_outputs, n_connections, n_parameters
+        self,
+        n_inputs: int,
+        n_nodes: int,
+        n_outputs: int,
+        n_connections: int,
+        n_parameters: int,
     ):
         super().__init__()
         self.n_inputs = n_inputs
@@ -38,157 +32,65 @@ class AdapterMono(Adapter):
         self.out_idx = self.n_inputs + self.n_nodes
         self.para_idx = self.con_idx + self.n_connections
         self.w = 1 + self.n_connections + self.n_parameters
-        self.prototype = self.create_prototype()
+        self._genotype = self._create_prototype()
 
-    def create_prototype(self):
-        return MonoChromosome(
-            self.n_outputs, np.zeros((self.n_nodes, self.w), dtype=np.uint8)
-        )
+    def _create_prototype(self) -> Genotype:
+        raise NotImplementedError
 
-    def write_function(self, genome, node, function_id):
-        genome[node, 0] = function_id
-
-    def write_connections(self, genome, node, connections):
-        genome[node, self.con_idx : self.para_idx] = connections
-
-    def write_parameters(self, genome, node, parameters):
-        genome[node, self.para_idx :] = parameters
-
-    def write_output_connection(self, genome, output_index, connection):
-        genome.outputs[output_index] = connection
-
-    def read_function(self, genome, node):
-        return genome[node, 0]
-
-    def read_connections(self, genome, node):
-        return genome[node, self.con_idx : self.para_idx]
-
-    def read_active_connections(self, genome, node, active_connections):
-        return genome[
-            node,
-            self.con_idx : self.con_idx + active_connections,
-        ]
-
-    def read_parameters(self, genome, node):
-        return genome[node, self.para_idx :]
-
-    def read_outputs(self, genotype):
-        return genotype.outputs
+    def new_genotype(self):
+        return self._genotype.clone()
 
 
-@register(Adapter, "poly")
-class AdapterPoly(Adapter):
+@register(Adapter, "mono")
+class AdapterMono(Adapter):
     """
     Adpater Design Pattern: https://refactoring.guru/design-patterns/adapter
     """
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "AdapterPoly":
+    def __from_dict__(cls, dict_infos: Dict) -> "Component":
         pass
 
-    def new(self):
-        return self.prototype.clone()
-
     def __init__(
-        self, n_inputs, n_nodes, returns, n_connections, n_parameters, rtypes
+        self, n_inputs, n_nodes, n_outputs, n_connections, n_parameters
     ):
-        super().__init__()
-        self.n_inputs = n_inputs
-        self.n_nodes = n_nodes
-        self.returns = returns
-        self.n_outputs = len(self.returns)
-        self.n_connections = n_connections
-        self.n_parameters = n_parameters
-        assert len(n_parameters) == len(n_parameters), "not uniform"
-        self.types_map = {t: i for i, t in enumerate(rtypes)}
-        assert (
-            len(n_parameters) == len(n_parameters) == len(self.types_map)
-        ), f"Libraries provided seem to have same return types: {rtypes}."
-        self.in_idx = 0
-        self.con_idx = 1
-        self.out_idx = self.n_inputs + self.n_nodes
-        self.para_idx = [self.con_idx + c for c in self.n_connections]
-        self.w = [
-            1 + self.n_connections[i] + self.n_parameters[i]
-            for i in range(len(self.n_connections))
-        ]
-        self.prototype = self.create_prototype()
+        super().__init__(
+            n_inputs, n_nodes, n_outputs, n_connections, n_parameters
+        )
 
-    def create_prototype(self):
-        chromosomes = [
-            np.zeros((self.n_nodes, wi), dtype=np.uint8) for wi in self.w
-        ]
-        return MultiChromosomes(self.n_outputs, chromosomes)
+    def _create_prototype(self):
+        return MonoChromosome(
+            self.n_outputs, np.zeros((self.n_nodes, self.w), dtype=np.uint8)
+        )
 
-    def write_function(
-        self,
-        genotype: MultiChromosomes,
-        chromosome: int,
-        node: int,
-        function_id,
-    ):
-        genotype.get_chromosome(chromosome)[node, 0] = function_id
+    def set_function(self, genotype: Genotype, node: int, function_id: int):
+        genotype[node, 0] = function_id
 
-    def write_connections(
-        self,
-        genotype: MultiChromosomes,
-        chromosome: int,
-        node: int,
-        connections,
-    ):
-        genotype.get_chromosome(chromosome)[
-            node, self.con_idx : self.para_idx[chromosome]
-        ] = connections
+    def set_connections(self, genotype: Genotype, node: int, connections):
+        genotype[node, self.con_idx : self.para_idx] = connections
 
-    def write_parameters(
-        self,
-        genotype: MultiChromosomes,
-        chromosome: int,
-        node: int,
-        parameters,
-    ):
-        genotype.get_chromosome(chromosome)[
-            node, self.para_idx[chromosome] :
-        ] = parameters
+    def set_parameters(self, genotype: Genotype, node: int, parameters):
+        genotype[node, self.para_idx :] = parameters
 
-    def write_output_connection(
-        self, genotype: MultiChromosomes, output_index, connection
+    def set_output_connection(
+        self, genotype: Genotype, output_index: int, connection
     ):
         genotype.outputs[output_index] = connection
 
-    def read_function(
-        self, genotype: MultiChromosomes, chromosome: int, node: int
-    ):
-        return genotype.get_chromosome(chromosome)[node, 0]
+    def get_function(self, genotype, node):
+        return genotype[node, 0]
 
-    def read_connections(
-        self, genotype: MultiChromosomes, chromosome: int, node: int
-    ):
-        return genotype.get_chromosome(chromosome)[
-            node, self.con_idx : self.para_idx[chromosome]
-        ]
+    def get_connections(self, genotype, node):
+        return genotype[node, self.con_idx : self.para_idx]
 
-    def read_active_connections(
-        self,
-        genotype: MultiChromosomes,
-        chromosome: int,
-        node: int,
-        n_connections: int,
-    ):
-        return genotype.get_chromosome(chromosome)[
+    def get_active_connections(self, genotype, node, active_connections):
+        return genotype[
             node,
-            self.con_idx : self.con_idx + n_connections,
+            self.con_idx : self.con_idx + active_connections,
         ]
 
-    def read_parameters(
-        self, genotype: MultiChromosomes, chromosome: int, node: int
-    ):
-        return genotype.get_chromosome(chromosome)[
-            node, self.para_idx[chromosome] :
-        ]
+    def get_parameters(self, genotype, node):
+        return genotype[node, self.para_idx :]
 
-    def read_outputs(self, genotype: MultiChromosomes):
+    def get_outputs(self, genotype):
         return genotype.outputs
-
-    def to_chromosome_indices(self, types):
-        return [self.types_map[_type] for _type in types]

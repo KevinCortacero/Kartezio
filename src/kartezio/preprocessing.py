@@ -3,12 +3,7 @@ import numpy as np
 
 from kartezio.core.components.base import register
 from kartezio.core.components.preprocessing import Preprocessing
-from kartezio.vision.common import (
-    image_split,
-    rgb2bgr,
-    rgb2hed,
-    rgb2hsv,
-)
+from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
 
 
 @register(Preprocessing, "pyr_shift")

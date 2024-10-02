@@ -4,9 +4,9 @@ from skimage.data import cell
 
 from kartezio.core.components.base import Components
 from kartezio.core.sequential import create_sequential_builder
+from kartezio.endpoint import EndpointThreshold
 from kartezio.fitness import FitnessIOU
 from kartezio.libraries.array import library_opencv
-from kartezio.endpoint import EndpointThreshold
 
 
 class MyTestCase(unittest.TestCase):
