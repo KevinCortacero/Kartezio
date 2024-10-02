@@ -4,7 +4,7 @@ import numpy as np
 
 from kartezio.core.components.base import Component
 from kartezio.core.components.decoder import Decoder, DecoderPoly
-from kartezio.core.components.genotype import Genotype, MultiChromosomes
+from kartezio.core.components.genotype import Genotype
 from kartezio.core.mutation.effect import MutationUniform
 
 
@@ -102,17 +102,15 @@ class MutationPoly(Component, ABC):
             size=self.decoder.adapter.n_connections[chromosome],
         )
 
-    def mutate_function(
-        self, genotype: MultiChromosomes, chromosome: int, idx: int
-    ):
+    def mutate_function(self, genotype: Genotype, chromosome: str, idx: int):
         self.decoder.adapter.write_function(
             genotype, chromosome, idx, self.random_functions(chromosome)
         )
 
     def mutate_connections(
         self,
-        genotype: MultiChromosomes,
-        chromosome: int,
+        genotype: Genotype,
+        chromosome: str,
         idx: int,
         only_one: int = None,
     ):
@@ -129,8 +127,8 @@ class MutationPoly(Component, ABC):
 
     def mutate_parameters(
         self,
-        genotype: MultiChromosomes,
-        chromosome: int,
+        genotype: Genotype,
+        chromosome: str,
         idx: int,
         only_one: int = None,
     ):
@@ -149,11 +147,11 @@ class MutationPoly(Component, ABC):
             genotype, chromosome, idx, new_parameters
         )
 
-    def mutate_output(self, genotype: MultiChromosomes, idx: int):
+    def mutate_output(self, genotype: Genotype, idx: int):
         self.decoder.adapter.write_output_connection(
             genotype, idx, self.random_output
         )
 
     @abstractmethod
-    def mutate(self, genotype: MultiChromosomes):
+    def mutate(self, genotype: Genotype):
         pass

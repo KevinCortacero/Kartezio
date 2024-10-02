@@ -33,6 +33,8 @@ class Adapter(Component):
         self.types_map = {t: i for i, t in enumerate(rtypes)}
         self.con_idx = 1
         self.out_idx = self.n_inputs + self.n_nodes
+
+        # extract class for each feature
         self.para_idx = {
             t: self.con_idx + self.n_connections[i]
             for i, t in enumerate(rtypes)
@@ -56,7 +58,7 @@ class Adapter(Component):
             genotype[t] = np.zeros((self.n_nodes, wi), dtype=np.uint8)
         return genotype
 
-    def write_function(
+    def set_function(
         self,
         genotype: Genotype,
         chromosome: str,
@@ -65,7 +67,7 @@ class Adapter(Component):
     ):
         genotype[chromosome][node, 0] = function_id
 
-    def write_connections(
+    def set_connections(
         self,
         genotype: Genotype,
         chromosome: str,
@@ -76,10 +78,10 @@ class Adapter(Component):
             node, self.con_idx : self.para_idx[chromosome]
         ] = connections
 
-    def write_parameters(
+    def set_parameters(
         self,
-        genotype: MultiChromosomes,
-        chromosome: int,
+        genotype: Genotype,
+        chromosome: str,
         node: int,
         parameters,
     ):
@@ -87,44 +89,33 @@ class Adapter(Component):
             node, self.para_idx[chromosome] :
         ] = parameters
 
-    def write_output_connection(
-        self, genotype: MultiChromosomes, output_index, connection
-    ):
-        genotype.outputs[output_index] = connection
+    def set_output(self, genotype: Genotype, output_index, connection):
+        genotype["outputs"][output_index] = connection
 
-    def read_function(
-        self, genotype: MultiChromosomes, chromosome: int, node: int
-    ):
-        return genotype.get_chromosome(chromosome)[node, 0]
+    def get_function(self, genotype: Genotype, chromosome: str, node: int):
+        return genotype[chromosome][node, 0]
 
-    def read_connections(
-        self, genotype: MultiChromosomes, chromosome: int, node: int
-    ):
-        return genotype.get_chromosome(chromosome)[
+    def get_connections(self, genotype: Genotype, chromosome: str, node: int):
+        return genotype[chromosome][
             node, self.con_idx : self.para_idx[chromosome]
         ]
 
-    def read_active_connections(
+    def get_active_connections(
         self,
-        genotype: MultiChromosomes,
-        chromosome: int,
+        genotype: Genotype,
+        chromosome: str,
         node: int,
         n_connections: int,
     ):
-        return genotype.get_chromosome(chromosome)[
-            node,
-            self.con_idx : self.con_idx + n_connections,
+        return genotype[chromosome][
+            node, self.con_idx : self.con_idx + n_connections
         ]
 
-    def read_parameters(
-        self, genotype: MultiChromosomes, chromosome: int, node: int
-    ):
-        return genotype.get_chromosome(chromosome)[
-            node, self.para_idx[chromosome] :
-        ]
+    def get_parameters(self, genotype: Genotype, chromosome: str, node: int):
+        return genotype[chromosome][node, self.para_idx[chromosome] :]
 
-    def read_outputs(self, genotype: MultiChromosomes):
-        return genotype.outputs
+    def get_outputs(self, genotype: Genotype):
+        return genotype["outputs"]
 
     def to_chromosome_indices(self, types):
         return [self.types_map[_type] for _type in types]
@@ -140,15 +131,16 @@ class Decoder(Component, ABC):
     ):
         super().__init__()
         if endpoint is None:
-            n_outputs = 1
+            n_outputs = [library.rtype]
         else:
-            n_outputs = len(endpoint.inputs)
-        self.adapter = AdapterMono(
+            n_outputs = endpoint.inputs
+        self.adapter = Adapter(
             n_inputs,
             n_nodes,
-            n_outputs=n_outputs,
+            returns=n_outputs,
             n_parameters=library.max_parameters,
             n_connections=library.max_arity,
+            rtypes=library.rtype,
         )
         self.library = library
         self.endpoint = endpoint
@@ -307,7 +299,7 @@ class DecoderPoly(Component):
             y_pred.append(y)
         return y_pred
 
-    def decode(self, genotype: MultiChromosomes, x: List[np.ndarray]):
+    def decode(self, genotype: Genotype, x: List[np.ndarray]):
         all_y_pred = []
         all_times = []
         phenotype = self.parse_to_graphs(genotype)
@@ -322,9 +314,7 @@ class DecoderPoly(Component):
         whole_time = np.mean(np.array(all_times))
         return all_y_pred, whole_time
 
-    def _decode_one(
-        self, genotype: MultiChromosomes, phenotype: List, x: List
-    ):
+    def _decode_one(self, genotype: Genotype, phenotype: List, x: List):
         # fill output_map with inputs
         node_outputs = []
         for _ in range(len(self.adapter.types_map)):
@@ -350,7 +340,7 @@ class DecoderPoly(Component):
 
     def _x_to_output_map(
         self,
-        genotype: MultiChromosomes,
+        genotype: Genotype,
         phenotype: List,
         x: List,
         node_outputs,
@@ -396,7 +386,7 @@ class DecoderPoly(Component):
                 node_outputs[type_index][node_index] = value
         return node_outputs
 
-    def parse_to_graphs(self, genotype: MultiChromosomes):
+    def parse_to_graphs(self, genotype: Genotype):
         outputs = self.adapter.read_outputs(genotype)
         graphs_list = []
         for output, f_type in zip(outputs, self.adapter.returns):
@@ -405,7 +395,7 @@ class DecoderPoly(Component):
             graphs_list.append(self._parse_one_graph(genotype, root))
         return graphs_list
 
-    def _parse_one_graph(self, genotype: MultiChromosomes, graph_source):
+    def _parse_one_graph(self, genotype: Genotype, graph_source):
         next_indices = graph_source.copy()
         output_tree = graph_source.copy()
         while next_indices:

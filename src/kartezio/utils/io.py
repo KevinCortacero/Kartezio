@@ -2,7 +2,7 @@ import os
 
 from kartezio.core.components.base import load_component
 from kartezio.core.components.decoder import Decoder, SequentialDecoder
-from kartezio.core.components.genotype import MonoChromosome
+from kartezio.core.components.genotype import Genotype
 from kartezio.drive.directory import Directory
 from kartezio.serialization.json import json_read, json_write
 

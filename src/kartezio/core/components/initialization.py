@@ -2,8 +2,8 @@ from abc import ABC
 from typing import Dict
 
 from kartezio.core.components.base import register
-from kartezio.core.components.decoder import DecoderPoly
-from kartezio.core.components.genotype import MultiChromosomes
+from kartezio.core.components.decoder import Decoder, DecoderPoly
+from kartezio.core.components.genotype import Genotype
 from kartezio.core.mutation.base import Mutation, MutationPoly
 
 
@@ -17,7 +17,7 @@ class MutationAllRandom(Mutation):
     def __from_dict__(cls, dict_infos: Dict) -> "Mutation":
         pass
 
-    def __init__(self, decoder):
+    def __init__(self, decoder: Decoder):
         super().__init__(decoder)
 
     def mutate(self, genotype):
@@ -63,7 +63,7 @@ class MutationAllRandomPoly(MutationPoly):
     def __init__(self, decoder: DecoderPoly):
         super().__init__(decoder)
 
-    def mutate(self, genotype: MultiChromosomes):
+    def mutate(self, genotype: Genotype):
         # mutate genes
         for t in range(len(self.decoder.adapter.types_map)):
             for n in range(self.decoder.adapter.n_nodes):

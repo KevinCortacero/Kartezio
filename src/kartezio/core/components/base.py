@@ -72,9 +72,10 @@ class Components:
     @staticmethod
     def name_of(component_class: type) -> str:
         if component_class.__name__ not in Components._reverse.keys():
-            raise KeyError(
+            print(
                 f"Component '{component_class.__name__}' not properly registered, please make sure use '@register' over your Class definition."
             )
+            return component_class.__name__
         return Components._reverse[component_class.__name__].split("/")[1]
 
     @staticmethod

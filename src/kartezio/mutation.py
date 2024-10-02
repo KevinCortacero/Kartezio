@@ -4,7 +4,7 @@ import numpy as np
 
 from kartezio.core.components.base import register
 from kartezio.core.components.decoder import Decoder, DecoderPoly
-from kartezio.core.components.genotype import Genotype, MultiChromosomes
+from kartezio.core.components.genotype import Genotype
 from kartezio.core.mutation.base import Mutation, MutationPoly
 
 
@@ -64,7 +64,7 @@ class MutationRandomPoly(MutationPoly):
         ]
         self.outputs_shape = decoder.adapter.n_outputs
 
-    def mutate(self, genotype: MultiChromosomes) -> Genotype:
+    def mutate(self, genotype: Genotype) -> Genotype:
         for i, shape in enumerate(self.nodes_shapes):
             random_matrix = np.random.random(size=shape)
             sampling_indices = np.nonzero(random_matrix < self.node_rate)
