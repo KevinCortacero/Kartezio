@@ -19,7 +19,7 @@ from kartezio.core.mutation.decay import (
     LinearDecay,
     MutationDecay,
 )
-from kartezio.export import GenomeToPython
+from kartezio.export import PythonClassWriter
 from kartezio.mutation import MutationRandom
 from kartezio.strategy import OnePlusLambda
 from kartezio.utils.io import JsonSaver
@@ -128,7 +128,7 @@ class ModelCGP(ModelML, Observable):
         return self.decoder.decode(self.ga.population.get_elite(), x)
 
     def print_python_class(self, class_name):
-        python_writer = GenomeToPython(self.decoder)
+        python_writer = PythonClassWriter(self.decoder)
         python_writer.to_python_class(
             class_name, self.ga.population.get_elite()
         )

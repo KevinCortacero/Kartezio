@@ -20,29 +20,35 @@ class Adapter(Component):
     Adpater Design Pattern: https://refactoring.guru/design-patterns/adapter
     """
 
-    def __init__(
-        self, n_inputs, n_nodes, returns, n_connections, n_parameters, rtypes
-    ):
+    FUNCTION = 0
+
+    class ChromosomeInfo:
+        def __init__(self, n_nodes, n_edges, n_parameters, n_functions):
+            self.n_edges = n_edges
+            self.n_parameters = n_parameters
+            self.para_idx = 1 + n_edges
+            self.shape = (n_nodes, 1 + self.n_edges + self.n_parameters)
+            self.n_functions = n_functions
+
+    def __init__(self, n_inputs, n_nodes, returns, libraries: List[Library]):
         super().__init__()
         self.n_inputs = n_inputs
         self.n_nodes = n_nodes
         self.returns = returns
         self.n_outputs = len(self.returns)
-        self.n_connections = n_connections
-        self.n_parameters = n_parameters
-        self.types_map = {t: i for i, t in enumerate(rtypes)}
-        self.con_idx = 1
         self.out_idx = self.n_inputs + self.n_nodes
-
-        # extract class for each feature
-        self.para_idx = {
-            t: self.con_idx + self.n_connections[i]
-            for i, t in enumerate(rtypes)
+        self.chromosomes_infos = {
+            library.rtype: Adapter.ChromosomeInfo(
+                n_nodes,
+                library.max_arity,
+                library.max_parameters,
+                library.size,
+            )
+            for library in libraries
         }
-        self.w = [
-            1 + self.n_connections[i] + self.n_parameters[i]
-            for i in range(len(self.n_connections))
-        ]
+        self.types_map = {
+            t: i for i, t in enumerate(self.chromosomes_infos.keys())
+        }
         self.prototype = self.create_prototype()
 
     @classmethod
@@ -54,8 +60,8 @@ class Adapter(Component):
 
     def create_prototype(self):
         genotype = Genotype(self.n_outputs)
-        for t, _, wi in zip(self.types_map, self.w):
-            genotype[t] = np.zeros((self.n_nodes, wi), dtype=np.uint8)
+        for chromosome, info in self.chromosomes_infos.items():
+            genotype[chromosome] = np.zeros(info.shape, dtype=np.uint8)
         return genotype
 
     def set_function(
@@ -67,16 +73,16 @@ class Adapter(Component):
     ):
         genotype[chromosome][node, 0] = function_id
 
-    def set_connections(
+    def set_edges(
         self,
         genotype: Genotype,
         chromosome: str,
         node: int,
-        connections,
+        edges,
     ):
         genotype[chromosome][
-            node, self.con_idx : self.para_idx[chromosome]
-        ] = connections
+            node, 1 : self.chromosomes_infos[chromosome].para_idx
+        ] = edges
 
     def set_parameters(
         self,
@@ -85,8 +91,8 @@ class Adapter(Component):
         node: int,
         parameters,
     ):
-        genotype.get_chromosome(chromosome)[
-            node, self.para_idx[chromosome] :
+        genotype[chromosome][
+            node, self.chromosomes_infos[chromosome].para_idx :
         ] = parameters
 
     def set_output(self, genotype: Genotype, output_index, connection):
@@ -95,24 +101,24 @@ class Adapter(Component):
     def get_function(self, genotype: Genotype, chromosome: str, node: int):
         return genotype[chromosome][node, 0]
 
-    def get_connections(self, genotype: Genotype, chromosome: str, node: int):
+    def get_edges(self, genotype: Genotype, chromosome: str, node: int):
         return genotype[chromosome][
-            node, self.con_idx : self.para_idx[chromosome]
+            node, 1 : self.chromosomes_infos[chromosome].para_idx
         ]
 
-    def get_active_connections(
+    def get_active_edges(
         self,
         genotype: Genotype,
         chromosome: str,
         node: int,
-        n_connections: int,
+        n_edges: int,
     ):
-        return genotype[chromosome][
-            node, self.con_idx : self.con_idx + n_connections
-        ]
+        return genotype[chromosome][node, 1 : 1 + n_edges]
 
     def get_parameters(self, genotype: Genotype, chromosome: str, node: int):
-        return genotype[chromosome][node, self.para_idx[chromosome] :]
+        return genotype[chromosome][
+            node, self.chromosomes_infos[chromosome].para_idx :
+        ]
 
     def get_outputs(self, genotype: Genotype):
         return genotype["outputs"]
@@ -126,23 +132,18 @@ class Decoder(Component, ABC):
         self,
         n_inputs: int,
         n_nodes: int,
-        library: Library,
-        endpoint: Endpoint = None,
+        libraries: List[Library],
+        endpoint: Endpoint,
     ):
         super().__init__()
-        if endpoint is None:
-            n_outputs = [library.rtype]
-        else:
-            n_outputs = endpoint.inputs
+        n_outputs = endpoint.inputs
         self.adapter = Adapter(
             n_inputs,
             n_nodes,
             returns=n_outputs,
-            n_parameters=library.max_parameters,
-            n_connections=library.max_arity,
-            rtypes=library.rtype,
+            libraries=libraries,
         )
-        self.library = library
+        self.libraries = libraries
         self.endpoint = endpoint
 
     def decode(self, genotype: Genotype, x: List[np.ndarray]):
@@ -188,7 +189,6 @@ class Decoder(Component, ABC):
     def __from_dict__(cls, dict_infos: Dict) -> "Decoder":
         n_inputs = dict_infos["metadata"]["n_in"]
         n_nodes = dict_infos["metadata"]["columns"]
-        print(dict_infos["endpoint"])
         return SequentialDecoder(
             n_inputs,
             n_nodes,
@@ -258,36 +258,10 @@ class Decoder(Component, ABC):
 
 
 @register(Decoder, "poly")
-class DecoderPoly(Component):
+class DecoderPoly(Decoder):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "DecoderPoly":
         pass
-
-    def n_functions(self):
-        return [l.size for l in self.libraries]
-
-    def __init__(
-        self,
-        n_inputs: int,
-        n_nodes: int,
-        libraries: List[Library],
-        endpoint: Endpoint,
-    ):
-        super().__init__()
-        if endpoint is None:
-            returns = [TypeArray]
-        else:
-            returns = endpoint.inputs
-        self.adapter = AdapterPoly(
-            n_inputs,
-            n_nodes,
-            returns=returns,
-            n_parameters=[library.max_parameters for library in libraries],
-            n_connections=[library.max_arity for library in libraries],
-            rtypes=[library.rtype for library in libraries],
-        )
-        self.libraries = libraries
-        self.endpoint = endpoint
 
     def decode_population(
         self, population: Population, x: List[np.ndarray]
@@ -319,18 +293,22 @@ class DecoderPoly(Component):
         node_outputs = []
         for _ in range(len(self.adapter.types_map)):
             node_outputs.append({})
-        outputs = self.adapter.read_outputs(genotype)
+        outputs = self.adapter.get_outputs(genotype)
         for idx, edge in enumerate(outputs):
             if edge < self.adapter.n_inputs:
-                type_index = self.adapter.types_map[self.adapter.returns[idx]]
+                chromosome_idx = self.adapter.types_map[
+                    self.adapter.returns[idx]
+                ]
                 if self.adapter.returns[idx] == TypeFourier:
-                    node_outputs[type_index][edge] = FFT().call([x[edge]], [])
+                    node_outputs[chromosome_idx][edge] = FFT().call(
+                        [x[edge]], []
+                    )
                 elif self.adapter.returns[idx] == TypeScalar:
-                    node_outputs[type_index][edge] = MeanValue().call(
+                    node_outputs[chromosome_idx][edge] = MeanValue().call(
                         [x[edge]], []
                     )
                 else:
-                    node_outputs[type_index][edge] = x[edge]
+                    node_outputs[chromosome_idx][edge] = x[edge]
         self._x_to_output_map(genotype, phenotype, x, node_outputs)
         y = [
             node_outputs[self.adapter.types_map[t]][c]
@@ -350,22 +328,25 @@ class DecoderPoly(Component):
                 node_index, type_index = node
                 if node_index < self.adapter.n_inputs:
                     continue
-                if node_index in node_outputs[type_index].keys():
+                if (
+                    node_index
+                    in node_outputs[self.adapter.types_map[type_index]].keys()
+                ):
                     continue
                 real_index = node_index - self.adapter.n_inputs
                 # fill the map with active nodes
-                function_index = self.adapter.read_function(
+                function_index = self.adapter.get_function(
                     genotype, type_index, real_index
                 )
-                p = self.adapter.read_parameters(
+                p = self.adapter.get_parameters(
                     genotype, type_index, real_index
                 )
-                arity = self.libraries[type_index].arity_of(function_index)
-                connections = self.adapter.read_active_connections(
+                arity = self.arity_of(type_index, function_index)
+                connections = self.adapter.get_active_edges(
                     genotype, type_index, real_index, arity
                 )
-                function_input_types = self.libraries[type_index].inputs_of(
-                    function_index
+                function_input_types = self.inputs_of(
+                    type_index, function_index
                 )
                 inputs = []
                 for c, t in zip(connections, function_input_types):
@@ -380,20 +361,32 @@ class DecoderPoly(Component):
                             inputs.append(x[c])
                     else:
                         inputs.append(node_outputs[chromosome][c])
-                value = self.libraries[type_index].execute(
-                    function_index, inputs, p
-                )
-                node_outputs[type_index][node_index] = value
+                value = self.execute(type_index, function_index, inputs, p)
+                node_outputs[chromosome][node_index] = value
         return node_outputs
 
     def parse_to_graphs(self, genotype: Genotype):
-        outputs = self.adapter.read_outputs(genotype)
+        outputs = self.adapter.get_outputs(genotype)
         graphs_list = []
-        for output, f_type in zip(outputs, self.adapter.returns):
-            f_index = self.adapter.types_map[f_type]
-            root = {(output, f_index)}
+        for output, chromosome in zip(outputs, self.adapter.returns):
+            root = {(output, chromosome)}
             graphs_list.append(self._parse_one_graph(genotype, root))
         return graphs_list
+
+    def arity_of(self, chromosome, function):
+        return self.libraries[self.adapter.types_map[chromosome]].arity_of(
+            function
+        )
+
+    def inputs_of(self, chromosome, function):
+        return self.libraries[self.adapter.types_map[chromosome]].inputs_of(
+            function
+        )
+
+    def execute(self, chromosome, function, inputs, parameters):
+        return self.libraries[self.adapter.types_map[chromosome]].execute(
+            function, inputs, parameters
+        )
 
     def _parse_one_graph(self, genotype: Genotype, graph_source):
         next_indices = graph_source.copy()
@@ -404,18 +397,15 @@ class DecoderPoly(Component):
             if next_index < self.adapter.n_inputs:
                 continue
             node = next_index - self.adapter.n_inputs
-            function_index = self.adapter.read_function(
+            function_index = self.adapter.get_function(
                 genotype, next_type_index, node
             )
-            arity = self.libraries[next_type_index].arity_of(function_index)
-            types = self.libraries[next_type_index].inputs_of(function_index)
-            chromosomes_indices = self.adapter.to_chromosome_indices(types)
-            next_connections = self.adapter.read_active_connections(
+            arity = self.arity_of(next_type_index, function_index)
+            types = self.inputs_of(next_type_index, function_index)
+            next_connections = self.adapter.get_active_edges(
                 genotype, next_type_index, node, arity
             )
-            next_connections_to_pop = set(
-                zip(next_connections, chromosomes_indices)
-            )
+            next_connections_to_pop = set(zip(next_connections, types))
             next_indices = next_indices.union(next_connections_to_pop)
             output_tree = output_tree.union(next_connections_to_pop)
         return sorted(list(output_tree))

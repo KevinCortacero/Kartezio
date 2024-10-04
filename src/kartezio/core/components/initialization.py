@@ -65,16 +65,16 @@ class MutationAllRandomPoly(MutationPoly):
 
     def mutate(self, genotype: Genotype):
         # mutate genes
-        for t in range(len(self.decoder.adapter.types_map)):
-            for n in range(self.decoder.adapter.n_nodes):
-                self.mutate_function(genotype, t, n)
-                self.mutate_connections(genotype, t, n)
-                self.mutate_parameters(genotype, t, n)
+        for chromosome in self.decoder.adapter.chromosomes_infos.keys():
+            for node in range(self.decoder.adapter.n_nodes):
+                self.mutate_function(genotype, chromosome, node)
+                self.mutate_connections(genotype, chromosome, node)
+                self.mutate_parameters(genotype, chromosome, node)
         # mutate outputs
-        for o in range(self.decoder.adapter.n_outputs):
-            self.mutate_output(genotype, o)
+        for output in range(self.decoder.adapter.n_outputs):
+            self.mutate_output(genotype, output)
         return genotype
 
     def random(self):
-        genotype = self.decoder.adapter.new()
+        genotype = self.decoder.adapter.new_genotype()
         return self.mutate(genotype)

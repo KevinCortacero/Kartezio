@@ -9,10 +9,9 @@ from kartezio.core.mutation.effect import MutationUniform
 
 
 class Mutation(Component, ABC):
-    def __init__(self, decoder):
+    def __init__(self, decoder: Decoder):
         super(Component).__init__()
         self.decoder = decoder
-        self.n_functions = decoder.library.size
         self.parameter_max_value = 256
         self.effect = MutationUniform()
 
@@ -79,32 +78,35 @@ class MutationPoly(Component, ABC):
     def __init__(self, decoder: DecoderPoly):
         super().__init__()
         self.decoder = decoder
-        self.n_functions = self.decoder.n_functions()
         self.parameter_max_value = 256
         self.effect = MutationUniform()
 
     def random_parameters(self, chromosome: int):
         return np.random.randint(
             self.parameter_max_value,
-            size=self.decoder.adapter.n_parameters[chromosome],
+            size=self.decoder.adapter.chromosomes_infos[
+                chromosome
+            ].n_parameters,
         )
 
-    def random_functions(self, chromosome: int):
-        return np.random.randint(self.n_functions[chromosome])
+    def random_function(self, chromosome: str):
+        return np.random.randint(
+            self.decoder.adapter.chromosomes_infos[chromosome].n_functions
+        )
 
     @property
     def random_output(self):
         return np.random.randint(self.decoder.adapter.out_idx, size=1)
 
-    def random_connections(self, idx: int, chromosome: int):
+    def random_edges(self, idx: int, chromosome: int):
         return np.random.randint(
             self.decoder.adapter.n_inputs + idx,
-            size=self.decoder.adapter.n_connections[chromosome],
+            size=self.decoder.adapter.chromosomes_infos[chromosome].n_edges,
         )
 
     def mutate_function(self, genotype: Genotype, chromosome: str, idx: int):
-        self.decoder.adapter.write_function(
-            genotype, chromosome, idx, self.random_functions(chromosome)
+        self.decoder.adapter.set_function(
+            genotype, chromosome, idx, self.random_function(chromosome)
         )
 
     def mutate_connections(
@@ -114,16 +116,14 @@ class MutationPoly(Component, ABC):
         idx: int,
         only_one: int = None,
     ):
-        new_connections = self.random_connections(idx, chromosome)
+        new_edges = self.random_edges(idx, chromosome)
         if only_one is not None:
-            new_value = new_connections[only_one]
-            new_connections = self.decoder.adapter.read_connections(
+            new_value = new_edges[only_one]
+            new_edges = self.decoder.adapter.get_edges(
                 genotype, chromosome, idx
             )
-            new_connections[only_one] = new_value
-        self.decoder.adapter.write_connections(
-            genotype, chromosome, idx, new_connections
-        )
+            new_edges[only_one] = new_value
+        self.decoder.adapter.set_edges(genotype, chromosome, idx, new_edges)
 
     def mutate_parameters(
         self,
@@ -133,7 +133,7 @@ class MutationPoly(Component, ABC):
         only_one: int = None,
     ):
         new_random_parameters = self.random_parameters(chromosome)
-        old_parameters = self.decoder.adapter.read_parameters(
+        old_parameters = self.decoder.adapter.get_parameters(
             genotype, chromosome, idx
         )
         new_parameters = self.effect.call(
@@ -143,14 +143,12 @@ class MutationPoly(Component, ABC):
 
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
-        self.decoder.adapter.write_parameters(
+        self.decoder.adapter.set_parameters(
             genotype, chromosome, idx, new_parameters
         )
 
     def mutate_output(self, genotype: Genotype, idx: int):
-        self.decoder.adapter.write_output_connection(
-            genotype, idx, self.random_output
-        )
+        self.decoder.adapter.set_output(genotype, idx, self.random_output)
 
     @abstractmethod
     def mutate(self, genotype: Genotype):

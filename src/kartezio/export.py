@@ -3,7 +3,7 @@ import cv2
 from kartezio.core.components.decoder import Decoder
 
 
-class GenomeToPython:
+class PythonClassWriter:
     def __init__(self, decoder: Decoder):
         self.decoder = decoder
         self.indent_1 = " " * 4
@@ -15,7 +15,7 @@ class GenomeToPython:
         # self.imports += f"from {import_package} import {endpoint_class_name}\n"
         # self.endpoint_instantiation = f"{endpoint_class_name}(**{endpoint_kwargs})"
 
-    def to_python_class(self, class_name, genome):
+    def to_python_class(self, class_name, genotype):
         python_code = ""
         python_code += f"{self.imports}\n\n\n"
         python_code += f"class {class_name}(CodeModel):\n"
@@ -33,7 +33,7 @@ class GenomeToPython:
         map_of_outputs = {}
 
         for i in range(self.decoder.adapter.n_outputs):
-            active_nodes = self.decoder.parse_to_graphs(genome)[i]
+            active_nodes = self.decoder.parse_to_graphs(genotype)[i]
             for node in active_nodes:
                 if node in list_of_inputs or node in list_of_nodes:
                     continue
@@ -44,18 +44,18 @@ class GenomeToPython:
                     )
                 elif node < self.decoder.adapter.out_idx:
                     function_index = self.decoder.adapter.read_function(
-                        genome, node - self.decoder.adapter.n_inputs
+                        genotype, node - self.decoder.adapter.n_inputs
                     )
                     active_connections = self.decoder.library.arity_of(
                         function_index
                     )
                     connections = self.decoder.adapter.read_active_connections(
-                        genome,
+                        genotype,
                         node - self.decoder.adapter.n_inputs,
                         active_connections,
                     )
                     parameters = self.decoder.adapter.read_parameters(
-                        genome, node - self.decoder.adapter.n_inputs
+                        genotype, node - self.decoder.adapter.n_inputs
                     )
                     f_name = self.decoder.library.name_of(function_index)
                     c_names = [
@@ -96,12 +96,12 @@ class KartezioInsight(Decoder):
         super().__init__(parser.infos, parser.library, parser.endpoint)
         self.preprocessing = preprocessing
 
-    def create_node_images(self, genome, x, prefix="", crop=None):
+    def create_node_images(self, genotype, x, prefix="", crop=None):
         if self.preprocessing:
             x = self.preprocessing.call([x])[0]
-        graphs = self.parse_to_graphs(genome)
-        output_map = self._x_to_output_map(genome, graphs, x)
-        outputs = self._parse_one(genome, graphs, x)
+        graphs = self.parse_to_graphs(genotype)
+        output_map = self._x_to_output_map(genotype, graphs, x)
+        outputs = self._parse_one(genotype, graphs, x)
         endpoint_output = self.endpoint.call(outputs)
         for node_name, node_image in output_map.items():
             if crop:

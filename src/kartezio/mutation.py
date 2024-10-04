@@ -59,40 +59,34 @@ class MutationRandomPoly(MutationPoly):
         super().__init__(decoder)
         self.node_rate = node_rate
         self.out_rate = out_rate
-        self.nodes_shapes = [
-            (decoder.adapter.n_nodes, wi) for wi in decoder.adapter.w
-        ]
         self.outputs_shape = decoder.adapter.n_outputs
 
     def mutate(self, genotype: Genotype) -> Genotype:
-        for i, shape in enumerate(self.nodes_shapes):
-            random_matrix = np.random.random(size=shape)
+        for (
+            chromosome,
+            chromosome_infos,
+        ) in self.decoder.adapter.chromosomes_infos.items():
+            random_matrix = np.random.random(size=chromosome_infos.shape)
             sampling_indices = np.nonzero(random_matrix < self.node_rate)
             for node, mutation_parameter_index in np.transpose(
                 sampling_indices
             ):
                 if mutation_parameter_index == 0:
-                    self.mutate_function(genotype, i, node)
-                elif (
-                    mutation_parameter_index
-                    <= self.decoder.adapter.n_connections[i]
-                ):
+                    self.mutate_function(genotype, chromosome, node)
+                elif mutation_parameter_index <= chromosome_infos.n_edges:
                     connection_idx = mutation_parameter_index - 1
                     self.mutate_connections(
-                        genotype, i, node, only_one=connection_idx
+                        genotype, chromosome, node, only_one=connection_idx
                     )
                 else:
                     parameter_idx = (
-                        mutation_parameter_index
-                        - self.decoder.adapter.n_connections[i]
-                        - 1
+                        mutation_parameter_index - chromosome_infos.n_edges - 1
                     )
                     self.mutate_parameters(
-                        genotype, i, node, only_one=parameter_idx
+                        genotype, chromosome, node, only_one=parameter_idx
                     )
-
-            random_matrix = np.random.random(size=self.outputs_shape)
-            sampling_indices = np.nonzero(random_matrix < self.out_rate)
-            for output in sampling_indices:
-                self.mutate_output(genotype, output)
+        random_matrix = np.random.random(size=self.outputs_shape)
+        sampling_indices = np.nonzero(random_matrix < self.out_rate)
+        for output in sampling_indices:
+            self.mutate_output(genotype, output)
         return genotype
