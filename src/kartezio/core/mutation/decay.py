@@ -1,6 +1,8 @@
 from abc import ABC
 from typing import Dict
 
+import numpy as np
+
 from kartezio.callback import Event
 from kartezio.core.components.base import UpdatableComponent, register
 from kartezio.core.mutation.base import Mutation
@@ -10,9 +12,22 @@ class MutationDecay(UpdatableComponent, ABC):
     def __init__(self):
         super().__init__()
         self._mutation = None
+        self.n_iterations = 0
+        self.stored = None
+
+    def compile(self, n_iterations: int):
+        self.n_iterations = n_iterations
+        self.stored = self._precompute()
+
+    def _precompute(self):
+        pass
 
     def set_mutation(self, mutation: Mutation):
         self._mutation = mutation
+
+    def update(self, event: dict):
+        if event["name"] == Event.END_STEP:
+            self._mutation.node_rate = self.stored[event["n"]]
 
 
 @register(MutationDecay, "linear")
@@ -21,27 +36,70 @@ class LinearDecay(MutationDecay):
     def __from_dict__(cls, dict_infos: Dict) -> "LinearDecay":
         pass
 
-    def __init__(self, step: float):
+    def __init__(self, start: float, end: float):
         super().__init__()
-        self.step = step
+        self.start = start
+        self.end = end
 
-    def update(self, event: dict):
-        if event["name"] == Event.END_STEP:
-            self._mutation.node_rate -= self.step
-            self._mutation.out_rate -= self.step
+    def _precompute(self):
+        return np.linspace(self.start, self.end, self.n_iterations)
 
 
-@register(MutationDecay, "factor")
-class FactorDecay(MutationDecay):
+@register(MutationDecay, "geometric")
+class GeometricDecay(MutationDecay):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "FactorDecay":
+    def __from_dict__(cls, dict_infos: Dict) -> "GeometricDecay":
         pass
 
-    def __init__(self, decay_factor: float):
+    def __init__(self, start: float, end: float):
         super().__init__()
-        self.decay_factor = decay_factor
+        self.start = start
+        self.end = end
 
-    def update(self, event: dict):
-        if event["name"] == Event.END_STEP:
-            self._mutation.node_rate *= self.decay_factor
-            self._mutation.out_rate *= self.decay_factor
+    def _precompute(self):
+        return np.geomspace(self.start, self.end, self.n_iterations)
+
+
+@register(MutationDecay, "geometric_inv")
+class GeometricInvDecay(MutationDecay):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "GeometricInvDecay":
+        pass
+
+    def __init__(self, start: float, end: float):
+        super().__init__()
+        self.start = start
+        self.end = end
+
+    def _precompute(self):
+        abs_diff = np.abs(
+            np.geomspace(self.start, self.end, self.n_iterations)
+            - np.linspace(self.start, self.end, self.n_iterations)
+        )
+        return np.linspace(self.start, self.end, self.n_iterations) + abs_diff
+
+
+if __name__ == "__main__":
+    n_iterations = 20000
+    start = 0.15
+    end = 0.01
+    test_decay_linear = LinearDecay(start, end)
+    test_decay_linear.compile(n_iterations)
+    print(test_decay_linear.stored)
+
+    test_decay_factor = GeometricInvDecay(start, end)
+    test_decay_factor.compile(n_iterations)
+    print(test_decay_factor.stored)
+
+    test_decay_geometric = GeometricDecay(start, end)
+    test_decay_geometric.compile(n_iterations)
+    print(test_decay_geometric.stored)
+
+    # plot 3 curves to compare the decays
+    import matplotlib.pyplot as plt
+
+    plt.plot(test_decay_linear.stored, label="Linear")
+    plt.plot(test_decay_factor.stored, label="Factor")
+    plt.plot(test_decay_geometric.stored, label="Geometric")
+    plt.legend()
+    plt.show()

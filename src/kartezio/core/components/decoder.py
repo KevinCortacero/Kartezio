@@ -373,18 +373,20 @@ class DecoderPoly(Decoder):
             graphs_list.append(self._parse_one_graph(genotype, root))
         return graphs_list
 
+    def get_library(self, chromosome):
+        return self.libraries[self.adapter.types_map[chromosome]]
+
     def arity_of(self, chromosome, function):
-        return self.libraries[self.adapter.types_map[chromosome]].arity_of(
-            function
-        )
+        return self.get_library(chromosome).arity_of(function)
+
+    def name_of(self, chromosome, function):
+        return self.get_library(chromosome).name_of(function)
 
     def inputs_of(self, chromosome, function):
-        return self.libraries[self.adapter.types_map[chromosome]].inputs_of(
-            function
-        )
+        return self.get_library(chromosome).inputs_of(function)
 
     def execute(self, chromosome, function, inputs, parameters):
-        return self.libraries[self.adapter.types_map[chromosome]].execute(
+        return self.get_library(chromosome).execute(
             function, inputs, parameters
         )
 

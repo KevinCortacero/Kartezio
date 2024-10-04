@@ -1,10 +1,10 @@
 import cv2
 
-from kartezio.core.components.decoder import Decoder
+from kartezio.core.components.decoder import DecoderPoly
 
 
 class PythonClassWriter:
-    def __init__(self, decoder: Decoder):
+    def __init__(self, decoder: DecoderPoly):
         self.decoder = decoder
         self.indent_1 = " " * 4
         self.indent_2 = self.indent_1 * 2
@@ -34,45 +34,51 @@ class PythonClassWriter:
 
         for i in range(self.decoder.adapter.n_outputs):
             active_nodes = self.decoder.parse_to_graphs(genotype)[i]
-            for node in active_nodes:
+            for node_infos in active_nodes:
+                node, chromosome = node_infos
                 if node in list_of_inputs or node in list_of_nodes:
                     continue
                 if node < self.decoder.adapter.n_inputs:
                     list_of_inputs.append(node)
                     map_of_input[node] = (
-                        f"{self.indent_2}x_{node} = X[{node}]\n"
+                        f"{self.indent_2}{chromosome}_{node} = X[{node}]\n"
                     )
                 elif node < self.decoder.adapter.out_idx:
-                    function_index = self.decoder.adapter.read_function(
-                        genotype, node - self.decoder.adapter.n_inputs
-                    )
-                    active_connections = self.decoder.library.arity_of(
-                        function_index
-                    )
-                    connections = self.decoder.adapter.read_active_connections(
+                    function_index = self.decoder.adapter.get_function(
                         genotype,
+                        chromosome,
                         node - self.decoder.adapter.n_inputs,
-                        active_connections,
                     )
-                    parameters = self.decoder.adapter.read_parameters(
-                        genotype, node - self.decoder.adapter.n_inputs
+                    active_edges = self.decoder.arity_of(
+                        chromosome, function_index
                     )
-                    f_name = self.decoder.library.name_of(function_index)
+                    edges = self.decoder.adapter.get_active_edges(
+                        genotype,
+                        chromosome,
+                        node - self.decoder.adapter.n_inputs,
+                        active_edges,
+                    )
+                    parameters = self.decoder.adapter.get_parameters(
+                        genotype,
+                        chromosome,
+                        node - self.decoder.adapter.n_inputs,
+                    )
+                    f_name = self.decoder.name_of(chromosome, function_index)
                     c_names = [
                         (
-                            f"x_{c}"
-                            if c < self.decoder.adapter.n_inputs
-                            else f"node_{c}"
+                            f"{chromosome}_{edge}"
+                            if edge < self.decoder.adapter.n_inputs
+                            else f"{chromosome}_{edge}"
                         )
-                        for c in connections
+                        for edge in edges
                     ]
                     c_names = "[" + ", ".join(c_names) + "]"
                     list_of_nodes.append(node)
                     map_of_nodes[node] = (
-                        f'{self.indent_2}node_{node} = self.call_node("{f_name}", {c_names}, {list(parameters)})\n'
+                        f'{self.indent_2}{chromosome}_{node} = self.call_node("{f_name}", {c_names}, {list(parameters)})\n'
                     )
             list_of_outputs.append(i)
-            map_of_outputs[i] = f"{self.indent_2}y_{i} = node_{node}\n"
+            map_of_outputs[i] = f"{self.indent_2}y_{i} = {chromosome}_{node}\n"
         for input_node in sorted(set(list_of_inputs)):
             python_code += map_of_input[input_node]
         for function_node in sorted(set(list_of_nodes)):
@@ -91,8 +97,8 @@ class PythonClassWriter:
         print(f"# {'=' * 86}")
 
 
-class KartezioInsight(Decoder):
-    def __init__(self, parser: Decoder, preprocessing=None):
+class KartezioInsight(DecoderPoly):
+    def __init__(self, parser: DecoderPoly, preprocessing=None):
         super().__init__(parser.infos, parser.library, parser.endpoint)
         self.preprocessing = preprocessing
 
