@@ -164,7 +164,7 @@ class MetricCellpose(KartezioMetric):
             fp[n] = n_pred[n] - tp[n]
             fn[n] = n_true[n] - tp[n]
             if tp[n] == 0:
-                if n_true[n] == 0:
+                if n_true[n] == 0 and fp[n] == 0:
                     ap[n] = 1.0
                 else:
                     ap[n] = 0.0
