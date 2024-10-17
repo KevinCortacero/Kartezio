@@ -1,3 +1,5 @@
+import numpy as np
+
 from kartezio.core.strategy import Strategy
 from kartezio.population import PopulationWithElite
 
@@ -8,6 +10,7 @@ class OnePlusLambda(Strategy):
         self.n_children = 4
         self.mutation_system = mutation_system
         self.fn_init = init
+        self.gamma = None
 
     def create_population(self, n_children):
         self.n_children = n_children
@@ -18,6 +21,14 @@ class OnePlusLambda(Strategy):
         return population
 
     def selection(self, population: PopulationWithElite):
+        # apply random noise on raw fitness
+        fitness = population.get_raw()
+        if self.gamma is not None:
+            noise_shape = fitness[0].shape
+            noise = np.random.normal(1.0, self.gamma, noise_shape)
+            # apply noise to fitness
+            fitness = fitness * noise
+        population.score.fitness = np.mean(fitness, axis=1)
         return population.promote_new_parent()
 
     def reproduction(self, population: PopulationWithElite):

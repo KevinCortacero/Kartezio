@@ -14,11 +14,7 @@ from kartezio.core.mutation.behavior import (
     AccumulateBehavior,
     MutationBehavior,
 )
-from kartezio.core.mutation.decay import (
-    FactorDecay,
-    LinearDecay,
-    MutationDecay,
-)
+from kartezio.core.mutation.decay import MutationDecay
 from kartezio.export import PythonClassWriter
 from kartezio.mutation import MutationRandom
 from kartezio.strategy import OnePlusLambda
@@ -71,8 +67,8 @@ class GeneticAlgorithm:
         self.strategy.reproduction(self.population)
 
     def evaluation(self, y_true, y_pred):
-        fitness = self.fitness.batch(y_true, y_pred)
-        self.population.set_fitness(fitness)
+        fitness = self.fitness.batch(y_true, y_pred, reduction="raw")
+        self.population.set_raw_fitness(fitness)
 
     def next(self):
         self.current_generation += 1
@@ -161,13 +157,14 @@ class ModelBuilder:
             self.node_rate = node_rate
             self.out_rate = out_rate
 
-        def compile(self):
+        def compile(self, n_iterations: int):
             self.mutation.node_rate = self.node_rate
             self.mutation.out_rate = self.out_rate
             if self.behavior:
                 self.behavior.set_mutation(self.mutation)
             if self.decay:
                 self.decay.set_mutation(self.mutation)
+                self.decay.compile(n_iterations)
 
         def mutate(self, genotype: Genotype):
             if self.behavior:
@@ -219,14 +216,14 @@ class ModelBuilder:
         self.mutation.set_effect(effect)
 
     def compile(
-        self, n_generations: int, n_children: int, callbacks: List[Callback]
+        self, n_iterations: int, n_children: int, callbacks: List[Callback]
     ):
-        self.mutation.compile()
+        self.mutation.compile(n_iterations)
         self.updatable.append(self.mutation.mutation.effect)
         if self.mutation.decay:
             self.updatable.append(self.mutation.decay)
         ga = GeneticAlgorithm(self.init, self.mutation, self.fitness)
-        ga.init(n_generations, n_children)
+        ga.init(n_iterations, n_children)
         model = ModelCGP(self.decoder, ga)
         for updatable in self.updatable:
             model.attach(updatable)

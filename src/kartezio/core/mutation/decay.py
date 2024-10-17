@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Dict
 
 import numpy as np
@@ -19,6 +19,7 @@ class MutationDecay(UpdatableComponent, ABC):
         self.n_iterations = n_iterations
         self.stored = self._precompute()
 
+    @abstractmethod
     def _precompute(self):
         pass
 

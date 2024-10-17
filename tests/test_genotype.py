@@ -10,11 +10,7 @@ from kartezio.libraries.array import library_opencv
 class TestModel(unittest.TestCase):
     def setUp(self) -> None:
         builder = create_model_builder(
-            1,
-            5,
-            library_opencv,
-            FitnessIOU(),
-            EndpointThreshold(128)
+            1, 5, library_opencv, FitnessIOU(), EndpointThreshold(128)
         )
         Components.display()
         self.model = builder.compile(200, 4, callbacks=[])

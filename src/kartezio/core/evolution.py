@@ -12,7 +12,7 @@ class Fitness(Component, ABC):
         self.reduction = reduction
         self.mode = "train"
 
-    def batch(self, y_true, y_pred):
+    def batch(self, y_true, y_pred, reduction=None):
         population_fitness = np.zeros(
             (len(y_pred), len(y_true)), dtype=np.float32
         )
@@ -20,18 +20,22 @@ class Fitness(Component, ABC):
             population_fitness[idx_individual] = self.evaluate(
                 y_true, y_pred[idx_individual]
             )
-        return self._reduce(population_fitness)
+        if self.reduction is not None and reduction is None:
+            return self._reduce(population_fitness, self.reduction)
+        if reduction is not None:
+            return self._reduce(population_fitness, reduction)
+        return population_fitness
 
-    def _reduce(self, population_fitness):
-        if self.reduction == "mean":
+    def _reduce(self, population_fitness, reduction=None):
+        if reduction == "mean":
             return np.mean(population_fitness, axis=1)
-        if self.reduction == "min":
+        if reduction == "min":
             return np.min(population_fitness, axis=1)
-        if self.reduction == "max":
+        if reduction == "max":
             return np.max(population_fitness, axis=1)
-        if self.reduction == "median":
+        if reduction == "median":
             return np.median(population_fitness, axis=1)
-        if self.reduction is None:
+        if reduction == "raw":
             return population_fitness
 
     @abstractmethod

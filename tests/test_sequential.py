@@ -12,11 +12,7 @@ from kartezio.libraries.array import library_opencv
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
         builder = create_model_builder(
-            1,
-            30,
-            library_opencv,
-            FitnessIOU(),
-            EndpointThreshold(128)
+            1, 30, library_opencv, FitnessIOU(), EndpointThreshold(128)
         )
         self.model = builder.compile(200, 4, callbacks=[])
         image_x = cell().copy()

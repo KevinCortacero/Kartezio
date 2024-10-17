@@ -46,13 +46,14 @@ class PopulationWithElite(Population):
         changed = False
         fitness = self.get_fitness()
         times = self.get_time()
-        # best_fitness_idx = np.argsort(self.get_score())[0]
+        raw = self.get_raw()
         best_fitness_idx = np.argsort(self.get_score())[0]
         if best_fitness_idx != 0:
             changed = True
-            self.individuals[0] = self.individuals[best_fitness_idx].clone()
-            self._fitness["fitness"][0] = fitness[best_fitness_idx]
-            self._fitness["time"][0] = times[best_fitness_idx]
+        self.individuals[0] = self.individuals[best_fitness_idx].clone()
+        self.score.fitness[0] = fitness[best_fitness_idx]
+        self.score.time[0] = times[best_fitness_idx]
+        self.score.raw[0] = raw[best_fitness_idx]
 
         state = PopulationHistory(self.size)
 
@@ -61,16 +62,3 @@ class PopulationWithElite(Population):
             state.individuals[i].fitness = fitness[i]
             state.individuals[i].time = times[i]
         return changed, state
-
-    """
-        def get_state(self):
-        state = PopulationHistory(self.size)
-        fitness = self.get_fitness()
-        times = self.get_time()
-        for i in range(len(self.individuals)):
-            state.individuals[i].chromosome = self.individuals[i].chromosome
-            state.individuals[i].outputs = self.individuals[i].outputs
-            state.individuals[i].fitness = fitness[i]
-            state.individuals[i].time = times[i]
-        return state
-    """
