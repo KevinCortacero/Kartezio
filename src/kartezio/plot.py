@@ -2,10 +2,6 @@ import colorsys
 
 import cv2
 import numpy as np
-from numena.figure import Figure
-from numena.image.color import rgb2bgr
-from numena.image.contour import contours_find
-from numena.image.drawing import draw_overlay
 
 
 def save_prediction(

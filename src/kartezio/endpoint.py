@@ -1,3 +1,4 @@
+from typing import Dict
 import cv2
 import numpy as np
 from skimage.segmentation import watershed
@@ -10,6 +11,7 @@ from kartezio.libraries.array import Sobel
 from kartezio.vision.common import (
     WatershedSkimage,
     contours_find,
+    contours_fill,
     image_new,
     threshold_tozero,
 )
@@ -100,21 +102,24 @@ class EndpointHoughCircle(Endpoint):
 
 @register(Endpoint, "fit_ellipse")
 class EndpointEllipse(Endpoint):
-    def __init__(self, min_axis=10, max_axis=30, backend="opencv"):
+    def __init__(self, min_axis=10, max_axis=30, backend="opencv", keep_mask=True, as_labels=False):
         super().__init__([TypeArray])
         self.min_axis = min_axis
         self.max_axis = max_axis
         self.backend = backend
-        self.edge_detector = Sobel()
+        # self.edge_detector = Sobel()
+        self.keep_mask = keep_mask
+        self.as_labels = as_labels
 
     def call(self, x, args=None):
         mask = x[0]
         n = 0
         new_labels = image_new(mask.shape)
+        new_mask = image_new(mask.shape)
         labels = []
-        edges = self.edge_detector.call([mask], [3, 3])
+        # edges = self.edge_detector.call([mask], [3, 3])
         if self.backend == "opencv":
-            cnts = contours_find(edges, exclude_holes=True)
+            cnts = contours_find(x[0], exclude_holes=True)
             for cnt in cnts:
                 if len(cnt) >= 5:
                     center, (MA, ma), angle = cv2.fitEllipse(cnt)
@@ -122,14 +127,22 @@ class EndpointEllipse(Endpoint):
                         self.min_axis <= MA <= self.max_axis
                         and self.min_axis <= ma <= self.max_axis
                     ):
-                        cv2.ellipse(
-                            new_labels,
-                            (center, (MA, ma), angle),
-                            n + 1,
-                            thickness=-1,
-                        )
-                        labels.append((center, (MA, ma), angle))
+                        if self.keep_mask:
+                            new_mask = contours_fill(new_mask, [cnt], n + 1)
+                        else:
+                            cv2.ellipse(
+                                new_mask,
+                                (center, (MA, ma), angle),
+                                n + 1,
+                                thickness=-1,
+                            )
+                            labels.append((center, (MA, ma), angle))
                         n += 1
+            if self.keep_mask:
+                if self.as_labels:
+                    new_mask[new_mask >= 1] = mask[new_mask >= 1]
+                else:
+                    new_mask[new_mask >= 1] = x[0][new_mask >= 1]
 
         elif self.backend == "skimage":
             print("skimage")
@@ -153,7 +166,19 @@ class EndpointEllipse(Endpoint):
                 labels.append((x0, y0, a, b))
                 n += 1
 
-        return [new_labels]
+        return [new_mask]
+    
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "fit_ellipse",
+            "args": {
+                "min_axis": self.min_axis,
+                "max_axis": self.max_axis,
+                "backend": self.backend,
+                "keep_mask": self.keep_mask,
+                "as_labels": self.as_labels,
+            },
+        }
 
 
 @register(Endpoint, "marker_controlled_watershed")

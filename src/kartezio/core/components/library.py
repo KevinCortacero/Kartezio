@@ -19,15 +19,16 @@ class Library(Component, ABC):
     def __to_dict__(self) -> Dict:
         return {
             "rtype": self.rtype,
-            "primitives": {str(i): self.name_of(i) for i in range(self.size)},
+            "primitives": {i: self.name_of(i) for i in range(self.size)},
         }
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Library":
-        rtype = dict_infos.get("rtype", TypeArray)
+        rtype = dict_infos["rtype"]
         library = LibraryEmpty(rtype)
-        for p_name in dict_infos["primitives"].values():
-            library.add_by_name(p_name)
+        size = len(dict_infos["primitives"])
+        for i in range(size):
+            library.add_by_name(dict_infos["primitives"][str(i)])
         return library
 
     def add_by_name(self, name):

@@ -36,8 +36,8 @@ class ModelML(ABC):
 
 
 class GeneticAlgorithm:
-    def __init__(self, init, mutation, fitness: Fitness):
-        self.strategy = OnePlusLambda(init, mutation)
+    def __init__(self, init, mutation, fitness: Fitness, gamma=None, required_fps=None):
+        self.strategy = OnePlusLambda(init, mutation, gamma, required_fps)
         self.population = None
         self.fitness = fitness
         self.current_generation = 0
@@ -216,13 +216,13 @@ class ModelBuilder:
         self.mutation.set_effect(effect)
 
     def compile(
-        self, n_iterations: int, n_children: int, callbacks: List[Callback]
+        self, n_iterations: int, n_children: int, callbacks: List[Callback], gamma=None, required_fps=60
     ):
         self.mutation.compile(n_iterations)
         self.updatable.append(self.mutation.mutation.effect)
         if self.mutation.decay:
             self.updatable.append(self.mutation.decay)
-        ga = GeneticAlgorithm(self.init, self.mutation, self.fitness)
+        ga = GeneticAlgorithm(self.init, self.mutation, self.fitness, gamma, required_fps)
         ga.init(n_iterations, n_children)
         model = ModelCGP(self.decoder, ga)
         for updatable in self.updatable:

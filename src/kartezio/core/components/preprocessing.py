@@ -25,7 +25,7 @@ class Preprocessing(Node, ABC):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Preprocessing":
         return Components.instantiate(
-            "Preprocessing", dict_infos["name"], *dict_infos["args"]
+            "Preprocessing", dict_infos["name"], **dict_infos["args"]
         )
 
     def then(self, preprocessing: "Preprocessing"):

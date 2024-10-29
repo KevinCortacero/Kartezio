@@ -4,6 +4,7 @@ import numpy as np
 from kartezio.core.components.base import register
 from kartezio.core.components.preprocessing import Preprocessing
 from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
+from typing import Dict
 
 
 @register(Preprocessing, "pyr_shift")
@@ -124,6 +125,14 @@ class AddColorSpace(Preprocessing):
                 transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
             new_x.append(list(x[i]) + transformed)
         return new_x
+    
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "add_color_space",
+            "args": {
+                "color_space": self.color_space
+            }
+        }
 
 
 @register(Preprocessing, "clahe")

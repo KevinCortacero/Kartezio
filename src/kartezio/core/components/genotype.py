@@ -33,15 +33,12 @@ class Genotype(Component):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Genotype":
-        # read old json models
-        # genotype = np.asarray(ast.literal_eval(dict_infos["sequence"]))
-        # chromosome = genotype[:-1]
-        # outputs = [genotype[-1][1]]
-        assert "genotype" in dict_infos
-        assert "outputs" in dict_infos["genotype"]
-        genotype = Genotype(len(dict_infos["genotype"]["outputs"]))
-        for key, value in dict_infos["genotype"].items():
-            genotype[key] = np.asarray(ast.literal_eval(value))
+        assert "chromosomes" in dict_infos
+        assert "outputs" in dict_infos["chromosomes"]
+        n_outputs = len(dict_infos["chromosomes"]["outputs"])
+        genotype = Genotype(n_outputs)
+        for key, value in dict_infos["chromosomes"].items():
+            genotype[key] = np.asarray(value)
         return genotype
 
     def clone(self):

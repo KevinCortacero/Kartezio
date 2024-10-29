@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from kartezio.core.components.base import Components
+from kartezio.core.components.genotype import Genotype
+from kartezio.core.components.decoder import Decoder
 from kartezio.drive.directory import Directory
 from kartezio.plot import plot_mask
 from kartezio.utils.io import JsonLoader
@@ -38,12 +40,12 @@ class CodeModel(InferenceModel, ABC):
 
 
 class SingleModel(InferenceModel):
-    def __init__(self, genome, parser):
-        self.genome = genome
-        self.parser = parser
+    def __init__(self, genotype: Genotype, decoder: Decoder):
+        self.genotype = genotype
+        self.decoder = decoder
 
     def predict(self, x):
-        return self.parser.decode(self.genome, x)
+        return self.decoder.decode(self.genotype, x)
 
 
 class EnsembleModel(InferenceModel):
@@ -88,14 +90,14 @@ class KartezioModel(InferenceModel):
 
     json_loader = JsonLoader()
 
-    def __init__(self, filepath: str, fitness):
+    def __init__(self, filepath: str):
         super().__init__()
-        dataset, genome, parser = KartezioModel.json_loader.read_individual(
+        dataset, genotype, decoder, fitness = KartezioModel.json_loader.read_individual(
             filepath=filepath
         )
-        self._model = SingleModel(genome, parser)
-        self.fitness = fitness
+        self._model = SingleModel(genotype, decoder)
         self.indices = dataset["indices"]
+        self.fitness = fitness
 
     def predict(self, x, preprocessing=None):
         if preprocessing:
@@ -105,7 +107,7 @@ class KartezioModel(InferenceModel):
     def eval(self, dataset, subset="test", preprocessing=None):
         x, y = dataset.train_xy if subset == "train" else dataset.test_xy
         p, t = self.predict(x, preprocessing=preprocessing)
-        f = self.fitness.compute_one(y, p)
+        f = self.fitness.batch(y, [p])
         return p, f, t
 
     """

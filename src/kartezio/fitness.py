@@ -1,3 +1,4 @@
+from typing import Dict
 import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
@@ -61,7 +62,7 @@ class FitnessAP(Fitness):
     def __init__(self, reduction="mean", threshold=0.5, iou_factor=0.0):
         super().__init__(reduction)
         self.threshold = threshold
-        self.iou_factor = iou_factor
+        self.iou_factor = float(iou_factor)
         self.iou_fitness = FitnessIOU(reduction)
 
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
@@ -137,6 +138,16 @@ class FitnessAP(Fitness):
                 ap[n] = tp[n] / (tp[n] + fp[n] + fn[n])
         return ap
 
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "average_precision",
+            "args": {
+                "reduction": self.reduction,
+                "threshold": self.threshold,
+                "iou_factor": self.iou_factor,
+            }
+        }
+
 
 @register(Fitness, "intersection_over_union")
 class FitnessIOU(Fitness):
@@ -166,6 +177,15 @@ class FitnessIOU(Fitness):
                     iou, _y_true, _y_pred, sensitivity=0.5, specificity=0.5
                 )
         return ious
+
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "intersection_over_union",
+            "args": {
+                "reduction": self.reduction,
+                "balance": self.balance
+            }
+        }
 
 
 @register(Fitness, "mean_squared_error")

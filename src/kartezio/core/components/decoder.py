@@ -54,6 +54,13 @@ class Adapter(Component):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Adapter":
         pass
+    
+    def __to_dict__(self) -> Dict:
+        return {
+            "n_inputs": self.n_inputs,
+            "n_nodes": self.n_nodes,
+            "returns": self.returns,
+        }
 
     def new_genotype(self):
         return self.prototype.clone()
@@ -174,14 +181,8 @@ class Decoder(Component, ABC):
 
     def __to_dict__(self) -> Dict:
         return {
-            "genotype": {
-                "inputs": self.infos.inputs,
-                "nodes": self.infos.nodes,
-                "outputs": self.infos.outputs,
-                "parameters": self.infos.parameters,
-                "connections": self.infos.connections,
-            },
-            "library": self.library.__to_dict__(),
+            "adapter": self.adapter.__to_dict__(),
+            "libraries": {lib.rtype: lib.__to_dict__() for lib in self.libraries},
             "endpoint": self.endpoint.__to_dict__(),
         }
 
@@ -259,10 +260,6 @@ class Decoder(Component, ABC):
 
 @register(Decoder, "poly")
 class DecoderPoly(Decoder):
-    @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "DecoderPoly":
-        pass
-
     def decode_population(
         self, population: Population, x: List[np.ndarray]
     ) -> List:
@@ -411,6 +408,22 @@ class DecoderPoly(Decoder):
             next_indices = next_indices.union(next_connections_to_pop)
             output_tree = output_tree.union(next_connections_to_pop)
         return sorted(list(output_tree))
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "DecoderPoly":
+        print(dict_infos)
+        n_inputs = dict_infos["adapter"]["n_inputs"]
+        n_nodes = dict_infos["adapter"]["n_nodes"]
+        libraries = [Library.__from_dict__(lib_infos) for lib_infos in dict_infos["libraries"].values()]
+        endpoint = Endpoint.__from_dict__(dict_infos["endpoint"])
+        print(n_inputs, n_nodes, libraries, endpoint)
+        print(endpoint.__to_dict__())
+        return DecoderPoly(
+            n_inputs,
+            n_nodes,
+            libraries=libraries,
+            endpoint=endpoint
+        )
 
 
 @register(Decoder, "sequential")

@@ -3,7 +3,7 @@ from typing import Dict
 
 import numpy as np
 
-from kartezio.core.components.base import Component
+from kartezio.core.components.base import Component, Components
 
 
 class Fitness(Component, ABC):
@@ -43,5 +43,9 @@ class Fitness(Component, ABC):
         pass
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "Component":
-        pass
+    def __from_dict__(cls, dict_infos: Dict) -> "Fitness":
+        return Components.instantiate(
+            "Fitness",
+            dict_infos["name"].lower().replace(" ", "_"),
+            **dict_infos["args"]
+        )

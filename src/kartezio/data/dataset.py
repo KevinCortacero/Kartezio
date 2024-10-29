@@ -88,6 +88,14 @@ class Dataset:
     @property
     def split(self):
         return self.train_x, self.train_y, self.test_x, self.test_y
+    
+    def __to_dict__(self):
+        return {
+            "name": self.name,
+            "label_name": self.label_name,
+            "inputs": self.inputs,
+            "indices": list(self.indices),
+        }
 
 
 @dataclass

@@ -1,8 +1,10 @@
 import os
 
 from kartezio.core.components.base import load_component
-from kartezio.core.components.decoder import Decoder, SequentialDecoder
+from kartezio.core.components.decoder import Decoder, DecoderPoly
 from kartezio.core.components.genotype import Genotype
+from kartezio.core.components.preprocessing import Preprocessing
+from kartezio.core.evolution import Fitness
 from kartezio.drive.directory import Directory
 from kartezio.serialization.json import json_read, json_write
 
@@ -44,11 +46,13 @@ class JsonLoader:
     def read_individual(self, filepath):
         json_data = json_read(filepath=filepath)
         dataset = json_data["dataset"]
-        decoder = load_component(SequentialDecoder, json_data["decoding"])
+        decoder = load_component(DecoderPoly, json_data["decoder"])
         if decoder is None:
             raise ValueError("Decoder not found.")
-        individual = load_component(MonoChromosome, json_data["individual"])
-        return dataset, individual, decoder
+        individual = load_component(Genotype, json_data["elite"])
+        preprocessing = load_component(Preprocessing, json_data["preprocessing"])
+        fitness = load_component(Fitness, json_data["fitness"])
+        return dataset, individual, decoder, fitness
 
 
 class JsonSaver:

@@ -5,12 +5,16 @@ from kartezio.population import PopulationWithElite
 
 
 class OnePlusLambda(Strategy):
-    def __init__(self, init, mutation_system):
+    def __init__(self, init, mutation_system, gamma=None, required_fps=None):
         self.n_parents = 1
         self.n_children = 4
         self.mutation_system = mutation_system
         self.fn_init = init
         self.gamma = None
+        if required_fps is not None:
+            self.required_fps = 1.0 / required_fps
+        else:
+            self.required_fps = None
 
     def create_population(self, n_children):
         self.n_children = n_children
@@ -29,6 +33,10 @@ class OnePlusLambda(Strategy):
             # apply noise to fitness
             fitness = fitness * noise
         population.score.fitness = np.mean(fitness, axis=1)
+        if self.required_fps:
+            for i in range(population.size):
+                if population.score.time[i] > self.required_fps:
+                    population.score.fitness[i] = np.inf
         return population.promote_new_parent()
 
     def reproduction(self, population: PopulationWithElite):

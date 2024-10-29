@@ -6,9 +6,16 @@ from uuid import uuid4
 import numpy as np
 
 from kartezio.core.helpers import Observer
+from kartezio.core.components.genotype import Genotype
+from kartezio.core.components.decoder import Decoder
 from kartezio.drive.directory import Directory
 from kartezio.enums import JSON_ELITE
 from kartezio.utils.io import JsonSaver
+from kartezio.serialization.json import json_write
+
+
+
+import matplotlib.pyplot as plt
 
 
 def timestamp(ms=True):
@@ -136,3 +143,63 @@ class CallbackSaveFitness(Callback):
     def on_evolution_end(self, n, e_content):
         np.save(self.filename, np.array(self.data))
         print(f"{self.filename} saved.")
+
+
+class CallbackSaveScores(Callback):
+    def __init__(self, filename, dataset, fitness):
+        super().__init__()
+        self.filename = filename
+        self.data = []
+        self.dataset = dataset
+        self.fitness = fitness
+
+    def _add_new_line(self, iteration, event_content):
+        genotype = event_content.individuals[0].genotype
+        p_train = self.decoder.decode(genotype, self.dataset.train_x)[0]
+        p_test = self.decoder.decode(genotype, self.dataset.test_x)[0]
+        self.fitness.mode = "train"
+        f_train = self.fitness.batch(self.dataset.train_y, [p_train])
+        self.fitness.mode = "test"
+        f_test = self.fitness.batch(self.dataset.test_y, [p_test])
+        self.fitness.mode = "train"
+        self.data.append([float(iteration), float(f_train), float(f_test)])
+
+    def on_new_parent(self, iteration, event_content):
+        self._add_new_line(iteration, event_content)
+        np.save(self.filename, np.array(self.data))
+
+    def on_evolution_end(self, iteration, event_content):
+        self._add_new_line(iteration, event_content)
+        print(f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}")
+        data = np.array(self.data)
+        plt.figure()
+        plt.plot(data[:, 0], data[:, 1])
+        plt.plot(data[:, 0], data[:, 2])
+        plt.savefig(f"{self.filename}.png")
+        
+
+class CallbackSaveElite(Callback):
+    def __init__(self, filename, dataset, preprocessing, fitness):
+        super().__init__()
+        self.filename = filename
+        self.dataset = dataset.__to_dict__()
+        self.decoder = None
+        self.preprocessing = preprocessing.__to_dict__()
+        self.fitness = fitness.__to_dict__()
+        
+    def set_decoder(self, decoder: Decoder):
+        self.decoder = decoder.__to_dict__()
+
+    def on_new_parent(self, iteration, event_content):
+        elite: Genotype = event_content.individuals[0].genotype
+        json_data = {
+            "iteration": iteration,
+            "dataset": self.dataset,
+            "elite": {
+                "chromosomes": {k: v.tolist() for k, v in elite._chromosomes.items()}
+            },
+            "preprocessing": self.preprocessing,
+            "decoder": self.decoder,
+            "fitness": self.fitness,
+        }
+        json_write(self.filename, json_data, indent=None)
