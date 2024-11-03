@@ -159,9 +159,12 @@ class CallbackSaveScores(Callback):
         p_test = self.decoder.decode(genotype, self.dataset.test_x)[0]
         self.fitness.mode = "train"
         f_train = self.fitness.batch(self.dataset.train_y, [p_train])
-        self.fitness.mode = "test"
-        f_test = self.fitness.batch(self.dataset.test_y, [p_test])
-        self.fitness.mode = "train"
+        if self.dataset.test_x:
+            self.fitness.mode = "test"
+            f_test = self.fitness.batch(self.dataset.test_y, [p_test])
+            self.fitness.mode = "train"
+        else:
+            f_test = np.nan
         self.data.append([float(iteration), float(f_train), float(f_test)])
 
     def on_new_parent(self, iteration, event_content):
@@ -184,7 +187,7 @@ class CallbackSaveElite(Callback):
         self.filename = filename
         self.dataset = dataset.__to_dict__()
         self.decoder = None
-        self.preprocessing = preprocessing.__to_dict__()
+        self.preprocessing = preprocessing.__to_dict__() if preprocessing else None
         self.fitness = fitness.__to_dict__()
         
     def set_decoder(self, decoder: Decoder):

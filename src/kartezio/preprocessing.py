@@ -4,7 +4,25 @@ import numpy as np
 from kartezio.core.components.base import register
 from kartezio.core.components.preprocessing import Preprocessing
 from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
-from typing import Dict
+from typing import Dict, List
+
+
+__flag_map__ = {
+    "bgr": cv2.COLOR_RGB2BGR,
+    "hsv": cv2.COLOR_RGB2HSV,
+    "hls": cv2.COLOR_RGB2HLS,
+    "lab": cv2.COLOR_RGB2LAB,
+    "gray": cv2.COLOR_RGB2GRAY,
+    "luv": cv2.COLOR_RGB2LUV,
+    "ycrcb": cv2.COLOR_RGB2YCrCb,
+}
+
+def convert_color(image, flag):
+    return cv2.cvtColor(image, flag)
+
+
+def rgb_to(image, color_space):
+    return convert_color(image, __flag_map__[color_space])
 
 
 @register(Preprocessing, "pyr_shift")
@@ -76,28 +94,26 @@ class ToColorSpace(Preprocessing):
         super().__init__()
         self.color_space = color_space
 
-    def preprocess(self, x):
+    def preprocess(self, x: List):
+        if self.color_space == "rgb":
+            return x
         new_x = []
-        for i in range(len(x)):
+        for xi in x:
             # assuming that the image (3 first elements) is in RGB
-            original_image = cv2.merge(x[i][:3])
-            if self.color_space == "hed":
-                transformed = image_split(rgb2hed(original_image))
-            elif self.color_space == "hsv":
-                transformed = image_split(rgb2hsv(original_image))
-            elif self.color_space == "bgr":
-                transformed = image_split(rgb2bgr(original_image))
-            elif self.color_space == "lab":
-                transformed = image_split(
-                    cv2.cvtColor(original_image, cv2.COLOR_RGB2LAB)
-                )
-            elif self.color_space == "gray":
-                transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-            if len(x[i]) > 3:
-                new_x.append(transformed + list(x[i][3:]))
-            else:
-                new_x.append(transformed)
+            rgb_image = cv2.merge(xi[:3])
+            transformed = rgb_to(rgb_image, self.color_space)
+            transformed = list(cv2.split(transformed))
+            # append existing channels and transformed channels 
+            new_x.append(transformed)
         return new_x
+
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "to_color_space",
+            "args": {
+                "color_space": self.color_space
+            }
+        }
 
 
 @register(Preprocessing, "add_color_space")

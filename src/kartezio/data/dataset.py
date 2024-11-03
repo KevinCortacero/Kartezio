@@ -94,7 +94,7 @@ class Dataset:
             "name": self.name,
             "label_name": self.label_name,
             "inputs": self.inputs,
-            "indices": list(self.indices),
+            "indices": list(self.indices) if self.indices else None,
         }
 
 

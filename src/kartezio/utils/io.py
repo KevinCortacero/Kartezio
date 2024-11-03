@@ -50,9 +50,13 @@ class JsonLoader:
         if decoder is None:
             raise ValueError("Decoder not found.")
         individual = load_component(Genotype, json_data["elite"])
-        preprocessing = load_component(Preprocessing, json_data["preprocessing"])
+        print(json_data["preprocessing"])
+        if json_data["preprocessing"] is None:
+            preprocessing = None
+        else:
+            preprocessing = load_component(Preprocessing, json_data["preprocessing"])
         fitness = load_component(Fitness, json_data["fitness"])
-        return dataset, individual, decoder, fitness
+        return dataset, individual, decoder, preprocessing, fitness
 
 
 class JsonSaver:

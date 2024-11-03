@@ -260,7 +260,9 @@ class Canny(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         # return cv2.Canny(x[0], args[0], args[1])
-        return cv2.Canny(x[0], args[0], args[0] * 3)
+        t1 = float(args[0])
+        t2 = t1 * 3 if t1 * 3 < 255.0 else 255.0
+        return cv2.Canny(x[0], t1, t2)
 
 
 @register(Primitive, "sharpen")
@@ -918,19 +920,19 @@ library_opencv.add_by_name("hit_miss")
 library_opencv.add_by_name("binary_threshold")
 library_opencv.add_by_name("to_zero_threshold")
 library_opencv.add_by_name("binary_in_range")
-library_opencv.add_by_name("pyr_up")
-library_opencv.add_by_name("pyr_down")
-library_opencv.add_by_name("gabor_3")
 library_opencv.add_by_name("fill")
 library_opencv.add_by_name("rm_small_objects")
 library_opencv.add_by_name("rm_small_holes")
 library_opencv.add_by_name("binarize")
 library_opencv.add_by_name("in_range")
+library_opencv.add_by_name("pyr_up")
+library_opencv.add_by_name("pyr_down")
 library_opencv.add_by_name("kirsch")
 library_opencv.add_by_name("embossing")
 library_opencv.add_by_name("normalize")
 library_opencv.add_by_name("denoize")
 library_opencv.add_by_name("local_binary_pattern")
+library_opencv.add_by_name("gabor_3")
 library_opencv.add_by_name("gabor_7")
 library_opencv.add_by_name("gabor_11")
 library_opencv.add_by_name("laplacian_of_gaussian")

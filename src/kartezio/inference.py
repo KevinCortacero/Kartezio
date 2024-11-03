@@ -52,10 +52,12 @@ class EnsembleModel(InferenceModel):
     def __init__(self, models):
         self.models = models
 
-    def predict(self, x, reformat_x=None):
-        if reformat_x:
-            x = reformat_x(x)
+    def predict(self, x):
         return [model.predict(x) for model in self.models]
+    
+    def remove_endpoint(self):
+        for model in self.models:
+            model.endpoint = None
 
 
 class ModelPool:
@@ -69,11 +71,11 @@ class ModelPool:
         self.read(regex)
 
     def read(self, regex):
-        for elite in self.directory.ls(f"{regex}", ordered=True):
-            self.add_model(elite)
+        for model in self.directory.ls(f"{regex}", ordered=True):
+            self.add_model(model)
 
     def add_model(self, filepath):
-        model = KartezioModel(filepath, self.fitness)
+        model = KartezioModel(filepath)
         self.models.append(model)
 
     def sample_ensemble_model(self, n):
@@ -92,21 +94,22 @@ class KartezioModel(InferenceModel):
 
     def __init__(self, filepath: str):
         super().__init__()
-        dataset, genotype, decoder, fitness = KartezioModel.json_loader.read_individual(
+        dataset, genotype, decoder, preprocessing, fitness = KartezioModel.json_loader.read_individual(
             filepath=filepath
         )
         self._model = SingleModel(genotype, decoder)
         self.indices = dataset["indices"]
+        self.preprocessing = preprocessing
         self.fitness = fitness
 
-    def predict(self, x, preprocessing=None):
-        if preprocessing:
-            x = preprocessing.call(x)
+    def predict(self, x):
+        if self.preprocessing:
+            x = self.preprocessing.call(x)
         return self._model.predict(x)
 
-    def eval(self, dataset, subset="test", preprocessing=None):
+    def eval(self, dataset, subset="test"):
         x, y = dataset.train_xy if subset == "train" else dataset.test_xy
-        p, t = self.predict(x, preprocessing=preprocessing)
+        p, t = self.predict(x)
         f = self.fitness.batch(y, [p])
         return p, f, t
 

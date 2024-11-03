@@ -60,6 +60,16 @@ class EndpointThreshold(Endpoint):
         return [
             cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]
         ]
+    
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "threshold",
+            "args": {
+                "threshold": self.threshold,
+                "normalize": self.normalize,
+                "mode": self.mode,
+            },
+        }
 
 
 @register(Endpoint, "hough_circle")
@@ -102,12 +112,12 @@ class EndpointHoughCircle(Endpoint):
 
 @register(Endpoint, "fit_ellipse")
 class EndpointEllipse(Endpoint):
-    def __init__(self, min_axis=10, max_axis=30, backend="opencv", keep_mask=True, as_labels=False):
+    def __init__(self, min_axis=10, max_axis=30, min_ratio=0.5, backend="opencv", keep_mask=True, as_labels=False):
         super().__init__([TypeArray])
         self.min_axis = min_axis
         self.max_axis = max_axis
+        self.min_ratio = min_ratio
         self.backend = backend
-        # self.edge_detector = Sobel()
         self.keep_mask = keep_mask
         self.as_labels = as_labels
 
@@ -126,6 +136,7 @@ class EndpointEllipse(Endpoint):
                     if (
                         self.min_axis <= MA <= self.max_axis
                         and self.min_axis <= ma <= self.max_axis
+                        and ma / MA >= self.min_ratio
                     ):
                         if self.keep_mask:
                             new_mask = contours_fill(new_mask, [cnt], n + 1)
@@ -174,6 +185,7 @@ class EndpointEllipse(Endpoint):
             "args": {
                 "min_axis": self.min_axis,
                 "max_axis": self.max_axis,
+                "min_ratio": self.min_ratio,
                 "backend": self.backend,
                 "keep_mask": self.keep_mask,
                 "as_labels": self.as_labels,
@@ -243,18 +255,14 @@ class LocalMaxWatershed(Endpoint):
             mask, markers=None, mask=mask > 0
         )
         return [labels]
-        return {
-            "mask_raw": x[0],
-            "mask": mask,
-            "markers": markers,
-            "count": len(np.unique(labels)) - 1,
-            "labels": labels,
-        }
 
-    def _to_json_kwargs(self) -> dict:
+    def __to_dict__(self) -> Dict:
         return {
-            "threshold": self.threshold,
-            "markers_distance": self.wt.markers_distance,
+            "name": "local-max_watershed",
+            "args": {
+                "threshold": self.threshold,
+                "markers_distance": self.wt.markers_distance,
+            },
         }
 
 

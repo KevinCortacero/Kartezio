@@ -411,13 +411,10 @@ class DecoderPoly(Decoder):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "DecoderPoly":
-        print(dict_infos)
         n_inputs = dict_infos["adapter"]["n_inputs"]
         n_nodes = dict_infos["adapter"]["n_nodes"]
         libraries = [Library.__from_dict__(lib_infos) for lib_infos in dict_infos["libraries"].values()]
         endpoint = Endpoint.__from_dict__(dict_infos["endpoint"])
-        print(n_inputs, n_nodes, libraries, endpoint)
-        print(endpoint.__to_dict__())
         return DecoderPoly(
             n_inputs,
             n_nodes,
