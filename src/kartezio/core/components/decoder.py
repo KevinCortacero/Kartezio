@@ -354,12 +354,13 @@ class DecoderPoly(Decoder):
                             inputs.append(FFT().call([x[c]], []))
                         elif t == TypeScalar:
                             inputs.append(MeanValue().call([x[c]], []))
+                            # inputs.append(0)
                         else:
                             inputs.append(x[c])
                     else:
                         inputs.append(node_outputs[chromosome][c])
                 value = self.execute(type_index, function_index, inputs, p)
-                node_outputs[chromosome][node_index] = value
+                node_outputs[self.adapter.types_map[type_index]][node_index] = value
         return node_outputs
 
     def parse_to_graphs(self, genotype: Genotype):

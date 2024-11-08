@@ -9,7 +9,7 @@ from skimage.morphology import remove_small_holes, remove_small_objects
 from kartezio.core.components.base import register
 from kartezio.core.components.library import Library
 from kartezio.core.components.primitive import Primitive
-from kartezio.core.types import TypeArray
+from kartezio.core.types import TypeArray, TypeScalar
 from kartezio.vision.common import (
     convolution,
     gradient_magnitude,
@@ -70,6 +70,15 @@ class Add(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.add(x[0], x[1])
+    
+
+@register(Primitive, "add_scalar")
+class AddScalar(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray, TypeScalar], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.add(x[0], float(x[1]))
 
 
 @register(Primitive, "subtract")
@@ -79,6 +88,15 @@ class Subtract(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.subtract(x[0], x[1])
+    
+
+@register(Primitive, "subtract_scalar")
+class SubtractScalar(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray, TypeScalar], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.subtract(x[0], float(x[1]))
 
 
 @register(Primitive, "bitwise_not")
@@ -184,6 +202,15 @@ class MedianBlur(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.medianBlur(x[0], correct_ksize(args[0]))
+    
+
+@register(Primitive, "median_blur_scalar")
+class MedianBlurScalar(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray, TypeScalar], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.medianBlur(x[0], correct_ksize(args[1]))
 
 
 @register(Primitive, "gaussian_blur")
@@ -196,13 +223,23 @@ class GaussianBlur(Primitive):
         return cv2.GaussianBlur(x[0], (ksize, ksize), 0)
 
 
+@register(Primitive, "gaussian_blur_scalar")
+class GaussianBlurScalar(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray, TypeScalar], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        ksize = correct_ksize(args[1])
+        return cv2.GaussianBlur(x[0], (ksize, ksize), 0)
+
+
 @register(Primitive, "laplacian")
 class Laplacian(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeArray, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.convertScaleAbs(cv2.Laplacian(x[0], cv2.CV_8U, ksize=1))
+        return cv2.convertScaleAbs(cv2.Laplacian(x[0], cv2.CV_8U, ksize=3))
 
 
 # future: def f_sobel_laplacian(x, args=None): return cv2.convertScaleAbs(cv2.Laplacian(x[0], cv2.CV_8U, ksize=3))
@@ -884,59 +921,67 @@ class LaplacianOfGaussian(Primitive):
         return cv2.convertScaleAbs(cv2.filter2D(image, -1, kernel))
 
 
-library_opencv = LibraryDefaultOpenCV()
-library_opencv.add_by_name("max")
-library_opencv.add_by_name("min")
-library_opencv.add_by_name("mean")
-library_opencv.add_by_name("add")
-library_opencv.add_by_name("subtract")
-library_opencv.add_by_name("bitwise_not")
-library_opencv.add_by_name("bitwise_or")
-library_opencv.add_by_name("bitwise_and")
-library_opencv.add_by_name("bitwise_and_mask")
-library_opencv.add_by_name("bitwise_xor")
-library_opencv.add_by_name("sqrt")
-library_opencv.add_by_name("pow")
-library_opencv.add_by_name("exp")
-library_opencv.add_by_name("log")
-library_opencv.add_by_name("median_blur")
-library_opencv.add_by_name("gaussian_blur")
-library_opencv.add_by_name("laplacian")
-library_opencv.add_by_name("sobel")
-library_opencv.add_by_name("deriche")
-library_opencv.add_by_name("roberts")
-library_opencv.add_by_name("canny")
-library_opencv.add_by_name("sharpen")
-library_opencv.add_by_name("gaussian_diff")
-library_opencv.add_by_name("abs_diff")
-library_opencv.add_by_name("erode")
-library_opencv.add_by_name("dilate")
-library_opencv.add_by_name("open")
-library_opencv.add_by_name("close")
-library_opencv.add_by_name("gradient")
-library_opencv.add_by_name("top_hat")
-library_opencv.add_by_name("black_hat")
-library_opencv.add_by_name("hit_miss")
-library_opencv.add_by_name("binary_threshold")
-library_opencv.add_by_name("to_zero_threshold")
-library_opencv.add_by_name("binary_in_range")
-library_opencv.add_by_name("fill")
-library_opencv.add_by_name("rm_small_objects")
-library_opencv.add_by_name("rm_small_holes")
-library_opencv.add_by_name("binarize")
-library_opencv.add_by_name("in_range")
-library_opencv.add_by_name("pyr_up")
-library_opencv.add_by_name("pyr_down")
-library_opencv.add_by_name("kirsch")
-library_opencv.add_by_name("embossing")
-library_opencv.add_by_name("normalize")
-library_opencv.add_by_name("denoize")
-library_opencv.add_by_name("local_binary_pattern")
-library_opencv.add_by_name("gabor_3")
-library_opencv.add_by_name("gabor_7")
-library_opencv.add_by_name("gabor_11")
-library_opencv.add_by_name("laplacian_of_gaussian")
-library_opencv.add_by_name("meijiring")
-library_opencv.add_by_name("sato")
-library_opencv.add_by_name("frangi")
-library_opencv.add_by_name("hessian")
+def create_array_lib(use_scalars=False):
+    library_opencv = LibraryDefaultOpenCV()
+    library_opencv.add_by_name("max")
+    library_opencv.add_by_name("min")
+    library_opencv.add_by_name("mean")
+    if use_scalars:
+        library_opencv.add_by_name("add_scalar")
+        library_opencv.add_by_name("subtract_scalar")
+        library_opencv.add_by_name("median_blur_scalar")
+        library_opencv.add_by_name("gaussian_blur_scalar")
+    else:
+        library_opencv.add_by_name("add")
+        library_opencv.add_by_name("subtract")
+        library_opencv.add_by_name("median_blur")
+        library_opencv.add_by_name("gaussian_blur")
+    library_opencv.add_by_name("bitwise_not")
+    library_opencv.add_by_name("bitwise_or")
+    library_opencv.add_by_name("bitwise_and")
+    library_opencv.add_by_name("bitwise_and_mask")
+    library_opencv.add_by_name("bitwise_xor")
+    library_opencv.add_by_name("sqrt")
+    library_opencv.add_by_name("pow")
+    library_opencv.add_by_name("exp")
+    library_opencv.add_by_name("log")
+    library_opencv.add_by_name("laplacian")
+    library_opencv.add_by_name("sobel")
+    library_opencv.add_by_name("deriche")
+    library_opencv.add_by_name("roberts")
+    library_opencv.add_by_name("canny")
+    library_opencv.add_by_name("sharpen")
+    library_opencv.add_by_name("gaussian_diff")
+    library_opencv.add_by_name("abs_diff")
+    library_opencv.add_by_name("erode")
+    library_opencv.add_by_name("dilate")
+    library_opencv.add_by_name("open")
+    library_opencv.add_by_name("close")
+    library_opencv.add_by_name("gradient")
+    library_opencv.add_by_name("top_hat")
+    library_opencv.add_by_name("black_hat")
+    library_opencv.add_by_name("hit_miss")
+    library_opencv.add_by_name("binary_threshold")
+    library_opencv.add_by_name("to_zero_threshold")
+    library_opencv.add_by_name("binary_in_range")
+    library_opencv.add_by_name("fill")
+    library_opencv.add_by_name("rm_small_objects")
+    library_opencv.add_by_name("rm_small_holes")
+    library_opencv.add_by_name("binarize")
+    library_opencv.add_by_name("in_range")
+    library_opencv.add_by_name("pyr_up")
+    library_opencv.add_by_name("pyr_down")
+    library_opencv.add_by_name("kirsch")
+    library_opencv.add_by_name("embossing")
+    library_opencv.add_by_name("normalize")
+    library_opencv.add_by_name("denoize")
+    library_opencv.add_by_name("local_binary_pattern")
+    library_opencv.add_by_name("gabor_3")
+    library_opencv.add_by_name("gabor_7")
+    library_opencv.add_by_name("gabor_11")
+    library_opencv.add_by_name("laplacian_of_gaussian")
+    library_opencv.add_by_name("meijiring")
+    library_opencv.add_by_name("sato")
+    library_opencv.add_by_name("frangi")
+    library_opencv.add_by_name("hessian")
+    return library_opencv
