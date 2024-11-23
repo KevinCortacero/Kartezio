@@ -2,16 +2,17 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from uuid import uuid4
+from typing import Dict
 
 import numpy as np
 
 from kartezio.core.helpers import Observer
-from kartezio.core.components.genotype import Genotype
-from kartezio.core.components.decoder import Decoder
-from kartezio.drive.directory import Directory
+from kartezio.components.genotype import Genotype
+from kartezio.core.decoder import Decoder
+from kartezio.utils.directory import Directory
 from kartezio.enums import JSON_ELITE
 from kartezio.utils.io import JsonSaver
-from kartezio.serialization.json import json_write
+from kartezio.utils.json_handler import json_write
 
 
 
@@ -33,12 +34,20 @@ def eventid():
     return f"{timestamp()}-{uuid()}".replace(" ", "-")
 
 
-class Event(Enum):
-    NEW_PARENT = "on_new_parent"
-    START_STEP = "on_step_start"
-    END_STEP = "on_step_end"
-    START_LOOP = "on_loop_start"
-    END_LOOP = "on_loop_end"
+
+class Event:
+    def __init__(self, iteration: int, name: str, content: Dict, force: bool=False):
+        self.iteration = iteration
+        self.name = name
+        self.content = content
+        self.force = force
+
+    class Events(Enum):
+        NEW_PARENT = "on_new_parent"
+        START_STEP = "on_step_start"
+        END_STEP = "on_step_end"
+        START_LOOP = "on_loop_start"
+        END_LOOP = "on_loop_end"
 
 
 class Callback(Observer, ABC):
@@ -46,41 +55,38 @@ class Callback(Observer, ABC):
         self.frequency = frequency
         self.decoder = None
 
-    def set_decoder(self, parser):
-        self.decoder = parser
+    def set_decoder(self, decoder):
+        self.decoder = decoder
 
-    def update(self, event):
-        if event["n"] % self.frequency != 0 and not event["force"]:
+    def update(self, event: Event):
+        if event.iteration % self.frequency != 0 and not event.force:
             return
-        if event["name"] == Event.START_LOOP:
-            self.on_evolution_start(event["n"], event["content"])
-        elif event["name"] == Event.START_STEP:
-            self.on_generation_start(event["n"], event["content"])
-        elif event["name"] == Event.END_STEP:
-            self.on_generation_end(event["n"], event["content"])
-        elif event["name"] == Event.END_LOOP:
-            self.on_evolution_end(event["n"], event["content"])
-        elif event["name"] == Event.NEW_PARENT:
-            self.on_new_parent(event["n"], event["content"])
 
-        """
-        if event["n"] % self.frequency == 0 or event["force"]:
-            self._notify(event["n"], event["name"], event["content"])
-        """
+        match event.name:
+            case Event.Events.START_LOOP:
+                self.on_evolution_start(event.iteration, event.content)
+            case Event.Events.START_STEP:
+                self.on_generation_start(event.iteration, event.content)
+            case Event.Events.END_STEP:
+                self.on_generation_end(event.iteration, event.content)
+            case Event.Events.END_LOOP:
+                self.on_evolution_end(event.iteration, event.content)
+            case Event.Events.NEW_PARENT:
+                self.on_new_parent(event.iteration, event.content)
 
-    def on_new_parent(self, iteration, event_content):
+    def on_new_parent(self, iteration: int, content):
         pass
 
-    def on_evolution_start(self, iteration, event_content):
+    def on_evolution_start(self, iteration: int, event_content):
         pass
 
-    def on_generation_start(self, iteration, event_content):
+    def on_generation_start(self, iteration: int, event_content):
         pass
 
-    def on_generation_end(self, iteration, event_content):
+    def on_generation_end(self, iteration: int, event_content):
         pass
 
-    def on_evolution_end(self, iteration, event_content):
+    def on_evolution_end(self, iteration: int, event_content):
         pass
 
 

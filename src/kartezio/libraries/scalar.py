@@ -5,9 +5,8 @@ import cv2
 import numpy as np
 from scipy.stats import kurtosis, skew
 
-from kartezio.core.components.base import register
-from kartezio.core.components.library import Library
-from kartezio.core.components.primitive import Primitive
+from kartezio.components.base import register
+from kartezio.components.library import Library, Primitive
 from kartezio.core.types import TypeArray, TypeScalar
 
 

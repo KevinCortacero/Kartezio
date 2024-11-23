@@ -6,7 +6,7 @@ from typing import Dict, Tuple
 import numpy as np
 
 from kartezio.core.components.base import Component
-from kartezio.serialization.json import json_read, json_write
+from kartezio.utils.json_handler import json_read, json_write
 
 
 class DataReader(Component):

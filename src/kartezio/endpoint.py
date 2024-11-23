@@ -4,8 +4,8 @@ import numpy as np
 from skimage.segmentation import watershed
 from skimage.transform import hough_ellipse
 
-from kartezio.core.components.base import register
-from kartezio.core.components.endpoint import Endpoint
+from kartezio.components.base import register
+from kartezio.components.endpoint import Endpoint
 from kartezio.core.types import TypeArray, TypeLabels
 from kartezio.libraries.array import Sobel
 from kartezio.vision.common import (

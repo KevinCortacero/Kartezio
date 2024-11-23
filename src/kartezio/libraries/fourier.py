@@ -2,9 +2,8 @@ from typing import List
 
 import numpy as np
 
-from kartezio.core.components.base import register
-from kartezio.core.components.library import Library
-from kartezio.core.components.primitive import Primitive
+from kartezio.components.base import register
+from kartezio.components.library import Primitive, Library
 from kartezio.core.types import TypeArray, TypeFourier, TypeScalar
 
 

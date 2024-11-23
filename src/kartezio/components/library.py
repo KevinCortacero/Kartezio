@@ -5,10 +5,29 @@ from typing import Dict, List
 import numpy as np
 from tabulate import tabulate
 
-from kartezio.core.components.base import Component, Components, register
-from kartezio.core.components.primitive import Primitive
-from kartezio.core.types import TypeArray
+from kartezio.components.base import Node, Components, Component, register
+from kartezio.core.types import KType
 
+
+
+class Primitive(Node, ABC):
+    """
+    Primitive function called inside the CGP Graph.
+    """
+
+    def __init__(self, inputs: List[KType], output: KType, n_parameters: int):
+        super().__init__()
+        self.inputs = inputs
+        self.output = output
+        self.arity = len(inputs)
+        self.n_parameters = n_parameters
+
+    
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Primitive":
+        return Components.instantiate("Primitive", dict_infos["name"])
+    
 
 class Library(Component, ABC):
     def __init__(self, rtype):
@@ -52,7 +71,7 @@ class Library(Component, ABC):
         return self._primitives[i].n_parameters
 
     def inputs_of(self, i):
-        return self._primitives[i].input_types
+        return self._primitives[i].inputs
 
     def execute(self, f_index, x: List[np.ndarray], args: List[int]):
         return self._primitives[f_index].call(x, args)

@@ -1,12 +1,12 @@
 from typing import List
 
 from kartezio.core.base import ModelBuilder
-from kartezio.core.components.decoder import DecoderPoly, SequentialDecoder
-from kartezio.core.components.endpoint import Endpoint
-from kartezio.core.components.initialization import MutationAllRandomPoly
-from kartezio.core.components.library import Library
+from kartezio.core.decoder import DecoderPoly, SequentialDecoder
+from kartezio.components.endpoint import Endpoint
+from kartezio.components.initializer import MutationAllRandomPoly
+from kartezio.components.library import Library
 from kartezio.core.evolution import Fitness
-from kartezio.mutation import MutationRandomPoly
+from kartezio.mutation.base import MutationRandom
 
 
 def create_model_builder(
@@ -23,8 +23,8 @@ def create_model_builder(
     return ModelBuilder(
         decoder,
         fitness,
-        init=MutationAllRandomPoly(decoder),
-        mutation=MutationRandomPoly(decoder, 0.15, 0.2),
+        init=MutationAllRandomPoly(decoder.adapter),
+        mutation=MutationRandom(decoder.adapter, 0.15, 0.2),
         behavior=behavior,
     )
 

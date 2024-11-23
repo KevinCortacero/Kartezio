@@ -4,11 +4,11 @@ from typing import Dict, List
 
 import numpy as np
 
-from kartezio.core.components.base import Component, register
-from kartezio.core.components.endpoint import Endpoint
-from kartezio.core.components.genotype import Genotype
-from kartezio.core.components.library import Library
-from kartezio.core.components.reduction import Reduction
+from kartezio.components.base import Component, register
+from kartezio.components.endpoint import Endpoint
+from kartezio.components.genotype import Genotype
+from kartezio.components.library import Library
+from kartezio.components.reducer import Reducer
 from kartezio.core.population import Population
 from kartezio.core.types import TypeArray, TypeFourier, TypeScalar
 from kartezio.libraries.fourier import FFT
@@ -426,9 +426,9 @@ class DecoderPoly(Decoder):
 
 @register(Decoder, "sequential")
 class SequentialDecoder(Decoder):
-    def to_iterative_decoder(self, reduction: Reduction) -> "IterativeDecoder":
+    def to_iterative_decoder(self, reducer: Reducer) -> "IterativeDecoder":
         return IterativeDecoder(
-            self.infos, self.library, reduction, self.endpoint
+            self.infos, self.library, reducer, self.endpoint
         )
 
     @classmethod

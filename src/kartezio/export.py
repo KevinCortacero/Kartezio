@@ -1,6 +1,6 @@
 import cv2
 
-from kartezio.core.components.decoder import DecoderPoly
+from kartezio.core.decoder import DecoderPoly
 
 
 class PythonClassWriter:

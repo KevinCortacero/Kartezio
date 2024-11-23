@@ -3,7 +3,7 @@ from typing import Dict
 
 import numpy as np
 
-from kartezio.core.components.base import Component, Components
+from kartezio.components.base import Component, Components
 
 
 class Fitness(Component, ABC):

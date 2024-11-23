@@ -2,22 +2,23 @@ import unittest
 
 from skimage.data import cell
 
-from kartezio.core.components.base import Components
+from kartezio.components.base import Components
 from kartezio.core.sequential import create_model_builder
 from kartezio.endpoint import EndpointThreshold
 from kartezio.fitness import FitnessIOU
-from kartezio.libraries.array import library_opencv
+from kartezio.libraries.array import create_array_lib
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
+        lib = create_array_lib()
         builder = create_model_builder(
-            1, 30, library_opencv, FitnessIOU(), EndpointThreshold(128)
+            1, 30, lib, FitnessIOU(), EndpointThreshold(128)
         )
         self.model = builder.compile(200, 4, callbacks=[])
         image_x = cell().copy()
-        image_y = library_opencv.execute(12, [image_x.copy()], [128])
-        image_y = library_opencv.execute(0, [image_x, image_y], [])
+        image_y = lib.execute(12, [image_x.copy()], [128])
+        image_y = lib.execute(0, [image_x, image_y], [])
         self.x = [[image_x]]
         self.y = [[image_y]]
 

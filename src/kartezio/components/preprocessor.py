@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from kartezio.core.components.base import Components, Node
+from kartezio.components.base import Components, Node
 
 
 class Preprocessing(Node, ABC):

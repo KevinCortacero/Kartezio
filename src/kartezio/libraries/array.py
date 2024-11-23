@@ -6,9 +6,8 @@ from scipy.stats import kurtosis, skew
 from skimage.filters import frangi, hessian, meijering, sato
 from skimage.morphology import remove_small_holes, remove_small_objects
 
-from kartezio.core.components.base import register
-from kartezio.core.components.library import Library
-from kartezio.core.components.primitive import Primitive
+from kartezio.components.base import register
+from kartezio.components.library import Library, Primitive
 from kartezio.core.types import TypeArray, TypeScalar
 from kartezio.vision.common import (
     convolution,

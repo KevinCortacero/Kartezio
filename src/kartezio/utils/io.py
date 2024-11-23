@@ -1,12 +1,12 @@
 import os
 
-from kartezio.core.components.base import load_component
-from kartezio.core.components.decoder import Decoder, DecoderPoly
-from kartezio.core.components.genotype import Genotype
-from kartezio.core.components.preprocessing import Preprocessing
+from kartezio.components.base import load_component
+from kartezio.core.decoder import Decoder, DecoderPoly
+from kartezio.components.genotype import Genotype
+from kartezio.components.preprocessor import Preprocessing
 from kartezio.core.evolution import Fitness
-from kartezio.drive.directory import Directory
-from kartezio.serialization.json import json_read, json_write
+from kartezio.utils.directory import Directory
+from kartezio.utils.json_handler import json_read, json_write
 
 
 def pack_one_directory(directory_path):

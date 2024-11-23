@@ -3,7 +3,7 @@ import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
 
-from kartezio.core.components.base import register
+from kartezio.components.base import register
 from kartezio.core.evolution import Fitness
 from kartezio.vision.metrics import balanced_metric, iou
 

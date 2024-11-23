@@ -4,8 +4,8 @@ from typing import Dict
 import numpy as np
 
 from kartezio.callback import Event
-from kartezio.core.components.base import UpdatableComponent, register
-from kartezio.core.mutation.base import Mutation
+from kartezio.components.base import UpdatableComponent, register
+from kartezio.mutation.base import Mutation
 
 
 class MutationDecay(UpdatableComponent, ABC):

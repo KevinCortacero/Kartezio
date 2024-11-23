@@ -4,7 +4,7 @@ from typing import Dict
 import numpy as np
 
 from kartezio.callback import Event
-from kartezio.core.components.base import UpdatableComponent, register
+from kartezio.components.base import UpdatableComponent, register
 
 
 class MutationEffect(UpdatableComponent, ABC):

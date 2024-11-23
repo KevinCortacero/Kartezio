@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from kartezio.drive.image import (
+from kartezio.utils.image import (
     imread_czi,
     imread_rgb,
     imread_tiff,

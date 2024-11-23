@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from kartezio.core.components.base import Component
+from kartezio.components.base import Component
 
 
 class Population(Component, ABC):
@@ -55,3 +55,68 @@ class Population(Component, ABC):
         return np.array(
             score_list, dtype=[("fitness", float), ("time", float)]
         )
+
+from typing import Dict
+
+import numpy as np
+
+from kartezio.components.base import register
+from kartezio.core.population import Population
+
+
+class IndividualHistory:
+    def __init__(self):
+        self.fitness = 0.0
+        self.time = 0.0
+        self.genotype = None
+
+
+class PopulationHistory:
+    def __init__(self, n_individuals):
+        self.individuals = {}
+        for i in range(n_individuals):
+            self.individuals[i] = IndividualHistory()
+
+    def get_best_fitness(self):
+        return (
+            self.individuals[0],
+            self.individuals[0].fitness,
+            self.individuals[0].time,
+        )
+
+    def get_individuals(self):
+        return self.individuals.items()
+
+
+@register(Population, "one_elite")
+class PopulationWithElite(Population):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "PopulationWithElite":
+        pass
+
+    def __init__(self, n_children):
+        super().__init__(1 + n_children)
+
+    def get_elite(self):
+        return self.individuals[0]
+
+    def promote_new_parent(self):
+        changed = False
+        fitness = self.get_fitness()
+        times = self.get_time()
+        raw = self.get_raw()
+        best_fitness_idx = np.argsort(self.get_score())[0]
+        if best_fitness_idx != 0:
+            changed = True
+        self.individuals[0] = self.individuals[best_fitness_idx].clone()
+        self.score.fitness[0] = fitness[best_fitness_idx]
+        self.score.time[0] = times[best_fitness_idx]
+        self.score.raw[0] = raw[best_fitness_idx]
+
+        state = PopulationHistory(self.size)
+
+        for i in range(len(self.individuals)):
+            state.individuals[i].genotype = self.individuals[i].clone()
+            state.individuals[i].fitness = fitness[i]
+            state.individuals[i].time = times[i]
+        return changed, state

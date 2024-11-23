@@ -2,36 +2,32 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from kartezio.callback import Callback, Event
-from kartezio.core.components.decoder import Decoder
-from kartezio.core.components.endpoint import Endpoint
-from kartezio.core.components.genotype import Genotype
-from kartezio.core.components.initialization import MutationAllRandom
-from kartezio.core.components.library import Library
+from kartezio.core.decoder import Decoder
+from kartezio.components.endpoint import Endpoint
+from kartezio.components.genotype import Genotype
+from kartezio.components.initializer import RandomInit
+from kartezio.components.library import Library
 from kartezio.core.evolution import Fitness
 from kartezio.core.helpers import Observable
-from kartezio.core.mutation.base import Mutation
-from kartezio.core.mutation.behavior import (
+from kartezio.mutation.base import Mutation
+from kartezio.mutation.behavioral import (
     AccumulateBehavior,
     MutationBehavior,
 )
-from kartezio.core.mutation.decay import MutationDecay
+from kartezio.mutation.decay import MutationDecay
 from kartezio.export import PythonClassWriter
-from kartezio.mutation import MutationRandom
-from kartezio.strategy import OnePlusLambda
-from kartezio.utils.io import JsonSaver
+from kartezio.core.strategy import OnePlusLambda
 
 
-class ModelML(ABC):
-    @abstractmethod
-    def fit(self, x: List, y: List):
-        pass
-
-    @abstractmethod
-    def evaluate(self, x: List, y: List):
-        pass
-
+class GenericModel(ABC):
     @abstractmethod
     def predict(self, x: List):
+        pass
+
+
+class ModelTrainer(GenericModel):
+    @abstractmethod
+    def fit(self, x: List, y: List):
         pass
 
 
@@ -40,8 +36,8 @@ class GeneticAlgorithm:
         self.strategy = OnePlusLambda(init, mutation, gamma, required_fps)
         self.population = None
         self.fitness = fitness
-        self.current_generation = 0
-        self.n_generations = 0
+        self.current_iteration = 0
+        self.n_iterations = 0
 
     def init(self, n_generations: int, n_children: int):
         self.current_generation = 0
@@ -74,7 +70,7 @@ class GeneticAlgorithm:
         self.current_generation += 1
 
 
-class ModelCGP(ModelML, Observable):
+class CartesiaGeneticProgramming(ModelTrainer, Observable):
     def __init__(self, decoder: Decoder, ga: GeneticAlgorithm):
         super().__init__()
         self.decoder = decoder
@@ -92,18 +88,18 @@ class ModelCGP(ModelML, Observable):
         self.evaluation(x, y)
         changed, state = self.ga.selection()
         if changed:
-            self.send_event(Event.NEW_PARENT, state, force=True)
-        self.send_event(Event.START_LOOP, state, force=True)
+            self.send_event(Event.Events.NEW_PARENT, state, force=True)
+        self.send_event(Event.Events.START_LOOP, state, force=True)
         while not self.ga.is_satisfying():
-            self.send_event(Event.START_STEP, state)
+            self.send_event(Event.Events.START_STEP, state)
             self.ga.reproduction()
             self.evaluation(x, y)
             changed, state = self.ga.selection()
             if changed:
-                self.send_event(Event.NEW_PARENT, state, force=True)
-            self.send_event(Event.END_STEP, state)
+                self.send_event(Event.Events.NEW_PARENT, state, force=True)
+            self.send_event(Event.Events.END_STEP, state)
             self.ga.next()
-        self.send_event(Event.END_LOOP, state, force=True)
+        self.send_event(Event.Events.END_LOOP, state, force=True)
         elite = self.ga.population.get_elite()
         return elite, state
 
@@ -224,11 +220,11 @@ class ModelBuilder:
             self.updatable.append(self.mutation.decay)
         ga = GeneticAlgorithm(self.init, self.mutation, self.fitness, gamma, required_fps)
         ga.init(n_iterations, n_children)
-        model = ModelCGP(self.decoder, ga)
+        model_trainer = CartesiaGeneticProgramming(self.decoder, ga)
         for updatable in self.updatable:
-            model.attach(updatable)
+            model_trainer.attach(updatable)
         for callback in callbacks:
-            callback.set_decoder(model.decoder)
-            model.attach(callback)
+            callback.set_decoder(model_trainer.decoder)
+            model_trainer.attach(callback)
 
-        return model
+        return model_trainer

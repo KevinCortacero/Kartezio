@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from kartezio.core.components.base import Node
+from kartezio.components.base import Node
 
 
-class Reduction(Node, ABC):
+class Reducer(Node, ABC):
     def call(self, x: List):
         y = []
         for xi in x:

@@ -1,4 +1,3 @@
-import abc
 from abc import ABC, abstractmethod
 from pprint import pprint
 from typing import Dict
@@ -7,20 +6,52 @@ from kartezio.core.helpers import Observer
 
 
 class Component(ABC):
+    """
+    Abstract base class for representing a Component in the CGP framework.
+    This class provides basic functionalities for components.
+    """
     def __init__(self):
+        """
+        Initialize a Component instance.
+        The component name is derived using the Components registry.
+        """
         self.name = Components.name_of(self.__class__)
 
     def __to_dict__(self) -> Dict:
+        """
+        Convert the component to a dictionary representation.
+
+        Returns:
+            Dict: An empty dictionary, intended to be overridden by subclasses.
+        """
         return {}
 
     @classmethod
     @abstractmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Component":
+        """
+        Abstract method to instantiate a component from a dictionary representation.
+
+        Args:
+            dict_infos (Dict): A dictionary containing information to initialize the component.
+
+        Returns:
+            Component: A new component instance.
+        """
         pass
 
 
 class UpdatableComponent(Component, Observer, ABC):
+    """
+    A component that can be updated, typically used in adaptive scenarios.
+
+    Inherits from Component and Observer to enable both observation and update capabilities, making it suitable
+    for scenarios where a component's internal state must be adjusted during the evolutionary process.
+    """
     def __init__(self):
+        """
+        Initialize an UpdatableComponent instance.
+        """
         super().__init__()
 
 
@@ -83,13 +114,26 @@ class Components:
         pprint(Components._registry)
 
 
+
 class Node(Component, ABC):
-    @abstractmethod
-    def call(self, *args, **kwargs):
-        pass
+    """
+    Abstract base class for a Node in the CGP framework.
+    """
+    pass
 
 
-def register(component_group: type, component_name: str, replace=False):
+def register(component_group: type, component_name: str, replace: bool = False):
+    """
+    Register a component to the Components registry.
+
+    Args:
+        component_group (type): The group type of the component.
+        component_name (str): The name of the component.
+        replace (bool): If True, replace an existing component with the same name.
+
+    Returns:
+        Callable: A decorator for registering the component.
+    """
     group_name = component_group.__name__
 
     def inner(item_cls):
@@ -108,5 +152,15 @@ def register(component_group: type, component_name: str, replace=False):
     return inner
 
 
-def load_component(component_class, json_data: dict) -> Component:
+def load_component(component_class: type, json_data: Dict) -> Component:
+    """
+    Load a component from its dictionary representation.
+
+    Args:
+        component_class (type): The class of the component to load.
+        json_data (Dict): The dictionary containing component data.
+
+    Returns:
+        Component: An instance of the component created from the given data.
+    """
     return component_class.__from_dict__(json_data)

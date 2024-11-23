@@ -1,16 +1,16 @@
 import unittest
 
-from kartezio.core.components.base import Components
+from kartezio.components.base import Components
 from kartezio.core.sequential import create_model_builder
 from kartezio.endpoint import EndpointThreshold
 from kartezio.fitness import FitnessIOU
-from kartezio.libraries.array import library_opencv
+from kartezio.libraries.array import create_array_lib
 
 
 class TestModel(unittest.TestCase):
     def setUp(self) -> None:
         builder = create_model_builder(
-            1, 5, library_opencv, FitnessIOU(), EndpointThreshold(128)
+            1, 5, create_array_lib(), FitnessIOU(), EndpointThreshold(128)
         )
         Components.display()
         self.model = builder.compile(200, 4, callbacks=[])

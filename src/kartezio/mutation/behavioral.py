@@ -1,6 +1,6 @@
-from kartezio.core.components.decoder import Decoder
-from kartezio.core.components.genotype import Genotype
-from kartezio.core.mutation.base import Mutation
+from kartezio.core.decoder import Decoder
+from kartezio.components.genotype import Genotype
+from kartezio.mutation.base import Mutation
 
 
 class MutationBehavior:
