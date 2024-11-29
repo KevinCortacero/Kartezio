@@ -1,10 +1,9 @@
 import numpy as np
-from numba import jit
-from scipy.optimize import linear_sum_assignment
-
 from kartezio.core.components.base import register
 from kartezio.core.evolution import KartezioMetric, KMetric
 from kartezio.core.types import Score
+from numba import jit
+from scipy.optimize import linear_sum_assignment
 
 
 @jit(nopython=True)
@@ -97,9 +96,7 @@ class MetricCellpose(KMetric):
             inds = np.arange(0, masks_true[n].max(), 1, int)
             overlap = self._label_overlap(masks_true[n], masks_pred[n])
             union = np.logical_or(masks_true[n] > 0, masks_pred[n] > 0).sum()
-            overlap = overlap[
-                inds[preds > 0] + 1, preds[preds > 0].astype(int)
-            ]
+            overlap = overlap[inds[preds > 0] + 1, preds[preds > 0].astype(int)]
             aji[n] = overlap.sum() / union
         return aji
 
@@ -152,9 +149,7 @@ class MetricCellpose(KMetric):
         for n in range(len(masks_true)):
             #  _,mt = np.reshape(np.unique(masks_true[n], return_index=True), masks_pred[n].shape)
             if n_pred[n] > 0:
-                iou = _intersection_over_union(masks_true[n], masks_pred[n])[
-                    1:, 1:
-                ]
+                iou = _intersection_over_union(masks_true[n], masks_pred[n])[1:, 1:]
                 for k, th in enumerate(self.thresholds):
                     tp[n, k] = self._true_positive(iou, th)
             fp[n] = n_pred[n] - tp[n]

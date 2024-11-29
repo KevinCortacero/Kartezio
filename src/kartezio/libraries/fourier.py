@@ -1,7 +1,6 @@
 from typing import List
 
 import numpy as np
-
 from kartezio.components.base import register
 from kartezio.components.library import Library, Primitive
 from kartezio.core.types import TypeArray, TypeFourier, TypeScalar
@@ -72,9 +71,9 @@ class BandPass(Primitive):
         x, y = np.ogrid[:rows, :cols]
         center = (crow, ccol)
         distance = np.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2)
-        filter_mask = np.exp(
-            -(distance**2) / (2 * (x[1] * 2 / 2.0) ** 2)
-        ) - np.exp(-(distance**2) / (2 * (x[1] / 2.0) ** 2))
+        filter_mask = np.exp(-(distance**2) / (2 * (x[1] * 2 / 2.0) ** 2)) - np.exp(
+            -(distance**2) / (2 * (x[1] / 2.0) ** 2)
+        )
         filtered = x[0] * filter_mask
         return filtered
 

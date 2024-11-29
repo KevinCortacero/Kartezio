@@ -226,9 +226,7 @@ def morph_fill(image):
     return contours_fill(image, cnts)
 
 
-def draw_overlay(
-    image, mask, color=None, alpha=1.0, border_color="same", thickness=1
-):
+def draw_overlay(image, mask, color=None, alpha=1.0, border_color="same", thickness=1):
     if color is None:
         color = [255, 255, 255]
     out = image.copy()

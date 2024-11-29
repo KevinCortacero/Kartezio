@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 import numpy as np
-
 from kartezio.components.base import Component, Components
 
 
@@ -13,9 +12,7 @@ class Fitness(Component, ABC):
         self.mode = "train"
 
     def batch(self, y_true, y_pred, reduction=None):
-        population_fitness = np.zeros(
-            (len(y_pred), len(y_true)), dtype=np.float32
-        )
+        population_fitness = np.zeros((len(y_pred), len(y_true)), dtype=np.float32)
         for idx_individual in range(len(y_pred)):
             population_fitness[idx_individual] = self.evaluate(
                 y_true, y_pred[idx_individual]

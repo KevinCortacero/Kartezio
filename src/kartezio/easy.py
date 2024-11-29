@@ -1,5 +1,4 @@
 import numpy as np
-
 from kartezio.export import GenomeToPython
 from kartezio.inference import SingleModel
 from kartezio.utils.io import JsonLoader, JsonSaver
@@ -18,9 +17,7 @@ def load_model(filepath, series=False):
     return SingleModel(elite, parser)
 
 
-def show_graph(
-    model, inputs=None, outputs=None, only_active=True, jupyter=False
-):
+def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False):
     from kartezio.utils.viewer import KartezioViewer
 
     viewer = KartezioViewer(

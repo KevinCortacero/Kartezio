@@ -66,9 +66,7 @@ class CartesiaGeneticProgramming(ModelTrainer, Observable):
     def __init__(self, n_inputs, n_nodes, libraries, endpoint, fitness):
         super().__init__()
         self.decoder = DecoderPoly(n_inputs, n_nodes, libraries, endpoint)
-        self.genetic_algorithm = GeneticAlgorithm(
-            self.decoder.adapter, fitness
-        )
+        self.genetic_algorithm = GeneticAlgorithm(self.decoder.adapter, fitness)
 
     @property
     def population(self):
@@ -102,9 +100,7 @@ class CartesiaGeneticProgramming(ModelTrainer, Observable):
         return elite, state
 
     def send_event(self, name, state, force=False):
-        event = Event(
-            self.genetic_algorithm.current_generation, name, state, force
-        )
+        event = Event(self.genetic_algorithm.current_generation, name, state, force)
         self.notify(event)
 
     def evaluate(self, x, y):
@@ -178,9 +174,7 @@ class ModelBuilder:
     def set_mutation_effect(self, effect):
         self.mutation.set_effect(effect)
 
-    def compile(
-        self, n_iterations: int, n_children: int, callbacks: List[Callback]
-    ):
+    def compile(self, n_iterations: int, n_children: int, callbacks: List[Callback]):
         # compile genetic algorithm
         self.model_trainer.genetic_algorithm.compile(n_iterations, n_children)
         self.updatable.append(self.mutation.mutation.effect)

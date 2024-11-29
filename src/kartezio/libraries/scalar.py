@@ -3,11 +3,10 @@ from typing import List
 
 import cv2
 import numpy as np
-from scipy.stats import kurtosis, skew
-
 from kartezio.components.base import register
 from kartezio.components.library import Library, Primitive
 from kartezio.core.types import TypeArray, TypeScalar
+from scipy.stats import kurtosis, skew
 
 
 @register(Library, "opencv_scalar")

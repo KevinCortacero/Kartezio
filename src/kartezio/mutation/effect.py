@@ -2,7 +2,6 @@ from abc import ABC
 from typing import Dict
 
 import numpy as np
-
 from kartezio.callback import Event
 from kartezio.components.base import UpdatableComponent, register
 

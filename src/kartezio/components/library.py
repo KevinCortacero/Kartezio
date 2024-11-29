@@ -3,10 +3,9 @@ from abc import ABC
 from typing import Dict, List
 
 import numpy as np
-from tabulate import tabulate
-
 from kartezio.components.base import Component, Components, Node, register
 from kartezio.core.types import KType
+from tabulate import tabulate
 
 
 class Primitive(Node, ABC):

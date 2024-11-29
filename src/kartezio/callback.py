@@ -6,7 +6,6 @@ from uuid import uuid4
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from kartezio.components.genotype import Genotype
 from kartezio.core.decoder import Decoder
 from kartezio.core.helpers import Observer
@@ -32,9 +31,7 @@ def eventid():
 
 
 class Event:
-    def __init__(
-        self, iteration: int, name: str, content: Dict, force: bool = False
-    ):
+    def __init__(self, iteration: int, name: str, content: Dict, force: bool = False):
         self.iteration = iteration
         self.name = name
         self.content = content
@@ -177,9 +174,7 @@ class CallbackSaveScores(Callback):
 
     def on_evolution_end(self, iteration, event_content):
         self._add_new_line(iteration, event_content)
-        print(
-            f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}"
-        )
+        print(f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}")
         data = np.array(self.data)
         plt.figure()
         plt.plot(data[:, 0], data[:, 1])
@@ -193,9 +188,7 @@ class CallbackSaveElite(Callback):
         self.filename = filename
         self.dataset = dataset.__to_dict__()
         self.decoder = None
-        self.preprocessing = (
-            preprocessing.__to_dict__() if preprocessing else None
-        )
+        self.preprocessing = preprocessing.__to_dict__() if preprocessing else None
         self.fitness = fitness.__to_dict__()
 
     def set_decoder(self, decoder: Decoder):
@@ -207,9 +200,7 @@ class CallbackSaveElite(Callback):
             "iteration": iteration,
             "dataset": self.dataset,
             "elite": {
-                "chromosomes": {
-                    k: v.tolist() for k, v in elite._chromosomes.items()
-                }
+                "chromosomes": {k: v.tolist() for k, v in elite._chromosomes.items()}
             },
             "preprocessing": self.preprocessing,
             "decoder": self.decoder,

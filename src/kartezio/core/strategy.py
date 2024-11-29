@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-
 from kartezio.components.initializer import RandomInit
 from kartezio.core.population import Population, PopulationWithElite
 from kartezio.mutation.handler import MutationHandler
@@ -61,6 +60,4 @@ class OnePlusLambda(Strategy):
     def reproduction(self, population: PopulationWithElite):
         elite = population.get_elite()
         for i in range(self.n_parents, population.size):
-            population.individuals[i] = self.mutation_handler.mutate(
-                elite.clone()
-            )
+            population.individuals[i] = self.mutation_handler.mutate(elite.clone())

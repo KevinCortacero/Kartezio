@@ -1,12 +1,11 @@
 from typing import Dict
 
 import numpy as np
-from numba import jit
-from scipy.optimize import linear_sum_assignment
-
 from kartezio.components.base import register
 from kartezio.core.evolution import Fitness
 from kartezio.vision.metrics import balanced_metric, iou
+from numba import jit
+from scipy.optimize import linear_sum_assignment
 
 # TODO: clear the fitness process
 
@@ -117,14 +116,10 @@ class FitnessAP(Fitness):
         n_pred = np.array(list(map(np.max, y_pred)))
         for n in range(n_images):
             if n_pred[n]:
-                iou = _intersection_over_union(y_true[n][0], y_pred[n][0])[
-                    1:, 1:
-                ]
+                iou = _intersection_over_union(y_true[n][0], y_pred[n][0])[1:, 1:]
                 # tp[n, 0] = self._true_positive(iou, 0.5)
                 n_min = min(iou.shape[0], iou.shape[1])
-                costs = -(iou >= self.threshold).astype(float) - iou / (
-                    2 * n_min
-                )
+                costs = -(iou >= self.threshold).astype(float) - iou / (2 * n_min)
                 true_ind, pred_ind = linear_sum_assignment(costs)
                 match_ok = iou[true_ind, pred_ind] >= self.threshold
                 tp[n] = match_ok.sum()

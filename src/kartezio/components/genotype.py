@@ -3,7 +3,6 @@ import copy
 from typing import Dict
 
 import numpy as np
-
 from kartezio.components.base import Component
 
 
@@ -77,9 +76,7 @@ class Genotype(Component):
         Returns:
             Genotype: A new Genotype instance created from the given dictionary.
         """
-        assert (
-            "chromosomes" in dict_infos
-        ), "Expected 'chromosomes' key in dictionary."
+        assert "chromosomes" in dict_infos, "Expected 'chromosomes' key in dictionary."
         assert (
             "outputs" in dict_infos["chromosomes"]
         ), "Expected 'outputs' key in 'chromosomes' dictionary."

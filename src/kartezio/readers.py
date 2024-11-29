@@ -2,7 +2,6 @@ import ast
 
 import cv2
 import numpy as np
-
 from kartezio.components.base import register
 from kartezio.components.dataset import DataItem, DataReader
 from kartezio.utils.image import imread_gray, imread_rgb, imread_tiff
@@ -23,9 +22,7 @@ class ImageMaskReader(DataReader):
             return DataItem([mask], shape, 0)
         image = imread_gray(filepath)
         _, labels = cv2.connectedComponents(image)
-        return DataItem(
-            [labels], image.shape[:2], len(np.unique(labels)) - 1, image
-        )
+        return DataItem([labels], image.shape[:2], len(np.unique(labels)) - 1, image)
 
 
 @register(DataReader, "image_labels")
@@ -41,9 +38,7 @@ class ImageLabels(DataReader):
 class ImageRGBReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_rgb(filepath)
-        return DataItem(
-            image_split(image), image.shape[:2], None, visual=image
-        )
+        return DataItem(image_split(image), image.shape[:2], None, visual=image)
 
 
 @register(DataReader, "image_grayscale")

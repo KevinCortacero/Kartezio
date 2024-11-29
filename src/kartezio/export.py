@@ -1,5 +1,4 @@
 import cv2
-
 from kartezio.core.decoder import DecoderPoly
 
 
@@ -49,9 +48,7 @@ class PythonClassWriter:
                         chromosome,
                         node - self.decoder.adapter.n_inputs,
                     )
-                    active_edges = self.decoder.arity_of(
-                        chromosome, function_index
-                    )
+                    active_edges = self.decoder.arity_of(chromosome, function_index)
                     edges = self.decoder.adapter.get_active_edges(
                         genotype,
                         chromosome,

@@ -2,11 +2,6 @@ from typing import List
 
 import cv2
 import numpy as np
-from scipy.stats import kurtosis, skew
-from skimage.feature import local_binary_pattern
-from skimage.filters import frangi, hessian, meijering, sato
-from skimage.morphology import remove_small_holes, remove_small_objects
-
 from kartezio.components.base import register
 from kartezio.components.library import Library, Primitive
 from kartezio.core.types import TypeArray, TypeScalar
@@ -29,6 +24,10 @@ from kartezio.vision.kernel import (
     gabor_kernel,
     kernel_from_parameters,
 )
+from scipy.stats import kurtosis, skew
+from skimage.feature import local_binary_pattern
+from skimage.filters import frangi, hessian, meijering, sato
+from skimage.morphology import remove_small_holes, remove_small_objects
 
 
 @register(Library, "opencv_library")
@@ -182,9 +181,7 @@ class Exp(Primitive):
         # exp_image = cv2.exp(x[0])
         # exp_image[exp_image < 1] = 255
         # return exp_image
-        return (cv2.exp((x[0] / 255.0).astype(np.float32)) * 255).astype(
-            np.uint8
-        )
+        return (cv2.exp((x[0] / 255.0).astype(np.float32)) * 255).astype(np.uint8)
 
 
 @register(Primitive, "log")
@@ -367,9 +364,7 @@ class Open(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_OPEN, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_OPEN, kernel_from_parameters(args))
 
 
 @register(Primitive, "close")
@@ -378,9 +373,7 @@ class Close(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_CLOSE, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_CLOSE, kernel_from_parameters(args))
 
 
 @register(Primitive, "gradient")
@@ -389,9 +382,7 @@ class Gradient(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args))
 
 
 @register(Primitive, "morph_gradient")
@@ -400,9 +391,7 @@ class MorphGradient(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args))
 
 
 @register(Primitive, "top_hat")
@@ -411,9 +400,7 @@ class TopHat(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args))
 
 
 @register(Primitive, "morph_tophat")
@@ -422,9 +409,7 @@ class MorphTopHat(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args))
 
 
 @register(Primitive, "black_hat")
@@ -433,9 +418,7 @@ class BlackHat(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args))
 
 
 @register(Primitive, "morph_blackhat")
@@ -444,9 +427,7 @@ class MorphBlackHat(Primitive):
         super().__init__([TypeArray], TypeArray, 2)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args))
 
 
 @register(Primitive, "hit_miss")
@@ -899,9 +880,9 @@ class LocalBinaryPattern(Primitive):
         super().__init__([TypeArray], TypeArray, 1)
 
     def call(self, x, args=None):
-        return local_binary_pattern(
-            x[0], 8, args[0] // 16, method="uniform"
-        ).astype(np.uint8)
+        return local_binary_pattern(x[0], 8, args[0] // 16, method="uniform").astype(
+            np.uint8
+        )
 
 
 @register(Primitive, "laplacian_of_gaussian")

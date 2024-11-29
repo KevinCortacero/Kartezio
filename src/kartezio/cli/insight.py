@@ -2,7 +2,6 @@ import argparse
 
 import cv2
 import numpy as np
-
 from kartezio.core.registry import registry
 from kartezio.easy import load_model, read_dataset
 from kartezio.export import KartezioInsight

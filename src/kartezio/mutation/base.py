@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 import numpy as np
-
 from kartezio.components.base import Component, register
 from kartezio.components.genotype import Genotype
 from kartezio.core.decoder import Adapter
@@ -23,9 +22,7 @@ class Mutation(Component, ABC):
         )
 
     def random_function(self, chromosome: str):
-        return np.random.randint(
-            self.adapter.chromosomes_infos[chromosome].n_functions
-        )
+        return np.random.randint(self.adapter.chromosomes_infos[chromosome].n_functions)
 
     @property
     def random_output(self):
@@ -65,9 +62,7 @@ class Mutation(Component, ABC):
     ):
         new_random_parameters = self.random_parameters(chromosome)
         old_parameters = self.adapter.get_parameters(genotype, chromosome, idx)
-        new_parameters = self.effect.call(
-            old_parameters, new_random_parameters
-        )
+        new_parameters = self.effect.call(old_parameters, new_random_parameters)
         if only_one is not None:
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
@@ -99,9 +94,7 @@ class MutationRandom(Mutation):
         ) in self.adapter.chromosomes_infos.items():
             random_matrix = np.random.random(size=chromosome_infos.shape)
             sampling_indices = np.nonzero(random_matrix < self.node_rate)
-            for node, mutation_parameter_index in np.transpose(
-                sampling_indices
-            ):
+            for node, mutation_parameter_index in np.transpose(sampling_indices):
                 if mutation_parameter_index == 0:
                     self.mutate_function(genotype, chromosome, node)
                 elif mutation_parameter_index <= chromosome_infos.n_edges:

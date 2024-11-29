@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 
 import numpy as np
-
 from kartezio.components.base import Components
 from kartezio.components.dataset import DatasetMeta
 from kartezio.readers import DataReader
@@ -35,9 +34,7 @@ class Dataset:
         def xyv(self):
             return self.x, self.y, self.v
 
-    def __init__(
-        self, train_set, test_set, name, label_name, inputs, indices=None
-    ):
+    def __init__(self, train_set, test_set, name, label_name, inputs, indices=None):
         self.train_set = train_set
         self.test_set = test_set
         self.name = name
@@ -115,12 +112,8 @@ class DatasetReader(Directory):
         self.scale = meta["scale"]
         self.mode = meta["mode"]
         self.label_name = meta["label_name"]
-        input_reader_name = (
-            f"{meta['input']['type']}_{meta['input']['format']}"
-        )
-        label_reader_name = (
-            f"{meta['label']['type']}_{meta['label']['format']}"
-        )
+        input_reader_name = f"{meta['input']['type']}_{meta['input']['format']}"
+        label_reader_name = f"{meta['label']['type']}_{meta['label']['format']}"
         self.input_reader = Components.instantiate(
             "DataReader", input_reader_name, directory=self, scale=self.scale
         )
@@ -156,9 +149,7 @@ class DatasetReader(Directory):
                 f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
             )
             """
-            print(
-                f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
-            )
+            print(f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}")
 
         if self.preview:
             color = [98, 36, 97]
@@ -184,9 +175,7 @@ class DatasetReader(Directory):
                     thickness=3,
                 )
                 self.preview_dir.write(f"test_{i}.png", preview)
-        return Dataset(
-            training, testing, self.name, self.label_name, inputs, indices
-        )
+        return Dataset(training, testing, self.name, self.label_name, inputs, indices)
 
     def _read_auto(self, dataset):
         pass
@@ -224,9 +213,7 @@ def read_dataset(
     preview=False,
     reader=None,
 ):
-    dataset_reader = DatasetReader(
-        dataset_path, counting=counting, preview=preview
-    )
+    dataset_reader = DatasetReader(dataset_path, counting=counting, preview=preview)
     if reader is not None:
         dataset_reader.add_reader(reader)
     return dataset_reader.read_dataset(

@@ -3,17 +3,16 @@ import ast
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import gridspec
-from numena.io.drive import Directory
-from numena.io.image import imread_color
-from numena.io.json import json_read
-
 from kartezio.core.components import BaseGenotype
 from kartezio.data import read_dataset
 from kartezio.fitness import FitnessAP
 from kartezio.inference import KartezioModel
 from kartezio.preprocessing import SelectChannels
 from kartezio.utils.viewer import KartezioViewer
+from matplotlib import gridspec
+from numena.io.drive import Directory
+from numena.io.image import imread_color
+from numena.io.json import json_read
 
 CHANNELS = [1, 2]
 preprocessing = SelectChannels(CHANNELS)
@@ -37,9 +36,7 @@ def main():
     args = parser.parse_args()
 
     history_directory = Directory(args.history)
-    model = KartezioModel(
-        f"{history_directory._path}/elite.json", fitness=FitnessAP()
-    )
+    model = KartezioModel(f"{history_directory._path}/elite.json", fitness=FitnessAP())
     viewer = KartezioViewer(
         model._model.decoder.infos,
         model._model.decoder.library,

@@ -2,7 +2,6 @@ from abc import ABC
 from typing import Dict
 
 import numpy as np
-
 from kartezio.components.base import Component, register
 
 
@@ -31,8 +30,7 @@ class Population(Component, ABC):
     def set_raw_fitness(self, raw_fitness):
         if self.score.raw is None:
             self.score.raw = (
-                np.ones((self.size, len(raw_fitness[0])), dtype=np.float32)
-                * np.inf
+                np.ones((self.size, len(raw_fitness[0])), dtype=np.float32) * np.inf
             )
         self.score.raw[1:] = raw_fitness
 
@@ -50,9 +48,7 @@ class Population(Component, ABC):
 
     def get_score(self):
         score_list = list(zip(self.get_fitness(), self.get_time()))
-        return np.array(
-            score_list, dtype=[("fitness", float), ("time", float)]
-        )
+        return np.array(score_list, dtype=[("fitness", float), ("time", float)])
 
 
 class IndividualHistory:

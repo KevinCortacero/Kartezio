@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-
 from kartezio.components.base import Components
 from kartezio.components.genotype import Genotype
 from kartezio.core.decoder import Decoder
