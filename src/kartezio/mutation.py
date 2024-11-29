@@ -45,4 +45,3 @@ class MutationRandom(Mutation):
         for output in sampling_indices:
             self.mutate_output(genotype, output)
         return genotype
-

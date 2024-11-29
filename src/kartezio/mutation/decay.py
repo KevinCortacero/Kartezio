@@ -12,23 +12,13 @@ class MutationDecay(UpdatableComponent, ABC):
     def __init__(self):
         super().__init__()
         self._mutation = None
-        self.n_iterations = 0
-        self.stored = None
-
-    def compile(self, n_iterations: int):
-        self.n_iterations = n_iterations
-        self.stored = self._precompute()
-
-    @abstractmethod
-    def _precompute(self):
-        pass
 
     def set_mutation(self, mutation: Mutation):
         self._mutation = mutation
 
-    def update(self, event: dict):
-        if event["name"] == Event.END_STEP:
-            self._mutation.node_rate = self.stored[event["n"]]
+    def update(self, event: Event):
+        if event.name == Event.Events.END_STEP:
+            self._mutation.node_rate = self.stored[event.iteration]
 
 
 @register(MutationDecay, "linear")

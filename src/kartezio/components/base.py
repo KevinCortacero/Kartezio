@@ -10,6 +10,7 @@ class Component(ABC):
     Abstract base class for representing a Component in the CGP framework.
     This class provides basic functionalities for components.
     """
+
     def __init__(self):
         """
         Initialize a Component instance.
@@ -48,11 +49,22 @@ class UpdatableComponent(Component, Observer, ABC):
     Inherits from Component and Observer to enable both observation and update capabilities, making it suitable
     for scenarios where a component's internal state must be adjusted during the evolutionary process.
     """
+
     def __init__(self):
         """
         Initialize an UpdatableComponent instance.
         """
         super().__init__()
+        self.n_iterations = None
+        self.stored = None
+
+    def compile(self, n_iterations: int):
+        self.n_iterations = n_iterations
+        self.stored = self._precompute()
+
+    @abstractmethod
+    def _precompute(self):
+        pass
 
 
 class Components:
@@ -114,15 +126,17 @@ class Components:
         pprint(Components._registry)
 
 
-
 class Node(Component, ABC):
     """
     Abstract base class for a Node in the CGP framework.
     """
+
     pass
 
 
-def register(component_group: type, component_name: str, replace: bool = False):
+def register(
+    component_group: type, component_name: str, replace: bool = False
+):
     """
     Register a component to the Components registry.
 

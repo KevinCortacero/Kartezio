@@ -1,4 +1,5 @@
 from typing import Dict
+
 import cv2
 import numpy as np
 from skimage.segmentation import watershed
@@ -10,8 +11,8 @@ from kartezio.core.types import TypeArray, TypeLabels
 from kartezio.libraries.array import Sobel
 from kartezio.vision.common import (
     WatershedSkimage,
-    contours_find,
     contours_fill,
+    contours_find,
     image_new,
     threshold_tozero,
 )
@@ -60,7 +61,7 @@ class EndpointThreshold(Endpoint):
         return [
             cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]
         ]
-    
+
     def __to_dict__(self) -> Dict:
         return {
             "name": "threshold",
@@ -112,7 +113,15 @@ class EndpointHoughCircle(Endpoint):
 
 @register(Endpoint, "fit_ellipse")
 class EndpointEllipse(Endpoint):
-    def __init__(self, min_axis=10, max_axis=30, min_ratio=0.5, backend="opencv", keep_mask=True, as_labels=False):
+    def __init__(
+        self,
+        min_axis=10,
+        max_axis=30,
+        min_ratio=0.5,
+        backend="opencv",
+        keep_mask=True,
+        as_labels=False,
+    ):
         super().__init__([TypeArray])
         self.min_axis = min_axis
         self.max_axis = max_axis
@@ -178,7 +187,7 @@ class EndpointEllipse(Endpoint):
                 n += 1
 
         return [new_mask]
-    
+
     def __to_dict__(self) -> Dict:
         return {
             "name": "fit_ellipse",

@@ -7,10 +7,6 @@ import numpy as np
 from kartezio.components.base import Component
 
 
-import copy
-import numpy as np
-from typing import Dict
-
 class Genotype(Component):
     """
     Represents the genotype for Cartesian Genetic Programming (CGP).
@@ -81,8 +77,12 @@ class Genotype(Component):
         Returns:
             Genotype: A new Genotype instance created from the given dictionary.
         """
-        assert "chromosomes" in dict_infos, "Expected 'chromosomes' key in dictionary."
-        assert "outputs" in dict_infos["chromosomes"], "Expected 'outputs' key in 'chromosomes' dictionary."
+        assert (
+            "chromosomes" in dict_infos
+        ), "Expected 'chromosomes' key in dictionary."
+        assert (
+            "outputs" in dict_infos["chromosomes"]
+        ), "Expected 'outputs' key in 'chromosomes' dictionary."
         n_outputs = len(dict_infos["chromosomes"]["outputs"])
         genotype = cls(n_outputs)
         for key, value in dict_infos["chromosomes"].items():
@@ -97,4 +97,3 @@ class Genotype(Component):
             Genotype: A cloned instance of the genotype.
         """
         return copy.deepcopy(self)
-

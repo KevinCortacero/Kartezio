@@ -5,9 +5,8 @@ from typing import Dict, List
 import numpy as np
 from tabulate import tabulate
 
-from kartezio.components.base import Node, Components, Component, register
+from kartezio.components.base import Component, Components, Node, register
 from kartezio.core.types import KType
-
 
 
 class Primitive(Node, ABC):
@@ -22,12 +21,10 @@ class Primitive(Node, ABC):
         self.arity = len(inputs)
         self.n_parameters = n_parameters
 
-    
-
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Primitive":
         return Components.instantiate("Primitive", dict_infos["name"])
-    
+
 
 class Library(Component, ABC):
     def __init__(self, rtype):

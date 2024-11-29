@@ -2,21 +2,18 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from kartezio.callback import Callback, Event
-from kartezio.core.decoder import Decoder
 from kartezio.components.endpoint import Endpoint
 from kartezio.components.genotype import Genotype
 from kartezio.components.initializer import RandomInit
 from kartezio.components.library import Library
+from kartezio.core.decoder import DecoderPoly
 from kartezio.core.evolution import Fitness
 from kartezio.core.helpers import Observable
-from kartezio.mutation.base import Mutation
-from kartezio.mutation.behavioral import (
-    AccumulateBehavior,
-    MutationBehavior,
-)
-from kartezio.mutation.decay import MutationDecay
+from kartezio.core.strategy import OnePlusLambda, Strategy
 from kartezio.export import PythonClassWriter
-from kartezio.core.strategy import OnePlusLambda
+from kartezio.mutation.behavioral import MutationBehavior
+from kartezio.mutation.decay import MutationDecay
+from kartezio.mutation.handler import MutationHandler
 
 
 class GenericModel(ABC):
@@ -32,27 +29,22 @@ class ModelTrainer(GenericModel):
 
 
 class GeneticAlgorithm:
-    def __init__(self, init, mutation, fitness: Fitness, gamma=None, required_fps=None):
-        self.strategy = OnePlusLambda(init, mutation, gamma, required_fps)
+    def __init__(self, adapter, fitness: Fitness):
+        self.strategy = OnePlusLambda(adapter)
         self.population = None
         self.fitness = fitness
         self.current_iteration = 0
         self.n_iterations = 0
 
-    def init(self, n_generations: int, n_children: int):
+    def compile(self, n_iterations: int, n_children: int):
+        self.strategy.compile(n_iterations)
         self.current_generation = 0
-        self.n_generations = n_generations
+        self.n_iterations = n_iterations
         self.population = self.strategy.create_population(n_children)
-
-    def update(self):
-        pass
-
-    def fit(self, x: List, y: List):
-        pass
 
     def is_satisfying(self):
         return (
-            self.current_generation >= self.n_generations
+            self.current_generation >= self.n_iterations
             or self.population.get_fitness()[0] == 0.0
         )
 
@@ -71,14 +63,20 @@ class GeneticAlgorithm:
 
 
 class CartesiaGeneticProgramming(ModelTrainer, Observable):
-    def __init__(self, decoder: Decoder, ga: GeneticAlgorithm):
+    def __init__(self, n_inputs, n_nodes, libraries, endpoint, fitness):
         super().__init__()
-        self.decoder = decoder
-        self.ga = ga
+        self.decoder = DecoderPoly(n_inputs, n_nodes, libraries, endpoint)
+        self.genetic_algorithm = GeneticAlgorithm(
+            self.decoder.adapter, fitness
+        )
+
+    @property
+    def population(self):
+        return self.genetic_algorithm.population
 
     def evaluation(self, x, y):
-        y_pred = self.decoder.decode_population(self.ga.population, x)
-        self.ga.evaluation(y, y_pred)
+        y_pred = self.decoder.decode_population(self.population, x)
+        self.genetic_algorithm.evaluation(y, y_pred)
 
     def fit(
         self,
@@ -86,112 +84,66 @@ class CartesiaGeneticProgramming(ModelTrainer, Observable):
         y,
     ):
         self.evaluation(x, y)
-        changed, state = self.ga.selection()
+        changed, state = self.genetic_algorithm.selection()
         if changed:
             self.send_event(Event.Events.NEW_PARENT, state, force=True)
         self.send_event(Event.Events.START_LOOP, state, force=True)
-        while not self.ga.is_satisfying():
+        while not self.genetic_algorithm.is_satisfying():
             self.send_event(Event.Events.START_STEP, state)
-            self.ga.reproduction()
+            self.genetic_algorithm.reproduction()
             self.evaluation(x, y)
-            changed, state = self.ga.selection()
+            changed, state = self.genetic_algorithm.selection()
             if changed:
                 self.send_event(Event.Events.NEW_PARENT, state, force=True)
             self.send_event(Event.Events.END_STEP, state)
-            self.ga.next()
+            self.genetic_algorithm.next()
         self.send_event(Event.Events.END_LOOP, state, force=True)
-        elite = self.ga.population.get_elite()
+        elite = self.population.get_elite()
         return elite, state
 
     def send_event(self, name, state, force=False):
-        event = {
-            "n": self.ga.current_generation,
-            "name": name,
-            "content": state,
-            "force": force,
-        }
+        event = Event(
+            self.genetic_algorithm.current_generation, name, state, force
+        )
         self.notify(event)
 
     def evaluate(self, x, y):
         y_pred, t = self.predict(x)
-        return self.ga.fitness.batch(y, [y_pred])
+        return self.genetic_algorithm.fitness.batch(y, [y_pred])
 
     def predict(self, x):
-        return self.decoder.decode(self.ga.population.get_elite(), x)
+        return self.decoder.decode(self.population.get_elite(), x)
 
     def print_python_class(self, class_name):
         python_writer = PythonClassWriter(self.decoder)
-        python_writer.to_python_class(
-            class_name, self.ga.population.get_elite()
-        )
+        python_writer.to_python_class(class_name, self.population.get_elite())
 
     def display_elite(self):
-        elite = self.ga.population.get_elite()
+        elite = self.population.get_elite()
         print(elite[0])
         print(elite.outputs)
 
 
 class ModelBuilder:
-    class MutationSystem:
-        def __init__(self, mutation: Mutation):
-            self.mutation = mutation
-            self.behavior = None
-            self.decay = None
-            self.node_rate = 0.05
-            self.out_rate = 0.05
-
-        def set_behavior(self, behavior: MutationBehavior):
-            self.behavior = behavior
-
-        def set_decay(self, decay: MutationDecay):
-            self.decay = decay
-
-        def set_effect(self, effect):
-            self.mutation.effect = effect
-
-        def set_mutation_rates(self, node_rate, out_rate):
-            self.node_rate = node_rate
-            self.out_rate = out_rate
-
-        def compile(self, n_iterations: int):
-            self.mutation.node_rate = self.node_rate
-            self.mutation.out_rate = self.out_rate
-            if self.behavior:
-                self.behavior.set_mutation(self.mutation)
-            if self.decay:
-                self.decay.set_mutation(self.mutation)
-                self.decay.compile(n_iterations)
-
-        def mutate(self, genotype: Genotype):
-            if self.behavior:
-                return self.behavior.mutate(genotype)
-            else:
-                return self.mutation.mutate(genotype)
-
     def __init__(
         self,
-        decoder: Decoder,
+        n_inputs: int,
+        n_nodes: int,
+        libraries: List[Library],
+        endpoint: Endpoint,
         fitness: Fitness,
-        init=None,
-        mutation=None,
-        behavior=None,
     ):
         super().__init__()
-        self.decoder = decoder
-        if init:
-            self.init = init
-        else:
-            self.init = MutationAllRandom(decoder)
-        if mutation:
-            self.mutation = self.MutationSystem(mutation)
-        else:
-            self.mutation = self.MutationSystem(
-                MutationRandom(decoder, 0.05, 0.1)
-            )
-        if behavior == "accumulate":
-            self.mutation.set_behavior(AccumulateBehavior(decoder))
-        self.fitness = fitness
+        if not isinstance(libraries, list):
+            libraries = [libraries]
+        self.model_trainer = CartesiaGeneticProgramming(
+            n_inputs, n_nodes, libraries, endpoint, fitness
+        )
         self.updatable = []
+
+    @property
+    def decoder(self) -> DecoderPoly:
+        return self.model_trainer.decoder
 
     def set_endpoint(self, endpoint: Endpoint):
         self.decoder.endpoint = endpoint
@@ -199,11 +151,26 @@ class ModelBuilder:
     def set_library(self, library: Library):
         self.decoder.library = library
 
+    @property
+    def strategy(self) -> OnePlusLambda:
+        return self.model_trainer.genetic_algorithm.strategy
+
+    def set_required_fps(self, required_fps):
+        self.strategy.set_required_fps(required_fps)
+
+    def set_gamma(self, gamma):
+        self.strategy.set_gamma(gamma)
+
+    @property
+    def mutation(self) -> MutationHandler:
+        return self.strategy.mutation_handler
+
     def set_decay(self, decay: MutationDecay):
         self.mutation.set_decay(decay)
 
     def set_behavior(self, behavior: MutationBehavior):
         self.mutation.set_behavior(behavior)
+        self.mutation.behavior.set_decoder(self.decoder)
 
     def set_mutation_rates(self, node_rate, out_rate):
         self.mutation.set_mutation_rates(node_rate, out_rate)
@@ -212,19 +179,17 @@ class ModelBuilder:
         self.mutation.set_effect(effect)
 
     def compile(
-        self, n_iterations: int, n_children: int, callbacks: List[Callback], gamma=None, required_fps=60
+        self, n_iterations: int, n_children: int, callbacks: List[Callback]
     ):
-        self.mutation.compile(n_iterations)
+        # compile genetic algorithm
+        self.model_trainer.genetic_algorithm.compile(n_iterations, n_children)
         self.updatable.append(self.mutation.mutation.effect)
         if self.mutation.decay:
             self.updatable.append(self.mutation.decay)
-        ga = GeneticAlgorithm(self.init, self.mutation, self.fitness, gamma, required_fps)
-        ga.init(n_iterations, n_children)
-        model_trainer = CartesiaGeneticProgramming(self.decoder, ga)
         for updatable in self.updatable:
-            model_trainer.attach(updatable)
+            self.model_trainer.attach(updatable)
         for callback in callbacks:
-            callback.set_decoder(model_trainer.decoder)
-            model_trainer.attach(callback)
+            callback.set_decoder(self.model_trainer.decoder)
+            self.model_trainer.attach(callback)
 
-        return model_trainer
+        return self.model_trainer

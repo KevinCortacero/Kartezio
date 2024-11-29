@@ -1,9 +1,9 @@
 import os
 
 from kartezio.components.base import load_component
-from kartezio.core.decoder import Decoder, DecoderPoly
 from kartezio.components.genotype import Genotype
 from kartezio.components.preprocessor import Preprocessing
+from kartezio.core.decoder import Decoder, DecoderPoly
 from kartezio.core.evolution import Fitness
 from kartezio.utils.directory import Directory
 from kartezio.utils.json_handler import json_read, json_write
@@ -54,7 +54,9 @@ class JsonLoader:
         if json_data["preprocessing"] is None:
             preprocessing = None
         else:
-            preprocessing = load_component(Preprocessing, json_data["preprocessing"])
+            preprocessing = load_component(
+                Preprocessing, json_data["preprocessing"]
+            )
         fitness = load_component(Fitness, json_data["fitness"])
         return dataset, individual, decoder, preprocessing, fitness
 

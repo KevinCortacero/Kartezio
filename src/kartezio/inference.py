@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from kartezio.core.components.base import Components
-from kartezio.core.components.genotype import Genotype
-from kartezio.core.components.decoder import Decoder
-from kartezio.drive.directory import Directory
+from kartezio.components.base import Components
+from kartezio.components.genotype import Genotype
+from kartezio.core.decoder import Decoder
 from kartezio.plot import plot_mask
+from kartezio.utils.directory import Directory
 from kartezio.utils.io import JsonLoader
 from kartezio.vision.common import bgr2rgb
 
@@ -54,7 +54,7 @@ class EnsembleModel(InferenceModel):
 
     def predict(self, x):
         return [model.predict(x) for model in self.models]
-    
+
     def remove_endpoint(self):
         for model in self.models:
             model.endpoint = None
@@ -94,8 +94,8 @@ class KartezioModel(InferenceModel):
 
     def __init__(self, filepath: str):
         super().__init__()
-        dataset, genotype, decoder, preprocessing, fitness = KartezioModel.json_loader.read_individual(
-            filepath=filepath
+        dataset, genotype, decoder, preprocessing, fitness = (
+            KartezioModel.json_loader.read_individual(filepath=filepath)
         )
         self._model = SingleModel(genotype, decoder)
         self.indices = dataset["indices"]

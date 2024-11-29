@@ -54,7 +54,7 @@ class Adapter(Component):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Adapter":
         pass
-    
+
     def __to_dict__(self) -> Dict:
         return {
             "n_inputs": self.n_inputs,
@@ -182,7 +182,9 @@ class Decoder(Component, ABC):
     def __to_dict__(self) -> Dict:
         return {
             "adapter": self.adapter.__to_dict__(),
-            "libraries": {lib.rtype: lib.__to_dict__() for lib in self.libraries},
+            "libraries": {
+                lib.rtype: lib.__to_dict__() for lib in self.libraries
+            },
             "endpoint": self.endpoint.__to_dict__(),
         }
 
@@ -360,7 +362,9 @@ class DecoderPoly(Decoder):
                     else:
                         inputs.append(node_outputs[chromosome][c])
                 value = self.execute(type_index, function_index, inputs, p)
-                node_outputs[self.adapter.types_map[type_index]][node_index] = value
+                node_outputs[self.adapter.types_map[type_index]][
+                    node_index
+                ] = value
         return node_outputs
 
     def parse_to_graphs(self, genotype: Genotype):
@@ -414,13 +418,13 @@ class DecoderPoly(Decoder):
     def __from_dict__(cls, dict_infos: Dict) -> "DecoderPoly":
         n_inputs = dict_infos["adapter"]["n_inputs"]
         n_nodes = dict_infos["adapter"]["n_nodes"]
-        libraries = [Library.__from_dict__(lib_infos) for lib_infos in dict_infos["libraries"].values()]
+        libraries = [
+            Library.__from_dict__(lib_infos)
+            for lib_infos in dict_infos["libraries"].values()
+        ]
         endpoint = Endpoint.__from_dict__(dict_infos["endpoint"])
         return DecoderPoly(
-            n_inputs,
-            n_nodes,
-            libraries=libraries,
-            endpoint=endpoint
+            n_inputs, n_nodes, libraries=libraries, endpoint=endpoint
         )
 
 

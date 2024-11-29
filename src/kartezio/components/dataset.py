@@ -5,7 +5,7 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from kartezio.core.components.base import Component
+from kartezio.components.base import Component
 from kartezio.utils.json_handler import json_read, json_write
 
 

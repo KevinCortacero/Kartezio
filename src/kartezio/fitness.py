@@ -1,4 +1,5 @@
 from typing import Dict
+
 import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
@@ -145,7 +146,7 @@ class FitnessAP(Fitness):
                 "reduction": self.reduction,
                 "threshold": self.threshold,
                 "iou_factor": self.iou_factor,
-            }
+            },
         }
 
 
@@ -181,10 +182,7 @@ class FitnessIOU(Fitness):
     def __to_dict__(self) -> Dict:
         return {
             "name": "intersection_over_union",
-            "args": {
-                "reduction": self.reduction,
-                "balance": self.balance
-            }
+            "args": {"reduction": self.reduction, "balance": self.balance},
         }
 
 

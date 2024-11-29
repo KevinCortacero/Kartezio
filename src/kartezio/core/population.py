@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from typing import Dict
 
 import numpy as np
 
-from kartezio.components.base import Component
+from kartezio.components.base import Component, register
 
 
 class Population(Component, ABC):
@@ -20,9 +21,6 @@ class Population(Component, ABC):
             np.ones(self.size, dtype=np.float32) * np.inf,
             np.zeros(self.size, dtype=np.float32),
         )
-
-    def dumps(self) -> dict:
-        return {}
 
     def set_time(self, individual, value):
         self.score.time[individual] = value
@@ -55,13 +53,6 @@ class Population(Component, ABC):
         return np.array(
             score_list, dtype=[("fitness", float), ("time", float)]
         )
-
-from typing import Dict
-
-import numpy as np
-
-from kartezio.components.base import register
-from kartezio.core.population import Population
 
 
 class IndividualHistory:

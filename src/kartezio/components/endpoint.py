@@ -38,4 +38,3 @@ class Endpoint(Node, ABC):
             dict_infos["name"].lower().replace(" ", "_"),
             **dict_infos["args"]
         )
-

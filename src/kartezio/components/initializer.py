@@ -2,16 +2,16 @@ from abc import ABC
 from typing import Dict
 
 from kartezio.components.base import register
-from kartezio.core.decoder import Adapter
 from kartezio.components.genotype import Genotype
+from kartezio.core.decoder import Adapter
 from kartezio.mutation.base import Mutation
 
-
+"""
 @register(Mutation, "all_random")
 class RandomInit(Mutation):
-    """
+    '''
     Can be used to initialize genome (genome) randomly
-    """
+    '''
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Mutation":
@@ -32,8 +32,10 @@ class RandomInit(Mutation):
         return genotype
 
     def random(self):
-        genotype = self.adapter.new()
+        genotype = self.adapter.new_genotype()
         return self.mutate(genotype)
+
+"""
 
 
 @register(Mutation, "copy")
@@ -51,7 +53,7 @@ class CopyGenotype(Mutation):
 
 
 @register(Mutation, "all_random_poly")
-class MutationAllRandomPoly(Mutation):
+class RandomInit(Mutation):
     """
     Can be used to initialize genome (genome) randomly
     """

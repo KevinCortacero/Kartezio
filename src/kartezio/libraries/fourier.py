@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from kartezio.components.base import register
-from kartezio.components.library import Primitive, Library
+from kartezio.components.library import Library, Primitive
 from kartezio.core.types import TypeArray, TypeFourier, TypeScalar
 
 

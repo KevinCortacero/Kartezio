@@ -3,12 +3,14 @@ from typing import List
 import cv2
 import numpy as np
 from scipy.stats import kurtosis, skew
+from skimage.feature import local_binary_pattern
 from skimage.filters import frangi, hessian, meijering, sato
 from skimage.morphology import remove_small_holes, remove_small_objects
 
 from kartezio.components.base import register
 from kartezio.components.library import Library, Primitive
 from kartezio.core.types import TypeArray, TypeScalar
+from kartezio.thirdparty.kuwahara import kuwahara_filter
 from kartezio.vision.common import (
     convolution,
     gradient_magnitude,
@@ -69,7 +71,7 @@ class Add(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.add(x[0], x[1])
-    
+
 
 @register(Primitive, "add_scalar")
 class AddScalar(Primitive):
@@ -87,7 +89,7 @@ class Subtract(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.subtract(x[0], x[1])
-    
+
 
 @register(Primitive, "subtract_scalar")
 class SubtractScalar(Primitive):
@@ -201,7 +203,7 @@ class MedianBlur(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.medianBlur(x[0], correct_ksize(args[0]))
-    
+
 
 @register(Primitive, "median_blur_scalar")
 class MedianBlurScalar(Primitive):
@@ -548,6 +550,15 @@ class Threshold(Primitive):
         return threshold_tozero(x[0], args[1])
 
 
+@register(Primitive, "kuwahara")
+class Kuwahara(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 1)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return kuwahara_filter(x[0], correct_ksize(args[0]))
+
+
 @register(Primitive, "threshold_at_1")
 class ThresholdAt1(Primitive):
     def __init__(self):
@@ -882,9 +893,6 @@ class Gabor3(Primitive):
         return np.max(gabored, axis=0)
 
 
-from skimage.feature import local_binary_pattern
-
-
 @register(Primitive, "local_binary_pattern")
 class LocalBinaryPattern(Primitive):
     def __init__(self):
@@ -904,7 +912,7 @@ class LaplacianOfGaussian(Primitive):
     def call(self, x, args=None):
         image = x[0]
         sigma = 2.0
-        size = (args[0] // 16) + 1
+        size = correct_ksize(args[0])
 
         x, y = np.meshgrid(
             np.arange(-size // 2 + 1, size // 2 + 1),
@@ -983,4 +991,5 @@ def create_array_lib(use_scalars=False):
     library_opencv.add_by_name("sato")
     library_opencv.add_by_name("frangi")
     library_opencv.add_by_name("hessian")
+    library_opencv.add_by_name("kuwahara")
     return library_opencv

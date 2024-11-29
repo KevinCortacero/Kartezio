@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from kartezio.core.components.base import Components
-from kartezio.core.components.dataset import DatasetMeta
-from kartezio.drive.directory import Directory
+from kartezio.components.base import Components
+from kartezio.components.dataset import DatasetMeta
 from kartezio.readers import DataReader
+from kartezio.utils.directory import Directory
 from kartezio.vision.common import draw_overlay
 
 CSV_DATASET = "dataset.csv"
@@ -88,7 +88,7 @@ class Dataset:
     @property
     def split(self):
         return self.train_x, self.train_y, self.test_x, self.test_y
-    
+
     def __to_dict__(self):
         return {
             "name": self.name,

@@ -1,11 +1,11 @@
+from typing import Dict, List
+
 import cv2
 import numpy as np
 
-from kartezio.core.components.base import register
-from kartezio.core.components.preprocessing import Preprocessing
+from kartezio.components.base import register
+from kartezio.components.preprocessor import Preprocessing
 from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
-from typing import Dict, List
-
 
 __flag_map__ = {
     "bgr": cv2.COLOR_RGB2BGR,
@@ -16,6 +16,7 @@ __flag_map__ = {
     "luv": cv2.COLOR_RGB2LUV,
     "ycrcb": cv2.COLOR_RGB2YCrCb,
 }
+
 
 def convert_color(image, flag):
     return cv2.cvtColor(image, flag)
@@ -103,16 +104,14 @@ class ToColorSpace(Preprocessing):
             rgb_image = cv2.merge(xi[:3])
             transformed = rgb_to(rgb_image, self.color_space)
             transformed = list(cv2.split(transformed))
-            # append existing channels and transformed channels 
+            # append existing channels and transformed channels
             new_x.append(transformed)
         return new_x
 
     def __to_dict__(self) -> Dict:
         return {
             "name": "to_color_space",
-            "args": {
-                "color_space": self.color_space
-            }
+            "args": {"color_space": self.color_space},
         }
 
 
@@ -141,13 +140,11 @@ class AddColorSpace(Preprocessing):
                 transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
             new_x.append(list(x[i]) + transformed)
         return new_x
-    
+
     def __to_dict__(self) -> Dict:
         return {
             "name": "add_color_space",
-            "args": {
-                "color_space": self.color_space
-            }
+            "args": {"color_space": self.color_space},
         }
 
 

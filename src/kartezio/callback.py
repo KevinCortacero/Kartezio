@@ -1,22 +1,19 @@
 from abc import ABC
 from datetime import datetime
 from enum import Enum
-from uuid import uuid4
 from typing import Dict
-
-import numpy as np
-
-from kartezio.core.helpers import Observer
-from kartezio.components.genotype import Genotype
-from kartezio.core.decoder import Decoder
-from kartezio.utils.directory import Directory
-from kartezio.enums import JSON_ELITE
-from kartezio.utils.io import JsonSaver
-from kartezio.utils.json_handler import json_write
-
-
+from uuid import uuid4
 
 import matplotlib.pyplot as plt
+import numpy as np
+
+from kartezio.components.genotype import Genotype
+from kartezio.core.decoder import Decoder
+from kartezio.core.helpers import Observer
+from kartezio.enums import JSON_ELITE
+from kartezio.utils.directory import Directory
+from kartezio.utils.io import JsonSaver
+from kartezio.utils.json_handler import json_write
 
 
 def timestamp(ms=True):
@@ -34,9 +31,10 @@ def eventid():
     return f"{timestamp()}-{uuid()}".replace(" ", "-")
 
 
-
 class Event:
-    def __init__(self, iteration: int, name: str, content: Dict, force: bool=False):
+    def __init__(
+        self, iteration: int, name: str, content: Dict, force: bool = False
+    ):
         self.iteration = iteration
         self.name = name
         self.content = content
@@ -179,13 +177,15 @@ class CallbackSaveScores(Callback):
 
     def on_evolution_end(self, iteration, event_content):
         self._add_new_line(iteration, event_content)
-        print(f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}")
+        print(
+            f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}"
+        )
         data = np.array(self.data)
         plt.figure()
         plt.plot(data[:, 0], data[:, 1])
         plt.plot(data[:, 0], data[:, 2])
         plt.savefig(f"{self.filename}.png")
-        
+
 
 class CallbackSaveElite(Callback):
     def __init__(self, filename, dataset, preprocessing, fitness):
@@ -193,9 +193,11 @@ class CallbackSaveElite(Callback):
         self.filename = filename
         self.dataset = dataset.__to_dict__()
         self.decoder = None
-        self.preprocessing = preprocessing.__to_dict__() if preprocessing else None
+        self.preprocessing = (
+            preprocessing.__to_dict__() if preprocessing else None
+        )
         self.fitness = fitness.__to_dict__()
-        
+
     def set_decoder(self, decoder: Decoder):
         self.decoder = decoder.__to_dict__()
 
@@ -205,7 +207,9 @@ class CallbackSaveElite(Callback):
             "iteration": iteration,
             "dataset": self.dataset,
             "elite": {
-                "chromosomes": {k: v.tolist() for k, v in elite._chromosomes.items()}
+                "chromosomes": {
+                    k: v.tolist() for k, v in elite._chromosomes.items()
+                }
             },
             "preprocessing": self.preprocessing,
             "decoder": self.decoder,

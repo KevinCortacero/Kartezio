@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import List, TypeVar, Type, Callable, Dict
+from typing import Callable, Dict, List, Type, TypeVar
 
+T = TypeVar("T")
 
-T = TypeVar('T')
 
 def singleton(cls: Type[T]) -> Callable[..., T]:
     """
@@ -35,6 +35,7 @@ class Prototype(ABC):
     Reference:
     https://refactoring.guru/design-patterns/prototype
     """
+
     @abstractmethod
     def clone(self) -> T:
         """
@@ -54,6 +55,7 @@ class Factory:
     Reference:
     https://refactoring.guru/design-patterns/factory-method
     """
+
     def __init__(self, prototype: Prototype):
         """
         Initialize the Factory with a prototype object.
@@ -87,6 +89,7 @@ class Observer(ABC):
     """
     Abstract base class for the Observer interface, declaring the `update` method used by subjects to notify observers.
     """
+
     @abstractmethod
     def update(self, event: str) -> None:
         """
@@ -104,6 +107,7 @@ class Observable(ABC):
 
     Manages a list of observers, notifying them of any changes or events.
     """
+
     def __init__(self):
         """
         Initialize an Observable instance with an empty list of observers.
