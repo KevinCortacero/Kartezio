@@ -3,15 +3,15 @@ from abc import ABC
 from typing import Dict, List
 
 import numpy as np
-from kartezio.components.base import Component, register
+from kartezio.components.core import Component, register
 from kartezio.components.endpoint import Endpoint
 from kartezio.components.genotype import Genotype
 from kartezio.components.library import Library
 from kartezio.components.reducer import Reducer
-from kartezio.core.population import Population
-from kartezio.core.types import TypeArray, TypeFourier, TypeScalar
+from kartezio.evolution.population import Population
 from kartezio.libraries.fourier import FFT
 from kartezio.libraries.scalar import MeanValue
+from kartezio.types import TypeArray, TypeFourier, TypeScalar
 
 
 class Adapter(Component):
@@ -130,6 +130,11 @@ class Adapter(Component):
 
 
 class Decoder(Component, ABC):
+    pass
+
+
+"""
+class Decoder(Component, ABC):
     def __init__(
         self,
         n_inputs: int,
@@ -164,7 +169,9 @@ class Decoder(Component, ABC):
         whole_time = np.mean(np.array(all_times))
         return all_y_pred, whole_time
 
-    def decode_population(self, population: Population, x: List[np.ndarray]) -> List:
+    def decode_population(
+        self, population: Population, x: List[np.ndarray]
+    ) -> List:
         y_pred = []
         for i in range(1, population.size):
             y, t = self.decode(population.individuals[i], x)
@@ -175,7 +182,9 @@ class Decoder(Component, ABC):
     def __to_dict__(self) -> Dict:
         return {
             "adapter": self.adapter.__to_dict__(),
-            "libraries": {lib.rtype: lib.__to_dict__() for lib in self.libraries},
+            "libraries": {
+                lib.rtype: lib.__to_dict__() for lib in self.libraries
+            },
             "endpoint": self.endpoint.__to_dict__(),
         }
 
@@ -215,7 +224,9 @@ class Decoder(Component, ABC):
 
     def parse_to_graphs(self, genotype: Genotype):
         outputs = self.adapter.read_outputs(genotype)
-        graphs_list = [self._parse_one_graph(genotype, {output}) for output in outputs]
+        graphs_list = [
+            self._parse_one_graph(genotype, {output}) for output in outputs
+        ]
         return graphs_list
 
     def _x_to_output_map(self, genotype: Genotype, graphs_list: List, x: List):
@@ -227,7 +238,9 @@ class Decoder(Component, ABC):
                     continue
                 node_index = node - self.adapter.n_inputs
                 # fill the map with active nodes
-                function_index = self.adapter.read_function(genotype, node_index)
+                function_index = self.adapter.read_function(
+                    genotype, node_index
+                )
                 arity = self.library.arity_of(function_index)
                 connections = self.adapter.read_active_connections(
                     genotype, node_index, arity
@@ -245,10 +258,28 @@ class Decoder(Component, ABC):
             output_map[output_gene]
             for output_gene in self.adapter.read_outputs(genotype)
         ]
+"""
 
 
-@register(Decoder, "poly")
-class DecoderPoly(Decoder):
+@register(Decoder, "polymorph")
+class DecoderCGP(Decoder):
+    def __init__(
+        self,
+        n_inputs: int,
+        n_nodes: int,
+        libraries: List[Library],
+        endpoint: Endpoint,
+    ):
+        super().__init__()
+        self.adapter = Adapter(
+            n_inputs,
+            n_nodes,
+            returns=endpoint.inputs,
+            libraries=libraries,
+        )
+        self.libraries = libraries
+        self.endpoint = endpoint
+
     def decode_population(self, population: Population, x: List[np.ndarray]) -> List:
         y_pred = []
         for i in range(1, population.size):
@@ -384,7 +415,7 @@ class DecoderPoly(Decoder):
         return sorted(list(output_tree))
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "DecoderPoly":
+    def __from_dict__(cls, dict_infos: Dict) -> "DecoderCGP":
         n_inputs = dict_infos["adapter"]["n_inputs"]
         n_nodes = dict_infos["adapter"]["n_nodes"]
         libraries = [
@@ -392,13 +423,16 @@ class DecoderPoly(Decoder):
             for lib_infos in dict_infos["libraries"].values()
         ]
         endpoint = Endpoint.__from_dict__(dict_infos["endpoint"])
-        return DecoderPoly(n_inputs, n_nodes, libraries=libraries, endpoint=endpoint)
+        return DecoderCGP(n_inputs, n_nodes, libraries=libraries, endpoint=endpoint)
 
 
+"""
 @register(Decoder, "sequential")
 class SequentialDecoder(Decoder):
     def to_iterative_decoder(self, reducer: Reducer) -> "IterativeDecoder":
-        return IterativeDecoder(self.infos, self.library, reducer, self.endpoint)
+        return IterativeDecoder(
+            self.infos, self.library, reducer, self.endpoint
+        )
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "SequentialDecoder":
@@ -443,3 +477,4 @@ class IterativeDecoder(Decoder):
             all_y_pred.append(y_pred)
         whole_time = np.mean(np.array(all_times))
         return all_y_pred, whole_time
+"""

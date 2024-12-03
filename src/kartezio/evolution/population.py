@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Dict
 
 import numpy as np
-from kartezio.components.base import Component, register
+from kartezio.components.core import Component, register
 
 
 class Population(Component, ABC):

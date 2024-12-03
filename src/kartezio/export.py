@@ -1,9 +1,9 @@
 import cv2
-from kartezio.core.decoder import DecoderPoly
+from kartezio.evolution.decoder import DecoderCGP
 
 
 class PythonClassWriter:
-    def __init__(self, decoder: DecoderPoly):
+    def __init__(self, decoder: DecoderCGP):
         self.decoder = decoder
         self.indent_1 = " " * 4
         self.indent_2 = self.indent_1 * 2
@@ -94,8 +94,8 @@ class PythonClassWriter:
         print(f"# {'=' * 86}")
 
 
-class KartezioInsight(DecoderPoly):
-    def __init__(self, parser: DecoderPoly, preprocessing=None):
+class KartezioInsight(DecoderCGP):
+    def __init__(self, parser: DecoderCGP, preprocessing=None):
         super().__init__(parser.infos, parser.library, parser.endpoint)
         self.preprocessing = preprocessing
 

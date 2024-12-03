@@ -3,7 +3,7 @@ import copy
 from typing import Dict
 
 import numpy as np
-from kartezio.components.base import Component
+from kartezio.components.core import Component
 
 
 class Genotype(Component):

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pprint import pprint
 from typing import Dict
 
-from kartezio.core.helpers import Observer
+from kartezio.helpers import Observer
 
 
 class Component(ABC):
@@ -86,7 +86,9 @@ class Components:
     @staticmethod
     def add(group_name: str, component_name: str, component: type):
         assert isinstance(component, type), f"{component} is not a Class!"
-        assert issubclass(component, Component), f"{component} is not a Component!"
+        assert issubclass(
+            component, Component
+        ), f"{component} is not a Component! Please inherit from 'Component' or make sure to call 'super().__init__()'."
 
         if group_name not in Components._registry.keys():
             Components._registry[group_name] = {}
@@ -170,3 +172,18 @@ def load_component(component_class: type, json_data: Dict) -> Component:
         Component: An instance of the component created from the given data.
     """
     return component_class.__from_dict__(json_data)
+
+
+def dump_component(component: Component) -> Dict:
+    """
+    Dump a component to its dictionary representation.
+
+    Args:
+        component (Component): The component to save.
+
+    Returns:
+        Dict: A dictionary representation of the component.
+    """
+    base_dict = component.__to_dict__()
+    base_dict["name"] = component.name
+    return base_dict

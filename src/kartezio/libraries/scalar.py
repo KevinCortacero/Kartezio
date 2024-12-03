@@ -3,9 +3,9 @@ from typing import List
 
 import cv2
 import numpy as np
-from kartezio.components.base import register
+from kartezio.components.core import register
 from kartezio.components.library import Library, Primitive
-from kartezio.core.types import TypeArray, TypeScalar
+from kartezio.types import TypeArray, TypeScalar
 from scipy.stats import kurtosis, skew
 
 

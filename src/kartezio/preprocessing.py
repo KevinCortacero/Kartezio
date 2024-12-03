@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import cv2
 import numpy as np
-from kartezio.components.base import register
+from kartezio.components.core import register
 from kartezio.components.preprocessor import Preprocessing
 from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
 

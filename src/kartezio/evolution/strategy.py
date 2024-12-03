@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from kartezio.components.initializer import RandomInit
-from kartezio.core.population import Population, PopulationWithElite
+from kartezio.evolution.population import Population, PopulationWithElite
 from kartezio.mutation.handler import MutationHandler
 
 
@@ -19,7 +19,7 @@ class Strategy(ABC):
 class OnePlusLambda(Strategy):
     def __init__(self, adapter):
         self.n_parents = 1
-        self.n_children = None
+        self.n_children = 4
         self.initializer = RandomInit(adapter)
         self.mutation_handler = MutationHandler(adapter)
         self.gamma = None
@@ -33,9 +33,9 @@ class OnePlusLambda(Strategy):
 
     def compile(self, n_iterations: int):
         self.mutation_handler.compile(n_iterations)
+        return self.create_population()
 
-    def create_population(self, n_children):
-        self.n_children = n_children
+    def create_population(self):
         population = PopulationWithElite(self.n_children)
         for i in range(population.size):
             individual = self.initializer.random()

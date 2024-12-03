@@ -1,9 +1,9 @@
 from abc import ABC
 from typing import Dict
 
-from kartezio.components.base import register
+from kartezio.components.core import register
 from kartezio.components.genotype import Genotype
-from kartezio.core.decoder import Adapter
+from kartezio.evolution.decoder import Adapter
 from kartezio.mutation.base import Mutation
 
 """
@@ -70,7 +70,7 @@ class RandomInit(Mutation):
         for chromosome in self.adapter.chromosomes_infos.keys():
             for node in range(self.adapter.n_nodes):
                 self.mutate_function(genotype, chromosome, node)
-                self.mutate_connections(genotype, chromosome, node)
+                self.mutate_edges(genotype, chromosome, node)
                 self.mutate_parameters(genotype, chromosome, node)
         # mutate outputs
         for output in range(self.adapter.n_outputs):

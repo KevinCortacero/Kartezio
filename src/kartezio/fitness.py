@@ -1,8 +1,8 @@
 from typing import Dict
 
 import numpy as np
-from kartezio.components.base import register
-from kartezio.core.evolution import Fitness
+from kartezio.components.core import register
+from kartezio.evolution.fitness import Fitness
 from kartezio.vision.metrics import balanced_metric, iou
 from numba import jit
 from scipy.optimize import linear_sum_assignment

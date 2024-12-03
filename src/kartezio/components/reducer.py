@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from kartezio.components.base import Node
+from kartezio.components.core import Node
 
 
 class Reducer(Node, ABC):

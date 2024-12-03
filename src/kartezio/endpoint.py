@@ -2,10 +2,10 @@ from typing import Dict
 
 import cv2
 import numpy as np
-from kartezio.components.base import register
+from kartezio.components.core import register
 from kartezio.components.endpoint import Endpoint
-from kartezio.core.types import TypeArray, TypeLabels
 from kartezio.libraries.array import Sobel
+from kartezio.types import TypeArray, TypeLabels
 from kartezio.vision.common import (
     WatershedSkimage,
     contours_fill,

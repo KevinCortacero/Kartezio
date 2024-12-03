@@ -121,6 +121,9 @@ class Observable(ABC):
         Args:
             observer (Observer): The observer to attach.
         """
+        assert isinstance(
+            observer, Observer
+        ), "Observer must be an instance of the Observer class."
         self._observers.append(observer)
 
     def detach(self, observer: Observer) -> None:

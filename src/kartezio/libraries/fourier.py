@@ -1,9 +1,9 @@
 from typing import List
 
 import numpy as np
-from kartezio.components.base import register
+from kartezio.components.core import register
 from kartezio.components.library import Library, Primitive
-from kartezio.core.types import TypeArray, TypeFourier, TypeScalar
+from kartezio.types import TypeArray, TypeFourier, TypeScalar
 
 
 @register(Library, "opencv_fourier")

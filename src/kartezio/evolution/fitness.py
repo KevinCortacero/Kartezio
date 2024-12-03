@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 import numpy as np
-from kartezio.components.base import Component, Components
+from kartezio.components.core import Component, Components
 
 
 class Fitness(Component, ABC):

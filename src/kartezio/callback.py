@@ -7,11 +7,12 @@ from uuid import uuid4
 import matplotlib.pyplot as plt
 import numpy as np
 from kartezio.components.genotype import Genotype
-from kartezio.core.decoder import Decoder
-from kartezio.core.helpers import Observer
 from kartezio.enums import JSON_ELITE
+from kartezio.evolution.decoder import Decoder
+from kartezio.helpers import Observer
 from kartezio.utils.directory import Directory
-from kartezio.utils.io import JsonSaver
+
+# from kartezio.utils.io import JsonSaver
 from kartezio.utils.json_handler import json_write
 
 

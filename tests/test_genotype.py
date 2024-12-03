@@ -1,6 +1,6 @@
 import unittest
 
-from kartezio.components.base import Components
+from kartezio.components.core import Components
 from kartezio.core.sequential import create_model_builder
 from kartezio.endpoint import EndpointThreshold
 from kartezio.fitness import FitnessIOU

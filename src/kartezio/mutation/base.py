@@ -2,9 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 import numpy as np
-from kartezio.components.base import Component, register
+from kartezio.components.core import Component, register
 from kartezio.components.genotype import Genotype
-from kartezio.core.decoder import Adapter
+from kartezio.evolution.decoder import Adapter
+from kartezio.mutation.edges import MutationEdgesNormal, MutationEdgesUniform
 from kartezio.mutation.effect import MutationUniform
 
 
@@ -14,6 +15,7 @@ class Mutation(Component, ABC):
         self.adapter = adapter
         self.parameter_max_value = 256
         self.effect = MutationUniform()
+        self.edges_weights = MutationEdgesUniform()
 
     def random_parameters(self, chromosome: int):
         return np.random.randint(
@@ -24,29 +26,25 @@ class Mutation(Component, ABC):
     def random_function(self, chromosome: str):
         return np.random.randint(self.adapter.chromosomes_infos[chromosome].n_functions)
 
-    @property
-    def random_output(self):
-        return np.random.randint(self.adapter.out_idx, size=1)
-
-    def random_edges(self, idx: int, chromosome: int):
-        return np.random.randint(
-            self.adapter.n_inputs + idx,
-            size=self.adapter.chromosomes_infos[chromosome].n_edges,
-        )
-
     def mutate_function(self, genotype: Genotype, chromosome: str, idx: int):
         self.adapter.set_function(
             genotype, chromosome, idx, self.random_function(chromosome)
         )
 
-    def mutate_connections(
+    def mutate_edges(
         self,
         genotype: Genotype,
         chromosome: str,
         idx: int,
         only_one: int = None,
     ):
-        new_edges = self.random_edges(idx, chromosome)
+        p = self.edges_weights.weights_edges(self.adapter.n_inputs + idx)
+        print(idx, p)
+        new_edges = np.random.choice(
+            range(self.adapter.n_inputs + idx),
+            size=self.adapter.chromosomes_infos[chromosome].n_edges,
+            p=p,
+        )
         if only_one is not None:
             new_value = new_edges[only_one]
             new_edges = self.adapter.get_edges(genotype, chromosome, idx)
@@ -69,7 +67,9 @@ class Mutation(Component, ABC):
         self.adapter.set_parameters(genotype, chromosome, idx, new_parameters)
 
     def mutate_output(self, genotype: Genotype, idx: int):
-        self.adapter.set_output(genotype, idx, self.random_output)
+        p = self.edges_weights.weights_edges(self.adapter.out_idx)
+        new_edges = np.random.choice(range(self.adapter.out_idx), size=1, p=p)
+        self.adapter.set_output(genotype, idx, new_edges)
 
     @abstractmethod
     def mutate(self, genotype: Genotype):
@@ -99,7 +99,7 @@ class MutationRandom(Mutation):
                     self.mutate_function(genotype, chromosome, node)
                 elif mutation_parameter_index <= chromosome_infos.n_edges:
                     connection_idx = mutation_parameter_index - 1
-                    self.mutate_connections(
+                    self.mutate_edges(
                         genotype, chromosome, node, only_one=connection_idx
                     )
                 else:

@@ -3,7 +3,7 @@ from typing import Dict
 
 import numpy as np
 from kartezio.callback import Event
-from kartezio.components.base import UpdatableComponent, register
+from kartezio.components.core import UpdatableComponent, register
 from kartezio.mutation.base import Mutation
 
 

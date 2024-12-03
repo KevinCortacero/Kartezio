@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 import numpy as np
-from kartezio.components.base import Components
+from kartezio.components.core import Components
 from kartezio.components.dataset import DatasetMeta
 from kartezio.readers import DataReader
 from kartezio.utils.directory import Directory

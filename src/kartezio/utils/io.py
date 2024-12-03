@@ -1,10 +1,10 @@
 import os
 
-from kartezio.components.base import load_component
+from kartezio.components.core import load_component
 from kartezio.components.genotype import Genotype
 from kartezio.components.preprocessor import Preprocessing
-from kartezio.core.decoder import Decoder, DecoderPoly
-from kartezio.core.evolution import Fitness
+from kartezio.evolution.decoder import DecoderCGP
+from kartezio.evolution.fitness import Fitness
 from kartezio.utils.directory import Directory
 from kartezio.utils.json_handler import json_read, json_write
 
@@ -57,6 +57,7 @@ class JsonLoader:
         return dataset, individual, decoder, preprocessing, fitness
 
 
+"""
 class JsonSaver:
     def __init__(self, dataset, parser: Decoder):
         self.dataset_json = json.from_dataset(dataset)
@@ -77,3 +78,4 @@ class JsonSaver:
             "decoding": self.parser_as_json,
         }
         json_write(filepath, json_data)
+"""

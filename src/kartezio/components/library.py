@@ -3,8 +3,8 @@ from abc import ABC
 from typing import Dict, List
 
 import numpy as np
-from kartezio.components.base import Component, Components, Node, register
-from kartezio.core.types import KType
+from kartezio.components.core import Component, Components, Node, register
+from kartezio.types import KType
 from tabulate import tabulate
 
 

@@ -1,5 +1,5 @@
 from kartezio.components.genotype import Genotype
-from kartezio.core.decoder import Decoder
+from kartezio.evolution.decoder import Decoder
 from kartezio.mutation.base import Mutation
 
 
@@ -58,10 +58,7 @@ class AccumulateBehavior(MutationBehavior):
 
     def __init__(self):
         """
-        Initialize an AccumulateBehavior instance with a specific decoder.
-
-        Args:
-            decoder (Decoder): The decoder used to parse the genotype into active nodes.
+        Initialize an AccumulateBehavior instance.
         """
         super().__init__()
 
