@@ -36,6 +36,15 @@ class LibraryDefaultOpenCV(Library):
         super().__init__(TypeArray)
 
 
+@register(Primitive, "identity")
+class Identity(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return x[0]
+    
+
 @register(Primitive, "max")
 class Max(Primitive):
     def __init__(self):
@@ -97,6 +106,42 @@ class SubtractScalar(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.subtract(x[0], float(x[1]))
+    
+
+@register(Primitive, "multiply")
+class Multiply(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.multiply(x[0], x[1])
+    
+
+@register(Primitive, "multiply_scalar")
+class MultiplyScalar(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray, TypeScalar], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.multiply(x[0], float(x[1]))
+    
+
+@register(Primitive, "divide")
+class Divide(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray] * 2, TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.divide(x[0], x[1])
+    
+
+@register(Primitive, "divide_scalar")
+class DivideScalar(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray, TypeScalar], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.divide(x[0], float(x[1]))
 
 
 @register(Primitive, "bitwise_not")
@@ -911,17 +956,22 @@ class LaplacianOfGaussian(Primitive):
 
 def create_array_lib(use_scalars=False):
     library_opencv = LibraryDefaultOpenCV()
+    library_opencv.add_by_name("identity")
     library_opencv.add_by_name("max")
     library_opencv.add_by_name("min")
     library_opencv.add_by_name("mean")
     if use_scalars:
         library_opencv.add_by_name("add_scalar")
         library_opencv.add_by_name("subtract_scalar")
+        library_opencv.add_by_name("multiply_scalar")
+        library_opencv.add_by_name("divide_scalar")
         library_opencv.add_by_name("median_blur_scalar")
         library_opencv.add_by_name("gaussian_blur_scalar")
     else:
         library_opencv.add_by_name("add")
         library_opencv.add_by_name("subtract")
+        library_opencv.add_by_name("multiply")
+        library_opencv.add_by_name("divide")
         library_opencv.add_by_name("median_blur")
         library_opencv.add_by_name("gaussian_blur")
     library_opencv.add_by_name("bitwise_not")

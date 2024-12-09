@@ -29,6 +29,9 @@ class DataReader(Component):
     def __from_dict__(cls, dict_infos: Dict) -> "Component":
         pass
 
+    def __to_dict__(self) -> Dict:
+        return {"scale": self.scale, "directory": str(self.directory)}
+
 
 class DatasetMeta:
     @staticmethod

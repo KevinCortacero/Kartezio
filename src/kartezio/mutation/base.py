@@ -13,13 +13,12 @@ class Mutation(Component, ABC):
     def __init__(self, adapter: Adapter):
         super().__init__()
         self.adapter = adapter
-        self.parameter_max_value = 256
-        self.effect = MutationUniform()
+        self.parameters = MutationUniform()
         self.edges_weights = MutationEdgesUniform()
 
     def random_parameters(self, chromosome: int):
         return np.random.randint(
-            self.parameter_max_value,
+            self.parameters.max_value,
             size=self.adapter.chromosomes_infos[chromosome].n_parameters,
         )
 
@@ -38,13 +37,20 @@ class Mutation(Component, ABC):
         idx: int,
         only_one: int = None,
     ):
-        p = self.edges_weights.weights_edges(self.adapter.n_inputs + idx)
-        print(idx, p)
+        n_previous_nodes = 1 + idx
+        p = self.edges_weights.weights_edges(n_previous_nodes)
         new_edges = np.random.choice(
-            range(self.adapter.n_inputs + idx),
+            list(range(n_previous_nodes)),
             size=self.adapter.chromosomes_infos[chromosome].n_edges,
             p=p,
         )
+        for edge, new_edge in enumerate(new_edges):
+            if new_edge == 0:
+                # sample from inputs
+                new_edges[edge] = np.random.randint(self.adapter.n_inputs)
+            else:
+                # connect to previous nodes
+                new_edges[edge] = new_edge - 1 + self.adapter.n_inputs
         if only_one is not None:
             new_value = new_edges[only_one]
             new_edges = self.adapter.get_edges(genotype, chromosome, idx)
@@ -60,20 +66,31 @@ class Mutation(Component, ABC):
     ):
         new_random_parameters = self.random_parameters(chromosome)
         old_parameters = self.adapter.get_parameters(genotype, chromosome, idx)
-        new_parameters = self.effect.call(old_parameters, new_random_parameters)
+        new_parameters = self.parameters.adjust(old_parameters, new_random_parameters)
         if only_one is not None:
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
         self.adapter.set_parameters(genotype, chromosome, idx, new_parameters)
 
     def mutate_output(self, genotype: Genotype, idx: int):
-        p = self.edges_weights.weights_edges(self.adapter.out_idx)
-        new_edges = np.random.choice(range(self.adapter.out_idx), size=1, p=p)
+        n_previous_nodes = 1 + self.adapter.n_nodes
+        p = self.edges_weights.weights_edges(n_previous_nodes)
+        new_edges = np.random.choice(range(n_previous_nodes), size=1, p=p)
         self.adapter.set_output(genotype, idx, new_edges)
+        for edge, new_edge in enumerate(new_edges):
+            if new_edge == 0:
+                # sample from inputs
+                new_edges[edge] = np.random.randint(self.adapter.n_inputs)
+            else:
+                # connect to previous nodes
+                new_edges[edge] = new_edge - 1 + self.adapter.n_inputs
 
     @abstractmethod
     def mutate(self, genotype: Genotype):
         pass
+
+    def __to_dict__(self) -> Dict:
+        return {}
 
 
 @register(Mutation, "random")

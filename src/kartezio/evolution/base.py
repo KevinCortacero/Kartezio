@@ -16,20 +16,6 @@ from kartezio.mutation.decay import MutationDecay
 from kartezio.mutation.handler import MutationHandler
 
 
-class GenericModel(ABC):
-    @abstractmethod
-    def predict(self, x: List[Any]) -> List[Any]:
-        """Make a prediction based on input data."""
-        pass
-
-
-class ModelTrainer(GenericModel):
-    @abstractmethod
-    def fit(self, x: List[Any], y: List[Any]) -> "ModelTrainer":
-        """Fit the model to the provided data."""
-        pass
-
-
 class ObservableModel(Observable):
     def send_event(self, name, state):
         self.notify(Event(self.get_current_iteration(), name, state))
@@ -101,17 +87,6 @@ class KartezioCGP(ObservableModel):
         self.clear()
         for updatable in self.collect_updatables():
             self.attach(updatable)
-        # get updatable components
-        # self.updatables.append(self.mutation.mutation.effect)
-        # if self.mutation.decay:
-        # self.updatables.append(self.mutation.decay)
-        # print(self.updatables)
-        # attach updatables
-
-    def preprocess(self, x):
-        if self.preprocessing:
-            return self.preprocessing.call(x)
-        return x
 
     def get_current_iteration(self):
         return self.evolver.current_iteration
@@ -119,6 +94,10 @@ class KartezioCGP(ObservableModel):
     @property
     def population(self):
         return self.evolver.population
+    
+    @property
+    def elite(self):
+        return self.population.get_elite()
 
     def evaluation(self, x: List[Any], y: List[Any]):
         y_pred = self.decoder.decode_population(self.population, x)
@@ -140,46 +119,27 @@ class KartezioCGP(ObservableModel):
             self.send_event(Event.Events.END_STEP, state)
             self.evolver.next()
         self.force_event(Event.Events.END_LOOP, state)
-        elite = self.population.get_elite()
-        return elite, state
-
+        return self.elite, state
+    
+    def preprocess(self, x):
+        if self.preprocessing:
+            return self.preprocessing.call(x)
+        return x
+    
+    def predict(self, x):
+        """
+        Predict the output of the model given the input.
+        Apply the preprocessing if it exists.
+        """
+        x = self.preprocess(x)
+        return self.decoder.decode(self.elite, x)
+    
     def evaluate(self, x, y):
-        y_pred, t = self.predict(x)
+        y_pred, _ = self.predict(x)
         return self.evolver.fitness.batch(y, [y_pred])
 
-    def predict(self, x):
-        return self.decoder.decode(self.population.get_elite(), x)
 
-    def print_python_class(self, class_name):
-        python_writer = PythonClassWriter(self.decoder)
-        python_writer.to_python_class(class_name, self.population.get_elite())
-
-    def display_elite(self):
-        elite = self.population.get_elite()
-        print(elite[0])
-        print(elite.outputs)
-
-    def summary(self):
-        # TODO: implement summary
-        pass
-
-        """
-
-       
-
-        # attach callbacks
-        for callback in callbacks:
-            callback.set_decoder(self.model.decoder)
-            self.model.attach(callback)
-        return self.model
-        """
-
-
-class KartezioTrainer(ModelTrainer, ABC):
-    pass
-
-
-class KartezioSequentialTrainer(KartezioTrainer):
+class KartezioTrainer:
     def __init__(
         self,
         n_inputs: int,
@@ -217,9 +177,6 @@ class KartezioSequentialTrainer(KartezioTrainer):
 
         # evolve the model
         return self.model.evolve(x, y)
-
-    def predict(self, x: List[Any]) -> List[Any]:
-        return self.model.predict(x)
 
     @property
     def decoder(self) -> DecoderCGP:
@@ -263,3 +220,19 @@ class KartezioSequentialTrainer(KartezioTrainer):
 
     def set_mutation_edges(self, edges):
         self.mutation.set_edges(edges)
+
+    def evaluate(self, x, y):
+        return self.model.evaluate(x, y)       
+
+    def print_python_class(self, class_name):
+        python_writer = PythonClassWriter(self.decoder)
+        python_writer.to_python_class(class_name, self.model.population.get_elite())
+
+    def display_elite(self):
+        elite = self.model.elite
+        print(elite[0])
+        print(elite.outputs)
+
+    def summary(self):
+        # TODO: implement summary
+        pass

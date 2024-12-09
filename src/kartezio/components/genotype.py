@@ -85,6 +85,15 @@ class Genotype(Component):
         for key, value in dict_infos["chromosomes"].items():
             genotype[key] = np.asarray(value)
         return genotype
+    
+    def __to_dict__(self) -> Dict:
+        """
+        Convert the genotype to a dictionary representation.
+
+        Returns:
+            Dict: A dictionary containing the chromosome information.
+        """
+        return {"chromosomes": {key: value.tolist() for key, value in self._chromosomes.items()}}
 
     def clone(self) -> "Genotype":
         """

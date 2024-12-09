@@ -9,6 +9,7 @@ from kartezio.components.core import UpdatableComponent, register
 class MutationEffect(UpdatableComponent, ABC):
     def __init__(self):
         super().__init__()
+        self.max_value = 256
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "MutationEffect":
@@ -17,7 +18,7 @@ class MutationEffect(UpdatableComponent, ABC):
 
 @register(MutationEffect, "uniform")
 class MutationUniform(MutationEffect):
-    def call(self, _, new_parameters):
+    def adjust(self, _, new_parameters):
         return new_parameters
 
     def update(self, event: dict):

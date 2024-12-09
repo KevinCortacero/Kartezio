@@ -6,42 +6,11 @@ from kartezio.components.genotype import Genotype
 from kartezio.evolution.decoder import Adapter
 from kartezio.mutation.base import Mutation
 
-"""
-@register(Mutation, "all_random")
-class RandomInit(Mutation):
-    '''
-    Can be used to initialize genome (genome) randomly
-    '''
-
-    @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "Mutation":
-        pass
-
-    def __init__(self, adapter: Adapter):
-        super().__init__(adapter)
-
-    def mutate(self, genotype):
-        # mutate genes
-        for i in range(self.adapter.n_nodes):
-            self.mutate_function(genotype, i)
-            self.mutate_connections(genotype, i)
-            self.mutate_parameters(genotype, i)
-        # mutate outputs
-        for i in range(self.adapter.n_outputs):
-            self.mutate_output(genotype, i)
-        return genotype
-
-    def random(self):
-        genotype = self.adapter.new_genotype()
-        return self.mutate(genotype)
-
-"""
-
 
 @register(Mutation, "copy")
 class CopyGenotype(Mutation):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+    def __from_dict__(cls, dict_infos: Dict) -> "CopyGenotype":
         pass
 
     def __init__(self, genotype, shape, n_functions):
@@ -59,7 +28,7 @@ class RandomInit(Mutation):
     """
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "MutationAllRandomPoly":
+    def __from_dict__(cls, dict_infos: Dict) -> "RandomInit":
         pass
 
     def __init__(self, adapter: Adapter):

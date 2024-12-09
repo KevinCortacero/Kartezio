@@ -25,9 +25,9 @@ class MutationEdgesUniform(MutationEdges):
     def __init__(self):
         super().__init__()
 
-    def weights_edges(self, idx: int):
+    def weights_edges(self, n: int):
         # return uniform distribution
-        p = [1.0 / idx] * idx
+        p = [1.0 / n] * n
         return p
 
 
@@ -36,9 +36,11 @@ class MutationEdgesNormal(MutationEdges):
     def __init__(self, sigma=3):
         super().__init__()
         self.sigma = sigma
+        self.w = {}
 
-    def weights_edges(self, idx: int):
-        # return half normal distribution
-        p = np.exp(-np.power(np.arange(0, 1 + idx * 2) - idx, 2) / (2 * self.sigma**2))
-        p = p[: 1 + idx]
-        return p / np.sum(p)
+    def weights_edges(self, n: int):
+        if n not in self.w:
+            x = np.arange(-n + 1, 1)
+            p = 1.0 / (np.sqrt(2.0 * np.pi) * self.sigma) * np.exp(-np.power(x / self.sigma, 2.0) / 2)
+            self.w[n] = p / np.sum(p)
+        return self.w[n]

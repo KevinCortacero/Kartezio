@@ -38,15 +38,6 @@ class CodeModel(InferenceModel, ABC):
         return [self._endpoint(self._parse(xi)) for xi in x]
 
 
-class SingleModel(InferenceModel):
-    def __init__(self, genotype: Genotype, decoder: Decoder):
-        self.genotype = genotype
-        self.decoder = decoder
-
-    def predict(self, x):
-        return self.decoder.decode(self.genotype, x)
-
-
 class EnsembleModel(InferenceModel):
     def __init__(self, models):
         self.models = models
@@ -96,21 +87,28 @@ class KartezioModel(InferenceModel):
         dataset, genotype, decoder, preprocessing, fitness = (
             KartezioModel.json_loader.read_individual(filepath=filepath)
         )
-        self._model = SingleModel(genotype, decoder)
-        self.indices = dataset["indices"]
+        self.genotype = genotype
+        self.decoder = decoder
         self.preprocessing = preprocessing
         self.fitness = fitness
+        self.indices = dataset["indices"]
 
-    def predict(self, x):
+    def preprocess(self, x):
         if self.preprocessing:
-            x = self.preprocessing.call(x)
-        return self._model.predict(x)
-
-    def eval(self, dataset, subset="test"):
-        x, y = dataset.train_xy if subset == "train" else dataset.test_xy
-        p, t = self.predict(x)
-        f = self.fitness.batch(y, [p])
-        return p, f, t
+            return self.preprocessing.call(x)
+        return x
+    
+    def predict(self, x):
+        """
+        Predict the output of the model given the input.
+        Apply the preprocessing if it exists.
+        """
+        x = self.preprocess(x)
+        return self.decoder.decode(self.genotype, x)
+    
+    def evaluate(self, x, y):
+        y_pred, _ = self.predict(x)
+        return self.fitness.batch(y, [y_pred])
 
     """
     def show_graph(self, inputs, outputs, jupyter=False):

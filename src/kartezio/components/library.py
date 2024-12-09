@@ -23,6 +23,9 @@ class Primitive(Node, ABC):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Primitive":
         return Components.instantiate("Primitive", dict_infos["name"])
+    
+    def __to_dict__(self) -> Dict:
+        return {"name": self.name}
 
 
 class Library(Component, ABC):

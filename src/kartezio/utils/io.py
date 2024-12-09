@@ -44,11 +44,10 @@ class JsonLoader:
     def read_individual(self, filepath):
         json_data = json_read(filepath=filepath)
         dataset = json_data["dataset"]
-        decoder = load_component(DecoderPoly, json_data["decoder"])
+        decoder = load_component(DecoderCGP, json_data["decoder"])
         if decoder is None:
             raise ValueError("Decoder not found.")
         individual = load_component(Genotype, json_data["elite"])
-        print(json_data["preprocessing"])
         if json_data["preprocessing"] is None:
             preprocessing = None
         else:

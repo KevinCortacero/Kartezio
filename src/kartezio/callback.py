@@ -97,73 +97,39 @@ class CallbackVerbose(Callback):
 
     def on_generation_end(self, n, e_content):
         fitness, time, fps = self._compute_metrics(e_content)
-        verbose = f"[G {n:04}] {fitness:.4f} {time:.6f}s {fps}fps"
+        verbose = f"[G {n:06}] {fitness:.6f} {time:.6f}s {fps}fps"
         print(verbose)
 
     def on_evolution_end(self, n, e_content):
         fitness, time, fps = self._compute_metrics(e_content)
-        verbose = f"[G {n:04}] {fitness:.4f} {time:.6f}s {fps}fps, loop done."
+        verbose = f"[G {n:06}] {fitness:.6f} {time:.6f}s {fps}fps, loop done."
         print(verbose)
 
 
-class CallbackSave(Callback):
-    def __init__(self, workdir, dataset, frequency=1):
-        super().__init__(frequency)
-        self.workdir = Directory(workdir).next(eventid())
-        self.dataset = dataset
-        self.json_saver = None
-
-    def set_decoder(self, parser):
-        super().set_decoder(parser)
-        self.json_saver = JsonSaver(self.dataset, self.decoder)
-
-    def save_population(self, population, n):
-        filename = f"G{n}.json"
-        filepath = self.workdir / filename
-        self.json_saver.save_population(filepath, population)
-
-    def save_elite(self, elite):
-        filepath = self.workdir / JSON_ELITE
-        self.json_saver.save_individual(filepath, elite)
-
-    def _callback(self, n, e_name, e_content):
-        if e_name == Event.END_STEP or e_name == Event.END_LOOP:
-            self.save_population(e_content.get_individuals(), n)
-            self.save_elite(e_content.individuals[0])
-
-
-class CallbackSaveFitness(Callback):
-    def __init__(self, filename):
-        super().__init__()
-        self.filename = filename
-        self.data = []
-
-    def on_generation_end(self, n, e_content):
-        fitness = e_content.individuals[0].fitness
-        self.data.append(fitness)
-
-    def on_evolution_end(self, n, e_content):
-        np.save(self.filename, np.array(self.data))
-        print(f"{self.filename} saved.")
-
 
 class CallbackSaveScores(Callback):
-    def __init__(self, filename, dataset, fitness):
+    def __init__(self, filename, dataset, preprocessing, fitness):
         super().__init__()
         self.filename = filename
         self.data = []
-        self.dataset = dataset
         self.fitness = fitness
+        self.train_x = dataset.train_x
+        self.train_y = dataset.train_y
+        self.test_x = dataset.test_x
+        self.test_y = dataset.test_y
+        if preprocessing:
+            self.train_x = preprocessing.call(self.train_x)
+            self.test_x = preprocessing.call(self.test_x)
 
     def _add_new_line(self, iteration, event_content):
         genotype = event_content.individuals[0].genotype
-        p_train = self.decoder.decode(genotype, self.dataset.train_x)[0]
-        p_test = self.decoder.decode(genotype, self.dataset.test_x)[0]
+        p_train = self.decoder.decode(genotype, self.train_x)[0]
         self.fitness.mode = "train"
-        f_train = self.fitness.batch(self.dataset.train_y, [p_train])
-        if self.dataset.test_x:
+        f_train = self.fitness.batch(self.train_y, [p_train])
+        if self.test_x:
+            p_test = self.decoder.decode(genotype, self.test_x)[0]
             self.fitness.mode = "test"
-            f_test = self.fitness.batch(self.dataset.test_y, [p_test])
+            f_test = self.fitness.batch(self.test_y, [p_test])
             self.fitness.mode = "train"
         else:
             f_test = np.nan
