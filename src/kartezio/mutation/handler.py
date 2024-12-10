@@ -5,7 +5,7 @@ from kartezio.mutation.base import MutationRandom
 from kartezio.mutation.behavioral import MutationBehavior
 from kartezio.mutation.decay import MutationDecay
 from kartezio.mutation.edges import MutationEdges
-from kartezio.mutation.effect import MutationEffect
+from kartezio.mutation.effect import MutationEffect, MutationUniform
 
 
 class MutationHandler:
@@ -23,7 +23,7 @@ class MutationHandler:
         self.decay = decay
 
     def set_effect(self, effect: MutationEffect):
-        self.mutation.effect = effect
+        self.mutation.parameters = effect
 
     def set_edges(self, edges: MutationEdges):
         self.mutation.edges_weights = edges
@@ -35,7 +35,7 @@ class MutationHandler:
     def compile(self, n_iterations: int):
         self.mutation.node_rate = self.node_rate
         self.mutation.out_rate = self.out_rate
-        self.mutation.effect.compile(n_iterations)
+        self.mutation.parameters.compile(n_iterations)
         if self.behavior:
             self.behavior.set_mutation(self.mutation)
         if self.decay:
@@ -44,8 +44,8 @@ class MutationHandler:
 
     def collect_updatables(self):
         updatables = []
-        if isinstance(self.mutation.effect, UpdatableComponent):
-            updatables.append(self.mutation.effect)
+        if isinstance(self.mutation.parameters, UpdatableComponent):
+            updatables.append(self.mutation.parameters)
         if self.behavior:
             if isinstance(self.behavior, UpdatableComponent):
                 updatables.append(self.behavior)

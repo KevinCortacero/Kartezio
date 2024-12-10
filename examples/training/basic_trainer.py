@@ -1,5 +1,5 @@
 from kartezio.endpoint import EndpointThreshold
-from kartezio.evolution.base import KartezioSequentialTrainer
+from kartezio.evolution.base import KartezioTrainer
 from kartezio.fitness import FitnessIOU
 from kartezio.libraries.array import create_array_lib
 from kartezio.utils.dataset import one_cell_dataset
@@ -20,7 +20,7 @@ def main():
     fitness = FitnessIOU()  # Define the fitness metric
 
     # Build the model with specified components
-    model = KartezioSequentialTrainer(
+    model = KartezioTrainer(
         n_inputs=n_inputs,
         n_nodes=n_inputs * 10,
         libraries=libraries,
@@ -33,7 +33,7 @@ def main():
     train_x, train_y = one_cell_dataset()  # Use a simple one-cell dataset for training
 
     # Train the model
-    elite, history = model.fit(train_x, train_y)
+    elite, history = model.fit(100, train_x, train_y)
 
     # Evaluate the model
     evaluation_result = model.evaluate(train_x, train_y)

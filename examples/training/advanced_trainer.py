@@ -1,6 +1,6 @@
 from kartezio.callback import CallbackVerbose
 from kartezio.endpoint import EndpointThreshold
-from kartezio.evolution.base import KartezioSequentialTrainer
+from kartezio.evolution.base import KartezioTrainer
 from kartezio.fitness import FitnessIOU
 from kartezio.libraries.array import create_array_lib
 from kartezio.libraries.scalar import library_scalar
@@ -20,7 +20,7 @@ def main():
     # Define the number of inputs and create required components
     n_inputs = 1
     libraries = [
-        create_array_lib(use_scalars=False),
+        create_array_lib(use_scalars=True),
         library_scalar,
     ]  # Create a library of array operations
     endpoint = EndpointThreshold(
@@ -29,20 +29,19 @@ def main():
     fitness = FitnessIOU()  # Define the fitness metric
 
     # Build the model with specified components
-    model = KartezioSequentialTrainer(
+    model = KartezioTrainer(
         n_inputs=n_inputs,
-        n_nodes=n_inputs * 10,
+        n_nodes=30,
         libraries=libraries,
         endpoint=endpoint,
         fitness=fitness,
     )
 
-    # Set the mutation rates, decay, behavior, mutation effect, and required FPS
-    model.set_mutation_rates(node_rate=0.2, out_rate=0.1)
-    model.set_decay(LinearDecay(0.2, 0.01))
+    model.set_mutation_rates(node_rate=0.5, out_rate=0.2)
+    model.set_decay(LinearDecay(0.5, 0.01))
     model.set_behavior(AccumulateBehavior())
-    model.set_mutation_effect(MutationNormal(0.5, 0.05))
-    model.set_mutation_edges(MutationEdgesNormal(2))
+    model.set_mutation_effect(MutationNormal(0.5, 0.005))
+    model.set_mutation_edges(MutationEdgesNormal(10))
     model.set_required_fps(60)
 
     callbacks = []  # Define the callbacks for the model
@@ -60,11 +59,11 @@ def main():
     elite, history = model.fit(100, train_x, train_y, callbacks=callbacks)
 
     # Evaluate the model
-    evaluation_result = model.model.evaluate(train_x, train_y)
+    evaluation_result = model.evaluate(train_x, train_y)
     print(f"Model Evaluation Result: {evaluation_result}")
 
     # Export the model as a Python class
-    model.model.print_python_class("MyExampleClass")
+    model.print_python_class("MyExampleClass")
 
 
 if __name__ == "__main__":

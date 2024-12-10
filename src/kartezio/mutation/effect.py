@@ -41,7 +41,7 @@ class MutationWeighted(MutationEffect):
             self.end = self.start
         return np.linspace(self.start, self.end, self.n_iterations)
 
-    def call(self, old_parameters, new_parameters):
+    def adjust(self, old_parameters, new_parameters):
         return np.round(
             self.weight * new_parameters + (1 - self.weight) * old_parameters
         ).astype(np.uint8)
@@ -64,7 +64,7 @@ class MutationNormal(MutationEffect):
             self.end = self.start
         return np.linspace(self.start, self.end, self.n_iterations) * 255
 
-    def call(self, old_parameters, new_parameters):
+    def adjust(self, old_parameters, new_parameters):
         return np.clip(np.random.normal(old_parameters, self.sigma), 0, 255)
 
     def update(self, event: Event):

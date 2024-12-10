@@ -61,13 +61,14 @@ class PythonClassWriter:
                         node - self.decoder.adapter.n_inputs,
                     )
                     f_name = self.decoder.name_of(chromosome, function_index)
+                    c_types = self.decoder.inputs_of(chromosome, function_index)
                     c_names = [
                         (
-                            f"{chromosome}_{edge}"
+                            f"{ctype}_{edge}"
                             if edge < self.decoder.adapter.n_inputs
-                            else f"{chromosome}_{edge}"
+                            else f"{ctype}_{edge}"
                         )
-                        for edge in edges
+                        for edge, ctype in zip(edges, c_types)
                     ]
                     c_names = "[" + ", ".join(c_names) + "]"
                     list_of_nodes.append(node)
