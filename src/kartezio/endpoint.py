@@ -200,30 +200,21 @@ class EndpointEllipse(Endpoint):
 
 @register(Endpoint, "marker_controlled_watershed")
 class EndpointWatershed(Endpoint):
-    def __init__(self, backend="opencv"):
+    def __init__(self):
         super().__init__([TypeArray, TypeArray])
-        self.backend = backend
 
     def call(self, x):
-        marker_labels = cv2.connectedComponents(x[1], connectivity=8, ltype=cv2.CV_16U)[
+        markers = cv2.connectedComponents(x[1], connectivity=8, ltype=cv2.CV_16U)[
             1
         ]
-        marker_labels[marker_labels > 255] = 0
-        if self.backend == "skimage":
-            labels = watershed(
-                -x[0],
-                markers=marker_labels,
-                mask=x[0] > 0,
-                watershed_line=True,
-            )
-            return [labels]
-        elif self.backend == "opencv":
-            background = x[0] <= 0
-            image = cv2.merge((x[0], x[0], x[0]))
-            labels = cv2.watershed(image, marker_labels.astype(np.int32))
-            labels[labels <= -1] = 0
-            labels[background] = 0
-            return [labels]
+        scaled = cv2.exp((x[0] / 255.0).astype(np.float32))
+        labels = watershed(
+            -scaled,
+            markers=markers,
+            mask=x[0] > 0,
+            watershed_line=True,
+        )
+        return [labels]
 
 
 @register(Endpoint, "local-max_watershed")
@@ -232,22 +223,31 @@ class LocalMaxWatershed(Endpoint):
     Markers are computed as the local max of the distance transform of the mask
 
     """
-    def __init__(self, markers_distance: int = 21):
+    def __init__(self, min_distance=21):
         super().__init__([TypeArray])
+        self.min_distance = min_distance
 
     def call(self, x):
-        distance_transform = ndimage.distance_transform_edt(x[0])
-
-        mask = threshold_tozero(x[0], self.threshold)
-        mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
+        distance = cv2.distanceTransform(x[0], cv2.DIST_L2, 3)
+        distance = cv2.normalize(distance, None, 0., 1., cv2.NORM_MINMAX)
+        # distance[distance < 0.5] = 0
+        # distance = (distance * 255).astype(np.uint8)
+        # markers = cv2.connectedComponents(distance, connectivity=8, ltype=cv2.CV_16U)[1]
+        scaled = cv2.exp((x[0] / 255.0).astype(np.float32))
+        markers = _fast_local_max(distance, min_distance=self.min_distance)
+        labels = watershed(
+            -scaled,
+            markers=markers,
+            mask=x[0] > 0,
+            watershed_line=True,
+        )
         return [labels]
 
     def __to_dict__(self) -> Dict:
         return {
             "name": "local-max_watershed",
             "args": {
-                "threshold": self.threshold,
-                "markers_distance": self.wt.markers_distance,
+                "min_distance": self.min_distance,
             },
         }
 
@@ -280,11 +280,12 @@ def _fast_local_max(image, min_distance=21):
 
 @register(Endpoint, "raw_watershed")
 class RawWatershed(Endpoint):
-    def __init__(self):
+    def __init__(self, min_distance=21):
         super().__init__([TypeArray])
+        self.min_distance = min_distance
 
     def call(self, x):
-        marker_labels = _fast_local_max(x[0])
+        marker_labels = _fast_local_max(x[0], min_distance=self.min_distance)
         labels = watershed(
             -x[0],
             markers=marker_labels,

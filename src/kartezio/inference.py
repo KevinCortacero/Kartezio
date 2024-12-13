@@ -46,7 +46,6 @@ class EnsembleModel(InferenceModel):
         return [model.predict(x) for model in self.models]
     
     def predict(self, x, normalize=True):
-        
         y = self.batch(x)
         y_list = []
         for i in range(len(x)):
@@ -57,7 +56,6 @@ class EnsembleModel(InferenceModel):
             
             y_list.append((np.array(mask_list).mean(axis=0) * 255).astype(np.uint8))
         return y_list
-                
 
     def remove_endpoint(self):
         for model in self.models:
