@@ -322,17 +322,6 @@ class Roberts(Primitive):
         return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
 
 
-@register(Primitive, "robert_cross")
-class Roberts2(Primitive):
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 0)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        gx = convolution(x[0], KERNEL_ROBERTS_X)
-        gy = convolution(x[0], KERNEL_ROBERTS_Y)
-        return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
-
-
 @register(Primitive, "canny")
 class Canny(Primitive):
     def __init__(self):
@@ -538,42 +527,22 @@ class RemSmallHoles(Primitive):
         return remove_small_holes(x[0] > 0, args[0]).astype(np.uint8)
 
 
-@register(Primitive, "binary_threshold")
-class BinaryThreshold(Primitive):
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 1)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        return threshold_binary(x[0], args[0])
-
-
-@register(Primitive, "to_zero_threshold")
-class ToZeroThreshold(Primitive):
+@register(Primitive, "threshold")
+class Threshold(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeArray, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return threshold_tozero(x[0], args[0])
+    
 
-
-@register(Primitive, "binarize")
-class Binarize(Primitive):
+@register(Primitive, "threshold_scalar")
+class ThresholdScalar(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeArray, 0)
+        super().__init__([TypeArray, TypeScalar], TypeArray, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return threshold_binary(x[0], 1)
-
-
-@register(Primitive, "threshold")
-class Threshold(Primitive):
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 2)
-
-    def call(self, x, args=None):
-        if args[0] < 128:
-            return threshold_binary(x[0], args[1])
-        return threshold_tozero(x[0], args[1])
+        return threshold_tozero(x[0], x[1])
 
 
 @register(Primitive, "kuwahara")
@@ -583,65 +552,6 @@ class Kuwahara(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return kuwahara_filter(x[0], correct_ksize(args[0]))
-
-
-@register(Primitive, "threshold_at_1")
-class ThresholdAt1(Primitive):
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 1)
-
-    def call(self, x, args=None):
-        if args[0] < 128:
-            return threshold_binary(x[0], 1)
-        return threshold_tozero(x[0], 1)
-
-
-@register(Primitive, "fluo_tophat")
-class FluoTopHat(Primitive):
-    """from https://github.com/cytosmart-bv/tomni"""
-
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 0)
-
-    def _rescale_intensity(self, img, min_val, max_val):
-        output_img = np.clip(img, min_val, max_val)
-        if max_val - min_val == 0:
-            return (output_img * 255).astype(np.uint8)
-        output_img = (output_img - min_val) / (max_val - min_val) * 255
-        return output_img.astype(np.uint8)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        # kernel = kernel_from_parameters(args)
-        # img = cv2.morphologyEx(x[0], cv2.MORPH_TOPHAT, kernel, iterations=10)
-        kur = np.mean(kurtosis(x[0], fisher=True))
-        skew1 = np.mean(skew(x[0]))
-        if kur > 1 and skew1 > 1:
-            p2, p98 = np.percentile(x[0], (15, 99.5), interpolation="linear")
-        else:
-            p2, p98 = np.percentile(x[0], (15, 100), interpolation="linear")
-
-        return self._rescale_intensity(x[0], p2, p98)
-
-
-@register(Primitive, "rel_diff")
-class RelativeDifference(Primitive):
-    """from https://github.com/cytosmart-bv/tomni"""
-
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 1)
-
-    def call(self, x, args=None):
-        img = x[0]
-        max_img = np.max(img)
-        min_img = np.min(img)
-
-        ksize = correct_ksize(args[0])
-        gb = cv2.GaussianBlur(img, (ksize, ksize), 0)
-        gb = np.float32(gb)
-
-        img = np.divide(img, gb + 1e-15, dtype=np.float32)
-        img = cv2.normalize(img, img, max_img, min_img, cv2.NORM_MINMAX)
-        return img.astype(np.uint8)
 
 
 @register(Primitive, "distance_transform")
@@ -967,6 +877,7 @@ def create_array_lib(use_scalars=False):
         library_opencv.add_by_name("divide_scalar")
         library_opencv.add_by_name("median_blur_scalar")
         library_opencv.add_by_name("gaussian_blur_scalar")
+        library_opencv.add_by_name("threshold_scalar")
     else:
         library_opencv.add_by_name("add")
         library_opencv.add_by_name("subtract")
@@ -974,6 +885,7 @@ def create_array_lib(use_scalars=False):
         library_opencv.add_by_name("divide")
         library_opencv.add_by_name("median_blur")
         library_opencv.add_by_name("gaussian_blur")
+        library_opencv.add_by_name("threshold")
     library_opencv.add_by_name("bitwise_not")
     library_opencv.add_by_name("bitwise_or")
     library_opencv.add_by_name("bitwise_and")
@@ -999,13 +911,10 @@ def create_array_lib(use_scalars=False):
     library_opencv.add_by_name("top_hat")
     library_opencv.add_by_name("black_hat")
     library_opencv.add_by_name("hit_miss")
-    library_opencv.add_by_name("binary_threshold")
-    library_opencv.add_by_name("to_zero_threshold")
     library_opencv.add_by_name("binary_in_range")
     library_opencv.add_by_name("fill")
     library_opencv.add_by_name("rm_small_objects")
     library_opencv.add_by_name("rm_small_holes")
-    library_opencv.add_by_name("binarize")
     library_opencv.add_by_name("in_range")
     library_opencv.add_by_name("pyr_up")
     library_opencv.add_by_name("pyr_down")

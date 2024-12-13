@@ -143,6 +143,32 @@ class AddColorSpace(Preprocessing):
         }
 
 
+@register(Preprocessing, "resize")
+class Resize(Preprocessing):
+    def __init__(self, scale, method):
+        super().__init__()
+        self.scale = scale
+        self.method = method
+
+    def preprocess(self, x):
+        new_x = []
+        for i in range(len(x)):
+            new_xi = []
+            for xij in x[i]:
+                if self.scale == "down":
+                    if self.method == "pyr":
+                        new_xi.append(cv2.pyrDown(xij))
+                    if self.method == "nearest":
+                        new_xi.append(cv2.resize(xij, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_NEAREST))
+                elif self.scale == "up":
+                    if self.method == "pyr":
+                        new_xi.append(cv2.pyrUp(xij))
+                    if self.method == "nearest":
+                        new_xi.append(cv2.resize(xij, (0, 0), fx=2, fy=2, interpolation=cv2.INTER_NEAREST))
+            new_x.append(new_xi)
+        return new_x
+
+
 @register(Preprocessing, "clahe")
 class ApplyClahe(Preprocessing):
     def __init__(self, clip_limit=2.0, tile_grid_size=(8, 8)):

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+import cv2
 import numpy as np
 from kartezio.components.core import Components
 from kartezio.components.genotype import Genotype
@@ -42,8 +42,22 @@ class EnsembleModel(InferenceModel):
     def __init__(self, models):
         self.models = models
 
-    def predict(self, x):
+    def batch(self, x):
         return [model.predict(x) for model in self.models]
+    
+    def predict(self, x, normalize=True):
+        
+        y = self.batch(x)
+        y_list = []
+        for i in range(len(x)):
+            if normalize:
+                mask_list = [cv2.normalize(pi[0][i][0], None, 0., 1., cv2.NORM_MINMAX) for pi in y]
+            else:
+                mask_list = [pi[0][i][0] / 255. for pi in y]
+            
+            y_list.append((np.array(mask_list).mean(axis=0) * 255).astype(np.uint8))
+        return y_list
+                
 
     def remove_endpoint(self):
         for model in self.models:
@@ -51,13 +65,12 @@ class EnsembleModel(InferenceModel):
 
 
 class ModelPool:
-    def __init__(self, directory, fitness, regex=""):
+    def __init__(self, directory, regex=""):
         self.models = []
         if type(directory) == str:
             self.directory = Directory(directory)
         else:
             self.directory = directory
-        self.fitness = fitness
         self.read(regex)
 
     def read(self, regex):

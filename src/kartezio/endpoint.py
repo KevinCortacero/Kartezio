@@ -13,8 +13,11 @@ from kartezio.vision.common import (
     image_new,
     threshold_tozero,
 )
+from kartezio.preprocessing import Resize
 from skimage.segmentation import watershed
 from skimage.transform import hough_ellipse
+from skimage.feature import peak_local_max
+from scipy import ndimage
 
 
 @register(Endpoint, "to_labels")
@@ -223,33 +226,18 @@ class EndpointWatershed(Endpoint):
             return [labels]
 
 
-@register(Endpoint, "raw_watershed")
-class EndpointRawWatershed(Endpoint):
-    def __init__(self):
-        super().__init__([TypeArray, TypeLabels])
-
-    def call(self, x):
-        background = x[0] == 0
-        image = cv2.merge((x[0], x[0], x[0]))
-        labels = cv2.watershed(image, x[1])
-        labels[labels == -1] = 0
-        labels[background] = 0
-        return [labels]
-
-
 @register(Endpoint, "local-max_watershed")
 class LocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the distance transform of the mask
 
     """
-
-    def __init__(self, threshold: int = 1, markers_distance: int = 21):
+    def __init__(self, markers_distance: int = 21):
         super().__init__([TypeArray])
-        self.wt = WatershedSkimage(use_dt=True, markers_distance=markers_distance)
-        self.threshold = threshold
 
     def call(self, x):
+        distance_transform = ndimage.distance_transform_edt(x[0])
+
         mask = threshold_tozero(x[0], self.threshold)
         mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
         return [labels]
@@ -263,6 +251,48 @@ class LocalMaxWatershed(Endpoint):
             },
         }
 
+
+def _peak_local_max(image, min_distance=21):
+    peak_idx = peak_local_max(
+        image,
+        min_distance=min_distance,
+        exclude_border=0,
+    )
+    peak_mask = np.zeros_like(image, dtype=np.uint8)
+    labels = list(range(1, peak_idx.shape[0] + 1))
+    peak_mask[tuple(peak_idx.T)] = labels
+    return peak_mask
+
+
+def _fast_local_max(image, min_distance=21):
+    image_down = cv2.pyrDown(image)
+    peak_idx = peak_local_max(
+        image_down,
+        min_distance=min_distance//2,
+        exclude_border=0,
+    )
+    peak_mask = np.zeros_like(image, dtype=np.uint8)
+    labels = list(range(1, peak_idx.shape[0] + 1))
+    remaped_peaks = (peak_idx * 2).astype(np.int32)
+    peak_mask[tuple(remaped_peaks.T)] = labels
+    return peak_mask
+
+
+@register(Endpoint, "raw_watershed")
+class RawWatershed(Endpoint):
+    def __init__(self):
+        super().__init__([TypeArray])
+
+    def call(self, x):
+        marker_labels = _fast_local_max(x[0])
+        labels = watershed(
+            -x[0],
+            markers=marker_labels,
+            mask=x[0] > 0,
+            watershed_line=True,
+        )
+        return [labels]
+        
 
 @register(Endpoint, "raw_watershed_old")
 class RawLocalMaxWatershed(Endpoint):
@@ -337,3 +367,13 @@ class EndpointHoughCircleSmall(Endpoint):
                 radius = circle[2]
                 cv2.circle(new_mask, center, radius, (i + 1), -1)
         return [new_mask]
+
+
+@register(Endpoint, "rescale")
+class EndpointRescale(Endpoint):
+    def __init__(self, scale, method):
+        super().__init__([TypeArray])
+        self.resize = Resize(scale, method)
+
+    def call(self, x):
+        return self.resize.call([x])[0]
