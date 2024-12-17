@@ -197,6 +197,12 @@ class SelectChannels(Preprocessing):
             one_item = [x[i][channel] for channel in self.channels]
             new_x.append(one_item)
         return new_x
+    
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "select_channels",
+            "args": {"channels": self.channels},
+        }
 
 
 class Format3D(Preprocessing):

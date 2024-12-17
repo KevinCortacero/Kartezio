@@ -623,21 +623,25 @@ class InRange(Primitive):
             mask=cv2.inRange(x[0], lower, upper),
         )
 
-
-@register(Primitive, "inrange")
-class InRange2(Primitive):
+@register(Primitive, "inverse")
+class Inverse(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeArray, 2)
+        super().__init__([TypeArray], TypeArray, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
-        lower = int(min(args[0], args[1]))
-        upper = int(max(args[0], args[1]))
-        return cv2.bitwise_and(
-            x[0],
-            x[0],
-            mask=cv2.inRange(x[0], lower, upper),
-        )
+    def call(self, x: List[np.ndarray], args: List[int] = None):
+        return 255 - x[0]
+    
 
+@register(Primitive, "inverse_nonzero")
+class InverseNonZero(Primitive):
+    def __init__(self):
+        super().__init__([TypeArray], TypeArray, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int] = None):
+        inverse = 255 - x[0]
+        inverse[inverse == 255] = 0
+        return inverse
+    
 
 @register(Primitive, "kirsch")
 class Kirsch(Primitive):
@@ -870,6 +874,8 @@ def create_array_lib(use_scalars=False):
     library_opencv.add_by_name("max")
     library_opencv.add_by_name("min")
     library_opencv.add_by_name("mean")
+    library_opencv.add_by_name("inverse")
+    library_opencv.add_by_name("inverse_nonzero")
     if use_scalars:
         library_opencv.add_by_name("add_scalar")
         library_opencv.add_by_name("subtract_scalar")

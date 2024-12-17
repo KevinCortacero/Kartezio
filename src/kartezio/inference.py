@@ -45,16 +45,27 @@ class EnsembleModel(InferenceModel):
     def batch(self, x):
         return [model.predict(x) for model in self.models]
     
-    def predict(self, x, normalize=True):
-        y = self.batch(x)
+    def predict(self, x, normalize=True, reduction="mean", erosion=None):
+        y_batch = self.batch(x)
         y_list = []
         for i in range(len(x)):
-            if normalize:
-                mask_list = [cv2.normalize(pi[0][i][0], None, 0., 1., cv2.NORM_MINMAX) for pi in y]
-            else:
-                mask_list = [pi[0][i][0] / 255. for pi in y]
-            
-            y_list.append((np.array(mask_list).mean(axis=0) * 255).astype(np.uint8))
+            mask_list = []
+            for pi in y_batch:
+                one_image = pi[0][i][0]
+                if normalize:
+                    one_image = cv2.normalize(one_image, None, 0., 1., cv2.NORM_MINMAX)
+                else:
+                    one_image = one_image / 255.
+                mask_list.append(one_image)
+            if reduction == "mean":
+                y = (np.array(mask_list).mean(axis=0) * 255).astype(np.uint8)
+            elif reduction == "max":
+                y = (np.array(mask_list).max(axis=0) * 255).astype(np.uint8)
+            elif reduction == "min":
+                y = (np.array(mask_list).min(axis=0) * 255).astype(np.uint8)
+            if erosion:
+                y = cv2.erode(y, np.ones((erosion, erosion)), iterations=1)
+            y_list.append(y)
         return y_list
 
     def remove_endpoint(self):

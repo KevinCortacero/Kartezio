@@ -42,6 +42,12 @@ class EndpointSubtract(Endpoint):
 
     def call(self, x):
         return [cv2.subtract(x[0], x[1])]
+    
+    def __to_dict__(self) -> Dict:
+        return {
+            "name": "subtract",
+            "args": {},
+        }
 
 
 @register(Endpoint, "threshold")
