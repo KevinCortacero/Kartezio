@@ -2,9 +2,14 @@ from typing import Dict
 
 import cv2
 import numpy as np
-from kartezio.components.core import register
-from kartezio.components.endpoint import Endpoint
-from kartezio.libraries.array import Sobel
+from scipy import ndimage
+from skimage.feature import peak_local_max
+from skimage.segmentation import watershed
+from skimage.transform import hough_ellipse
+
+from kartezio.core.components import Endpoint, register
+from kartezio.preprocessing import Resize
+from kartezio.primitives.array import Sobel
 from kartezio.types import TypeArray, TypeLabels
 from kartezio.vision.common import (
     WatershedSkimage,
@@ -13,14 +18,9 @@ from kartezio.vision.common import (
     image_new,
     threshold_tozero,
 )
-from kartezio.preprocessing import Resize
-from skimage.segmentation import watershed
-from skimage.transform import hough_ellipse
-from skimage.feature import peak_local_max
-from scipy import ndimage
 
 
-@register(Endpoint, "to_labels")
+@register(Endpoint)
 class ToLabels(Endpoint):
     def call(self, x):
         return [
@@ -35,14 +35,14 @@ class ToLabels(Endpoint):
         self.connectivity = connectivity
 
 
-@register(Endpoint, "subtract")
+@register(Endpoint)
 class EndpointSubtract(Endpoint):
     def __init__(self):
         super().__init__([TypeArray, TypeArray])
 
     def call(self, x):
         return [cv2.subtract(x[0], x[1])]
-    
+
     def __to_dict__(self) -> Dict:
         return {
             "name": "subtract",
@@ -50,7 +50,7 @@ class EndpointSubtract(Endpoint):
         }
 
 
-@register(Endpoint, "threshold")
+@register(Endpoint)
 class EndpointThreshold(Endpoint):
     def __init__(self, threshold, normalize=False, mode="binary"):
         super().__init__([TypeArray])
@@ -63,8 +63,12 @@ class EndpointThreshold(Endpoint):
         if self.normalize:
             image = cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
         if self.mode == "binary":
-            return [cv2.threshold(image, self.threshold, 255, cv2.THRESH_BINARY)[1]]
-        return [cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]]
+            return [
+                cv2.threshold(image, self.threshold, 255, cv2.THRESH_BINARY)[1]
+            ]
+        return [
+            cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]
+        ]
 
     def __to_dict__(self) -> Dict:
         return {
@@ -77,9 +81,11 @@ class EndpointThreshold(Endpoint):
         }
 
 
-@register(Endpoint, "hough_circle")
+@register(Endpoint)
 class EndpointHoughCircle(Endpoint):
-    def __init__(self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120):
+    def __init__(
+        self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120
+    ):
         super().__init__([TypeArray])
         self.min_dist = min_dist
         self.p1 = p1
@@ -113,7 +119,7 @@ class EndpointHoughCircle(Endpoint):
         return [new_mask]
 
 
-@register(Endpoint, "fit_ellipse")
+@register(Endpoint)
 class EndpointEllipse(Endpoint):
     def __init__(
         self,
@@ -204,15 +210,15 @@ class EndpointEllipse(Endpoint):
         }
 
 
-@register(Endpoint, "marker_controlled_watershed")
+@register(Endpoint)
 class EndpointWatershed(Endpoint):
     def __init__(self):
         super().__init__([TypeArray, TypeArray])
 
     def call(self, x):
-        markers = cv2.connectedComponents(x[1], connectivity=8, ltype=cv2.CV_16U)[
-            1
-        ]
+        markers = cv2.connectedComponents(
+            x[1], connectivity=8, ltype=cv2.CV_16U
+        )[1]
         scaled = cv2.exp((x[0] / 255.0).astype(np.float32))
         labels = watershed(
             -scaled,
@@ -223,22 +229,23 @@ class EndpointWatershed(Endpoint):
         return [labels]
 
 
-@register(Endpoint, "local-max_watershed")
+@register(Endpoint)
 class LocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the distance transform of the mask
 
     """
+
     def __init__(self, min_distance=21):
         super().__init__([TypeArray])
         self.min_distance = min_distance
 
     def call(self, x):
         distance = cv2.distanceTransform(x[0], cv2.DIST_L2, 3)
-        distance = cv2.normalize(distance, None, 0., 1., cv2.NORM_MINMAX)
-        # distance[distance < 0.5] = 0
-        # distance = (distance * 255).astype(np.uint8)
-        # markers = cv2.connectedComponents(distance, connectivity=8, ltype=cv2.CV_16U)[1]
+        distance = cv2.normalize(distance, None, 0.0, 1.0, cv2.NORM_MINMAX)
+        # distance[distance < 0.5] = 0
+        # distance = (distance * 255).astype(np.uint8)
+        # markers = cv2.connectedComponents(distance, connectivity=8, ltype=cv2.CV_16U)[1]
         scaled = cv2.exp((x[0] / 255.0).astype(np.float32))
         markers = _fast_local_max(distance, min_distance=self.min_distance)
         labels = watershed(
@@ -274,7 +281,7 @@ def _fast_local_max(image, min_distance=21):
     image_down = cv2.pyrDown(image)
     peak_idx = peak_local_max(
         image_down,
-        min_distance=min_distance//2,
+        min_distance=min_distance // 2,
         exclude_border=0,
     )
     peak_mask = np.zeros_like(image, dtype=np.uint8)
@@ -284,7 +291,7 @@ def _fast_local_max(image, min_distance=21):
     return peak_mask
 
 
-@register(Endpoint, "raw_watershed")
+@register(Endpoint)
 class RawWatershed(Endpoint):
     def __init__(self, min_distance=21):
         super().__init__([TypeArray])
@@ -299,9 +306,9 @@ class RawWatershed(Endpoint):
             watershed_line=True,
         )
         return [labels]
-        
 
-@register(Endpoint, "raw_watershed_old")
+
+@register(Endpoint)
 class RawLocalMaxWatershed(Endpoint):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the mask
@@ -315,7 +322,9 @@ class RawLocalMaxWatershed(Endpoint):
 
     def call(self, x):
         mask = threshold_tozero(x[0], self.threshold)
-        mask, markers, labels = self.wt.apply(mask, markers=None, mask=mask > 0)
+        mask, markers, labels = self.wt.apply(
+            mask, markers=None, mask=mask > 0
+        )
         return {
             "mask_raw": x[0],
             "mask": mask,
@@ -331,7 +340,7 @@ class RawLocalMaxWatershed(Endpoint):
         }
 
 
-@register(Endpoint, "hough_circle_small")
+@register(Endpoint)
 class EndpointHoughCircleSmall(Endpoint):
     def __init__(self, min_dist=4, p1=256, p2=8, min_radius=2, max_radius=12):
         super().__init__([TypeArray])
@@ -376,7 +385,7 @@ class EndpointHoughCircleSmall(Endpoint):
         return [new_mask]
 
 
-@register(Endpoint, "rescale")
+@register(Endpoint)
 class EndpointRescale(Endpoint):
     def __init__(self, scale, method):
         super().__init__([TypeArray])

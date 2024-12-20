@@ -1,8 +1,8 @@
 from typing import List
 
 import numpy as np
-from kartezio.components.core import Components, register
-from kartezio.components.library import Primitive
+
+from kartezio.core.components import Components, Primitive, register
 from kartezio.types import TypeArray
 
 

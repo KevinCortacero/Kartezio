@@ -1,4 +1,4 @@
-from kartezio.components.core import UpdatableComponent
+from kartezio.components.components import UpdatableComponent
 from kartezio.components.genotype import Genotype
 from kartezio.evolution.decoder import Adapter
 from kartezio.mutation.base import MutationRandom

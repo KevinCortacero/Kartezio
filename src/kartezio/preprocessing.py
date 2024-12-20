@@ -2,30 +2,12 @@ from typing import Dict, List
 
 import cv2
 import numpy as np
-from kartezio.components.core import register
-from kartezio.components.preprocessor import Preprocessing
-from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
 
-__flag_map__ = {
-    "bgr": cv2.COLOR_RGB2BGR,
-    "hsv": cv2.COLOR_RGB2HSV,
-    "hls": cv2.COLOR_RGB2HLS,
-    "lab": cv2.COLOR_RGB2LAB,
-    "gray": cv2.COLOR_RGB2GRAY,
-    "luv": cv2.COLOR_RGB2LUV,
-    "ycrcb": cv2.COLOR_RGB2YCrCb,
-}
+from kartezio.core.components import Preprocessing, register
+from kartezio.vision.common import image_split
 
 
-def convert_color(image, flag):
-    return cv2.cvtColor(image, flag)
-
-
-def rgb_to(image, color_space):
-    return convert_color(image, __flag_map__[color_space])
-
-
-@register(Preprocessing, "pyr_shift")
+@register(Preprocessing)
 class PyrMeanShift(Preprocessing):
     def __init__(self, sp=2, sr=16):
         super().__init__()
@@ -36,12 +18,14 @@ class PyrMeanShift(Preprocessing):
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i][:3])
-            filtered = cv2.pyrMeanShiftFiltering(original_image, sp=self.sp, sr=self.sr)
+            filtered = cv2.pyrMeanShiftFiltering(
+                original_image, sp=self.sp, sr=self.sr
+            )
             new_x.append(image_split(filtered))
         return new_x
 
 
-@register(Preprocessing, "pyr_scale")
+@register(Preprocessing)
 class PyrScale(Preprocessing):
     def __init__(self, level, scale: str, preserve_values=False):
         super().__init__()
@@ -60,7 +44,9 @@ class PyrScale(Preprocessing):
                 if dsize[1] % 2 != 0:
                     dsize = (dsize[0], dsize[1] + 1)
                 if self.level == 0:
-                    xij = cv2.resize(xij, dsize, interpolation=cv2.INTER_NEAREST)
+                    xij = cv2.resize(
+                        xij, dsize, interpolation=cv2.INTER_NEAREST
+                    )
                 else:
                     for _ in range(self.level):
                         if self.preserve_values:
@@ -84,7 +70,7 @@ class PyrScale(Preprocessing):
         return new_x
 
 
-@register(Preprocessing, "to_color_space")
+@register(Preprocessing)
 class ToColorSpace(Preprocessing):
     def __init__(self, color_space):
         super().__init__()
@@ -110,7 +96,7 @@ class ToColorSpace(Preprocessing):
         }
 
 
-@register(Preprocessing, "add_color_space")
+@register(Preprocessing)
 class AddColorSpace(Preprocessing):
     def __init__(self, color_space):
         super().__init__()
@@ -143,7 +129,7 @@ class AddColorSpace(Preprocessing):
         }
 
 
-@register(Preprocessing, "resize")
+@register(Preprocessing)
 class Resize(Preprocessing):
     def __init__(self, scale, method):
         super().__init__()
@@ -159,33 +145,55 @@ class Resize(Preprocessing):
                     if self.method == "pyr":
                         new_xi.append(cv2.pyrDown(xij))
                     if self.method == "nearest":
-                        new_xi.append(cv2.resize(xij, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_NEAREST))
+                        new_xi.append(
+                            cv2.resize(
+                                xij,
+                                (0, 0),
+                                fx=0.5,
+                                fy=0.5,
+                                interpolation=cv2.INTER_NEAREST,
+                            )
+                        )
                 elif self.scale == "up":
                     if self.method == "pyr":
                         new_xi.append(cv2.pyrUp(xij))
                     if self.method == "nearest":
-                        new_xi.append(cv2.resize(xij, (0, 0), fx=2, fy=2, interpolation=cv2.INTER_NEAREST))
+                        new_xi.append(
+                            cv2.resize(
+                                xij,
+                                (0, 0),
+                                fx=2,
+                                fy=2,
+                                interpolation=cv2.INTER_NEAREST,
+                            )
+                        )
             new_x.append(new_xi)
         return new_x
 
 
-@register(Preprocessing, "clahe")
+@register(Preprocessing)
 class ApplyClahe(Preprocessing):
     def __init__(self, clip_limit=2.0, tile_grid_size=(8, 8)):
         super().__init__()
-        self.clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+        self.clahe = cv2.createCLAHE(
+            clipLimit=clip_limit, tileGridSize=tile_grid_size
+        )
 
     def preprocess(self, x):
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i])
-            transformed = transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+            transformed = transformed = cv2.cvtColor(
+                original_image, cv2.COLOR_RGB2GRAY
+            )
             transformed = self.clahe.apply(transformed)
-            new_x.append(image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB)))
+            new_x.append(
+                image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB))
+            )
         return new_x
 
 
-@register(Preprocessing, "select_channels")
+@register(Preprocessing)
 class SelectChannels(Preprocessing):
     def __init__(self, channels):
         super().__init__()
@@ -197,7 +205,7 @@ class SelectChannels(Preprocessing):
             one_item = [x[i][channel] for channel in self.channels]
             new_x.append(one_item)
         return new_x
-    
+
     def __to_dict__(self) -> Dict:
         return {
             "name": "select_channels",
@@ -218,10 +226,14 @@ class Format3D(Preprocessing):
             if self.channels:
                 if self.z_range:
                     for z in self.z_range:
-                        one_item.append([x[i][channel][z] for channel in self.channels])
+                        one_item.append(
+                            [x[i][channel][z] for channel in self.channels]
+                        )
                 else:
                     for z in range(len(x[i][0])):
-                        one_item.append([x[i][channel][z] for channel in self.channels])
+                        one_item.append(
+                            [x[i][channel][z] for channel in self.channels]
+                        )
             else:
                 if self.z_range:
                     for z in self.z_range:

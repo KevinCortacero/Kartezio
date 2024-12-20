@@ -3,19 +3,13 @@ from typing import List
 
 import cv2
 import numpy as np
-from kartezio.components.core import register
-from kartezio.components.library import Library, Primitive
-from kartezio.types import TypeArray, TypeScalar
 from scipy.stats import kurtosis, skew
 
-
-@register(Library, "opencv_scalar")
-class LibraryScalar(Library):
-    def __init__(self):
-        super().__init__(TypeScalar)
+from kartezio.core.components import Library, Primitive, register
+from kartezio.types import TypeArray, TypeScalar
 
 
-@register(Primitive, "const")
+@register(Primitive)
 class Const(Primitive):
     def __init__(self):
         super().__init__([], TypeScalar, 1)
@@ -24,7 +18,7 @@ class Const(Primitive):
         return float(args[0])
 
 
-@register(Primitive, "max_value")
+@register(Primitive)
 class MaxValue(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -33,7 +27,7 @@ class MaxValue(Primitive):
         return float(np.max(x[0]))
 
 
-@register(Primitive, "min_value")
+@register(Primitive)
 class MinValue(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -42,7 +36,7 @@ class MinValue(Primitive):
         return float(np.min(x[0]))
 
 
-@register(Primitive, "mean_value")
+@register(Primitive)
 class MeanValue(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -51,7 +45,7 @@ class MeanValue(Primitive):
         return float(np.mean(x[0]))
 
 
-@register(Primitive, "median_value")
+@register(Primitive)
 class MedianValue(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -60,7 +54,7 @@ class MedianValue(Primitive):
         return float(np.median(x[0]))
 
 
-@register(Primitive, "add_values")
+@register(Primitive)
 class AddValues(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -69,7 +63,7 @@ class AddValues(Primitive):
         return min(x[0] + x[1], 255.0)
 
 
-@register(Primitive, "subtract_values")
+@register(Primitive)
 class SubtractValues(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -78,7 +72,7 @@ class SubtractValues(Primitive):
         return max(x[0] - x[1], 0)
 
 
-@register(Primitive, "multiply_values")
+@register(Primitive)
 class MultiplyValues(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -87,7 +81,7 @@ class MultiplyValues(Primitive):
         return min(x[0] * x[1], 255.0)
 
 
-@register(Primitive, "pow_value")
+@register(Primitive)
 class PowValue(Primitive):
     def __init__(self):
         super().__init__([TypeScalar], TypeScalar, 0)
@@ -96,7 +90,7 @@ class PowValue(Primitive):
         return min(x[0] ** 2, 255.0)
 
 
-@register(Primitive, "sqrt_value")
+@register(Primitive)
 class SqrtValue(Primitive):
     def __init__(self):
         super().__init__([TypeScalar], TypeScalar, 0)
@@ -105,7 +99,7 @@ class SqrtValue(Primitive):
         return sqrt(x[0])
 
 
-@register(Primitive, "multiply_by_2")
+@register(Primitive)
 class MultiplyBy2(Primitive):
     def __init__(self):
         super().__init__([TypeScalar], TypeScalar, 0)
@@ -114,7 +108,7 @@ class MultiplyBy2(Primitive):
         return min(x[0] * 2.0, 255.0)
 
 
-@register(Primitive, "divide_by_2")
+@register(Primitive)
 class DivideBy2(Primitive):
     def __init__(self):
         super().__init__([TypeScalar], TypeScalar, 0)
@@ -123,7 +117,7 @@ class DivideBy2(Primitive):
         return x[0] / 2.0
 
 
-@register(Primitive, "min_scalars")
+@register(Primitive)
 class MinScalars(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -132,7 +126,7 @@ class MinScalars(Primitive):
         return min(x[0], x[1])
 
 
-@register(Primitive, "max_scalars")
+@register(Primitive)
 class MaxScalars(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -141,7 +135,7 @@ class MaxScalars(Primitive):
         return max(x[0], x[1])
 
 
-@register(Primitive, "mean_scalars")
+@register(Primitive)
 class MeanScalars(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -150,7 +144,7 @@ class MeanScalars(Primitive):
         return (x[0] + x[1]) / 2.0
 
 
-@register(Primitive, "less_than")
+@register(Primitive)
 class LessThan(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -161,7 +155,7 @@ class LessThan(Primitive):
         return 0.0
 
 
-@register(Primitive, "greater_than")
+@register(Primitive)
 class GreaterThan(Primitive):
     def __init__(self):
         super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
@@ -172,7 +166,7 @@ class GreaterThan(Primitive):
         return 0.0
 
 
-@register(Primitive, "skew")
+@register(Primitive)
 class Skew(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -181,7 +175,7 @@ class Skew(Primitive):
         return max(skew(x[0].reshape(-1)), 0.0)
 
 
-@register(Primitive, "kurtosis")
+@register(Primitive)
 class Kurtosis(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -190,7 +184,7 @@ class Kurtosis(Primitive):
         return max(kurtosis(x[0].reshape(-1)), 0.0)
 
 
-@register(Primitive, "mean_abs_diff")
+@register(Primitive)
 class MeanAbsDiff(Primitive):
     def __init__(self):
         super().__init__([TypeArray] * 2, TypeScalar, 0)
@@ -199,7 +193,7 @@ class MeanAbsDiff(Primitive):
         return np.mean(cv2.absdiff(x[0], x[1]))
 
 
-@register(Primitive, "coverage")
+@register(Primitive)
 class Coverage(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -208,7 +202,7 @@ class Coverage(Primitive):
         return np.count_nonzero(x[0]) / (x[0].shape[0] * x[0].shape[0]) * 255.0
 
 
-@register(Primitive, "count_regions")
+@register(Primitive)
 class CountRegions(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeScalar, 0)
@@ -217,26 +211,26 @@ class CountRegions(Primitive):
         return len(np.unique(cv2.connectedComponents(x[0], connectivity=4)[1]))
 
 
-library_scalar = LibraryScalar()
-library_scalar.add_by_name("const")
-library_scalar.add_by_name("max_value")
-library_scalar.add_by_name("min_value")
-library_scalar.add_by_name("mean_value")
-library_scalar.add_by_name("median_value")
-library_scalar.add_by_name("add_values")
-library_scalar.add_by_name("subtract_values")
-library_scalar.add_by_name("multiply_values")
-library_scalar.add_by_name("pow_value")
-library_scalar.add_by_name("sqrt_value")
-library_scalar.add_by_name("multiply_by_2")
-library_scalar.add_by_name("divide_by_2")
-library_scalar.add_by_name("min_scalars")
-library_scalar.add_by_name("max_scalars")
-library_scalar.add_by_name("mean_scalars")
-library_scalar.add_by_name("less_than")
-library_scalar.add_by_name("greater_than")
-library_scalar.add_by_name("mean_abs_diff")
-# library_scalar.add_by_name("coverage")
-# library_scalar.add_by_name("count_regions")
-# library_scalar.add_by_name("skew")
-# library_scalar.add_by_name("kurtosis")
+library_scalar = Library(TypeScalar)
+library_scalar.add_primitive(Const())
+library_scalar.add_primitive("max_value")
+library_scalar.add_primitive("min_value")
+library_scalar.add_primitive("mean_value")
+library_scalar.add_primitive("median_value")
+library_scalar.add_primitive("add_values")
+library_scalar.add_primitive("subtract_values")
+library_scalar.add_primitive("multiply_values")
+library_scalar.add_primitive("pow_value")
+library_scalar.add_primitive("sqrt_value")
+library_scalar.add_primitive("multiply_by_2")
+library_scalar.add_primitive("divide_by_2")
+library_scalar.add_primitive("min_scalars")
+library_scalar.add_primitive("max_scalars")
+library_scalar.add_primitive("mean_scalars")
+library_scalar.add_primitive("less_than")
+library_scalar.add_primitive("greater_than")
+library_scalar.add_primitive("mean_abs_diff")
+# library_scalar.add_primitive("coverage")
+# library_scalar.add_primitive("count_regions")
+# library_scalar.add_primitive("skew")
+# library_scalar.add_primitive("kurtosis")

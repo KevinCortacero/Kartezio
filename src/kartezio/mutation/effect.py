@@ -2,8 +2,9 @@ from abc import ABC
 from typing import Dict
 
 import numpy as np
+
 from kartezio.callback import Event
-from kartezio.components.core import UpdatableComponent, register
+from kartezio.components.components import UpdatableComponent, register
 
 
 class MutationEffect(UpdatableComponent, ABC):

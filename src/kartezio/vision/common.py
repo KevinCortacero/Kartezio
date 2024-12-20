@@ -5,41 +5,23 @@ from skimage import color
 from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
 
-
-def rgb2hsv(image):
-    return cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-
-
-def bgr2hsv(image):
-    return cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-
-def hsv2rgb(image):
-    return cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
+__flag_map__ = {
+    "bgr": cv2.COLOR_RGB2BGR,
+    "hsv": cv2.COLOR_RGB2HSV,
+    "hls": cv2.COLOR_RGB2HLS,
+    "lab": cv2.COLOR_RGB2LAB,
+    "gray": cv2.COLOR_RGB2GRAY,
+    "luv": cv2.COLOR_RGB2LUV,
+    "ycrcb": cv2.COLOR_RGB2YCrCb,
+}
 
 
-def rgb2bgr(image):
-    return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+def convert_color(image, flag):
+    return cv2.cvtColor(image, flag)
 
 
-def bgr2rgb(image):
-    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-
-def gray2rgb(image):
-    return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-
-
-def rgb2gray(image):
-    return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-
-
-def rgb2hed(image):
-    return (color.rgb2hed(image) * 255).astype(np.uint8)
-
-
-def bgr2hed(image):
-    return rgb2hed(bgr2rgb(image))
+def rgb_to(image, color_space):
+    return convert_color(image, __flag_map__[color_space])
 
 
 def image_new(shape, dtype=np.uint8):
@@ -226,7 +208,9 @@ def morph_fill(image):
     return contours_fill(image, cnts)
 
 
-def draw_overlay(image, mask, color=None, alpha=1.0, border_color="same", thickness=1):
+def draw_overlay(
+    image, mask, color=None, alpha=1.0, border_color="same", thickness=1
+):
     if color is None:
         color = [255, 255, 255]
     out = image.copy()
