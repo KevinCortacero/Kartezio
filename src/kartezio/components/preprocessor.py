@@ -24,6 +24,9 @@ class Preprocessing(Node, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Preprocessing":
+        if "name" not in dict_infos:
+            return Components.instantiate("Preprocessing", "select_channels", [0, 2])
+            # raise ValueError("Preprocessing name not found in dict_infos")
         return Components.instantiate(
             "Preprocessing", dict_infos["name"], **dict_infos["args"]
         )
