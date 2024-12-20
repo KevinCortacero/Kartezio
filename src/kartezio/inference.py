@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+
 import cv2
 import numpy as np
-from kartezio.components.core import Components
+
+from kartezio.components.components import Components
 from kartezio.components.genotype import Genotype
 from kartezio.evolution.decoder import Decoder
 from kartezio.plot import plot_mask
@@ -44,7 +46,7 @@ class EnsembleModel(InferenceModel):
 
     def batch(self, x):
         return [model.predict(x) for model in self.models]
-    
+
     def predict(self, x, normalize=True, reduction="mean", erosion=None):
         y_batch = self.batch(x)
         y_list = []
@@ -53,9 +55,11 @@ class EnsembleModel(InferenceModel):
             for pi in y_batch:
                 one_image = pi[0][i][0]
                 if normalize:
-                    one_image = cv2.normalize(one_image, None, 0., 1., cv2.NORM_MINMAX)
+                    one_image = cv2.normalize(
+                        one_image, None, 0.0, 1.0, cv2.NORM_MINMAX
+                    )
                 else:
-                    one_image = one_image / 255.
+                    one_image = one_image / 255.0
                 mask_list.append(one_image)
             if reduction == "mean":
                 y = (np.array(mask_list).mean(axis=0) * 255).astype(np.uint8)
@@ -119,7 +123,7 @@ class KartezioModel(InferenceModel):
         if self.preprocessing:
             return self.preprocessing.call(x)
         return x
-    
+
     def predict(self, x):
         """
         Predict the output of the model given the input.
@@ -127,7 +131,7 @@ class KartezioModel(InferenceModel):
         """
         x = self.preprocess(x)
         return self.decoder.decode(self.genotype, x)
-    
+
     def evaluate(self, x, y):
         y_pred, _ = self.predict(x)
         return self.fitness.batch(y, [y_pred])

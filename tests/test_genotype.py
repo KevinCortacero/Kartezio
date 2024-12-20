@@ -1,10 +1,10 @@
 import unittest
 
-from kartezio.components.core import Components
+from kartezio.core.components import Components
+from kartezio.core.endpoints import EndpointThreshold
+from kartezio.core.fitness import FitnessIOU
 from kartezio.core.sequential import create_model_builder
-from kartezio.endpoint import EndpointThreshold
-from kartezio.fitness import FitnessIOU
-from kartezio.libraries.array import create_array_lib
+from kartezio.primitives.array import create_array_lib
 
 
 class TestModel(unittest.TestCase):

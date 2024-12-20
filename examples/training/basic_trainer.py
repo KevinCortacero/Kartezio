@@ -1,7 +1,7 @@
-from kartezio.endpoint import EndpointThreshold
+from kartezio.core.endpoints import EndpointThreshold
+from kartezio.core.fitness import FitnessIOU
 from kartezio.evolution.base import KartezioTrainer
-from kartezio.fitness import FitnessIOU
-from kartezio.libraries.array import create_array_lib
+from kartezio.primitives.array import create_array_lib
 from kartezio.utils.dataset import one_cell_dataset
 
 
@@ -30,7 +30,9 @@ def main():
     model.set_mutation_rates(node_rate=0.05, out_rate=0.1)
 
     # Load training data
-    train_x, train_y = one_cell_dataset()  # Use a simple one-cell dataset for training
+    train_x, train_y = (
+        one_cell_dataset()
+    )  # Use a simple one-cell dataset for training
 
     # Train the model
     elite, history = model.fit(100, train_x, train_y)

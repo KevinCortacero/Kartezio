@@ -2,10 +2,11 @@ import argparse
 
 import cv2
 import numpy as np
+
+from kartezio.core.fitness import FitnessAP, FitnessIOU
 from kartezio.core.registry import registry
 from kartezio.easy import load_model, read_dataset
 from kartezio.export import KartezioInsight
-from kartezio.fitness import FitnessAP, FitnessIOU
 from kartezio.inference import KartezioModel
 
 

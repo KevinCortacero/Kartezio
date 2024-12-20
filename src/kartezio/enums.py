@@ -1,5 +1,5 @@
 JSON_ELITE = "elite.json"
 JSON_HISTORY = "history.json"
-JSON_META = "META.json"
+JSON_META = "meta.json"
 CSV_DATASET = "dataset.csv"
 DIR_PREVIEW = "__preview__"

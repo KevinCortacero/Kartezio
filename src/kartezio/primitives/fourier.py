@@ -1,18 +1,12 @@
 from typing import List
 
 import numpy as np
-from kartezio.components.core import register
-from kartezio.components.library import Library, Primitive
+
+from kartezio.core.components import Library, Primitive, register
 from kartezio.types import TypeArray, TypeFourier, TypeScalar
 
 
-@register(Library, "opencv_fourier")
-class LibraryFourier(Library):
-    def __init__(self):
-        super().__init__(TypeFourier)
-
-
-@register(Primitive, "fft")
+@register(Primitive)
 class FFT(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeFourier, 0)
@@ -25,7 +19,7 @@ class FFT(Primitive):
         return f_transform
 
 
-@register(Primitive, "low_pass")
+@register(Primitive)
 class LowPass(Primitive):
     def __init__(self):
         super().__init__([TypeFourier, TypeScalar], TypeFourier, 0)
@@ -42,7 +36,7 @@ class LowPass(Primitive):
         return filtered
 
 
-@register(Primitive, "high_pass")
+@register(Primitive)
 class HighPass(Primitive):
     def __init__(self):
         super().__init__([TypeFourier, TypeScalar], TypeFourier, 0)
@@ -59,7 +53,7 @@ class HighPass(Primitive):
         return filtered
 
 
-@register(Primitive, "band_pass")
+@register(Primitive)
 class BandPass(Primitive):
     def __init__(self):
         super().__init__([TypeFourier, TypeScalar], TypeFourier, 0)
@@ -71,14 +65,14 @@ class BandPass(Primitive):
         x, y = np.ogrid[:rows, :cols]
         center = (crow, ccol)
         distance = np.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2)
-        filter_mask = np.exp(-(distance**2) / (2 * (x[1] * 2 / 2.0) ** 2)) - np.exp(
-            -(distance**2) / (2 * (x[1] / 2.0) ** 2)
-        )
+        filter_mask = np.exp(
+            -(distance**2) / (2 * (x[1] * 2 / 2.0) ** 2)
+        ) - np.exp(-(distance**2) / (2 * (x[1] / 2.0) ** 2))
         filtered = x[0] * filter_mask
         return filtered
 
 
-@register(Primitive, "phase_congruency")
+@register(Primitive)
 class PhaseCongruency(Primitive):
     def __init__(self):
         super().__init__([TypeFourier], TypeFourier, 0)
@@ -94,8 +88,8 @@ class PhaseCongruency(Primitive):
         return phase_congruency
 
 
-@register(Primitive, "multiply_fourier")
-class MultiplyFourrier(Primitive):
+@register(Primitive)
+class MultiplyFourier(Primitive):
     def __init__(self):
         super().__init__([TypeFourier, TypeFourier], TypeFourier, 0)
 
@@ -103,11 +97,11 @@ class MultiplyFourrier(Primitive):
         return x[0] * x[1]
 
 
-library_fourier = LibraryFourier()
-library_fourier.add_by_name("fft")
-library_fourier.add_by_name("low_pass")
-library_fourier.add_by_name("high_pass")
-library_fourier.add_by_name("band_pass")
-library_fourier.add_by_name("phase_congruency")
-library_fourier.add_by_name("multiply_fourier")
-# library_fourrier.add_signatures("bitwise_and", [TypeFourier, TypeFourier], TypeFourier, 0)
+library_fourier = Library(TypeFourier)
+library_fourier.add_primitive(FFT())
+library_fourier.add_primitive(LowPass())
+library_fourier.add_primitive(HighPass())
+library_fourier.add_primitive(BandPass())
+library_fourier.add_primitive(PhaseCongruency())
+library_fourier.add_primitive(MultiplyFourier())
+print(library_fourier.display())

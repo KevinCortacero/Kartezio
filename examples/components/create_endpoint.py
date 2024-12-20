@@ -1,13 +1,14 @@
 from typing import Dict
 
 import numpy as np
-from kartezio.components.core import (
+
+from kartezio.core.components import (
     Components,
+    Endpoint,
     dump_component,
     load_component,
     register,
 )
-from kartezio.components.endpoint import Endpoint
 from kartezio.types import TypeArray
 
 
@@ -73,7 +74,9 @@ def main():
     print(f"Output from my_endpoint: {output}")
 
     # Instantiate the endpoint from the component registry and apply it
-    my_endpoint_2 = Components.instantiate("Endpoint", "my_endpoint", n_classes=3)
+    my_endpoint_2 = Components.instantiate(
+        "Endpoint", "my_endpoint", n_classes=3
+    )
     output_2 = my_endpoint_2.call(inputs)  # Expected Output: 0
     print(f"Output from my_endpoint_2: {output_2}")
 

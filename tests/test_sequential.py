@@ -1,17 +1,18 @@
 import unittest
 
-from kartezio.components.core import Components
-from kartezio.endpoint import EndpointThreshold
-from kartezio.evolution.base import KartezioSequentialTrainer
-from kartezio.fitness import FitnessIOU
-from kartezio.libraries.array import create_array_lib
 from skimage.data import cell
+
+from kartezio.core.components import Components
+from kartezio.core.endpoints import EndpointThreshold
+from kartezio.core.fitness import FitnessIOU
+from kartezio.evolution.base import KartezioTrainer
+from kartezio.primitives.array import create_array_lib
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
         lib = create_array_lib()
-        self.model = KartezioSequentialTrainer(
+        self.model = KartezioTrainer(
             1, 30, lib, EndpointThreshold(128), FitnessIOU()
         )
         image_x = cell().copy()

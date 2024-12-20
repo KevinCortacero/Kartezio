@@ -2,7 +2,8 @@ from abc import ABC
 from typing import Dict
 
 import numpy as np
-from kartezio.components.core import Component, register
+
+from kartezio.components.components import Component, register
 
 
 class MutationEdges(Component, ABC):
@@ -41,6 +42,10 @@ class MutationEdgesNormal(MutationEdges):
     def weights_edges(self, n: int):
         if n not in self.w:
             x = np.arange(-n + 1, 1)
-            p = 1.0 / (np.sqrt(2.0 * np.pi) * self.sigma) * np.exp(-np.power(x / self.sigma, 2.0) / 2)
+            p = (
+                1.0
+                / (np.sqrt(2.0 * np.pi) * self.sigma)
+                * np.exp(-np.power(x / self.sigma, 2.0) / 2)
+            )
             self.w[n] = p / np.sum(p)
         return self.w[n]

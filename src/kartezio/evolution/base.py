@@ -2,10 +2,12 @@ from abc import ABC, abstractmethod
 from typing import Any, List
 
 from kartezio.callback import Callback, Event
-from kartezio.components.core import UpdatableComponent
-from kartezio.components.endpoint import Endpoint
-from kartezio.components.library import Library
-from kartezio.components.preprocessor import Preprocessing
+from kartezio.core.components import (
+    Endpoint,
+    Library,
+    Preprocessing,
+    UpdatableComponent,
+)
 from kartezio.evolution.decoder import Adapter, DecoderCGP
 from kartezio.evolution.fitness import Fitness
 from kartezio.evolution.strategy import OnePlusLambda
@@ -21,7 +23,9 @@ class ObservableModel(Observable):
         self.notify(Event(self.get_current_iteration(), name, state))
 
     def force_event(self, name, state):
-        self.notify(Event(self.get_current_iteration(), name, state, force=True))
+        self.notify(
+            Event(self.get_current_iteration(), name, state, force=True)
+        )
 
     def get_current_iteration(self):
         pass
@@ -79,7 +83,9 @@ class KartezioCGP(ObservableModel):
 
     def collect_updatables(self):
         updatables = []
-        updatables.extend(self.evolver.strategy.mutation_handler.collect_updatables())
+        updatables.extend(
+            self.evolver.strategy.mutation_handler.collect_updatables()
+        )
         return updatables
 
     def initialize(self, n_iterations):
@@ -94,7 +100,7 @@ class KartezioCGP(ObservableModel):
     @property
     def population(self):
         return self.evolver.population
-    
+
     @property
     def elite(self):
         return self.population.get_elite()
@@ -120,12 +126,12 @@ class KartezioCGP(ObservableModel):
             self.evolver.next()
         self.force_event(Event.Events.END_LOOP, state)
         return self.elite, state
-    
+
     def preprocess(self, x):
         if self.preprocessing:
             return self.preprocessing.call(x)
         return x
-    
+
     def predict(self, x):
         """
         Predict the output of the model given the input.
@@ -133,7 +139,7 @@ class KartezioCGP(ObservableModel):
         """
         x = self.preprocess(x)
         return self.decoder.decode(self.elite, x)
-    
+
     def evaluate(self, x, y):
         y_pred, _ = self.predict(x)
         return self.evolver.fitness.batch(y, [y_pred])
@@ -222,11 +228,13 @@ class KartezioTrainer:
         self.mutation.set_edges(edges)
 
     def evaluate(self, x, y):
-        return self.model.evaluate(x, y)       
+        return self.model.evaluate(x, y)
 
     def print_python_class(self, class_name):
         python_writer = PythonClassWriter(self.decoder)
-        python_writer.to_python_class(class_name, self.model.population.get_elite())
+        python_writer.to_python_class(
+            class_name, self.model.population.get_elite()
+        )
 
     def display_elite(self):
         elite = self.model.elite

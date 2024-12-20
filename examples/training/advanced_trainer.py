@@ -1,13 +1,13 @@
 from kartezio.callback import CallbackVerbose
-from kartezio.endpoint import EndpointThreshold
+from kartezio.core.endpoints import EndpointThreshold
+from kartezio.core.fitness import FitnessIOU
 from kartezio.evolution.base import KartezioTrainer
-from kartezio.fitness import FitnessIOU
-from kartezio.libraries.array import create_array_lib
-from kartezio.libraries.scalar import library_scalar
 from kartezio.mutation.behavioral import AccumulateBehavior
 from kartezio.mutation.decay import LinearDecay
 from kartezio.mutation.edges import MutationEdgesNormal
 from kartezio.mutation.effect import MutationNormal
+from kartezio.primitives.array import create_array_lib
+from kartezio.primitives.scalar import library_scalar
 from kartezio.utils.dataset import one_cell_dataset
 
 
@@ -51,7 +51,9 @@ def main():
     # model.summary()  # Display the model summary
 
     # Load training data
-    train_x, train_y = one_cell_dataset()  # Use a simple one-cell dataset for training
+    train_x, train_y = (
+        one_cell_dataset()
+    )  # Use a simple one-cell dataset for training
 
     # trainer = KartezioTrainer(model)
 
