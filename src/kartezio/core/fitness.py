@@ -3,19 +3,18 @@ from typing import Dict
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from kartezio.core.components import register
-from kartezio.evolution.fitness import Fitness
+from kartezio.core.components import register, Fitness
 from kartezio.thirdparty.cellpose import cellpose_ap
 from kartezio.vision.metrics import balanced_metric, iou
 
 
-@register(Fitness, "average_precision")
-class FitnessAP(Fitness):
+@register(Fitness)
+class AveragePrecision(Fitness):
     def __init__(self, reduction="mean", threshold=0.5, iou_factor=0.0):
         super().__init__(reduction)
         self.threshold = threshold
         self.iou_factor = float(iou_factor)
-        self.iou_fitness = FitnessIOU(reduction)
+        self.iou_fitness = IoU(reduction)
 
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
         ap = 1.0 - cellpose_ap(y_true, y_pred, self.threshold)
@@ -35,8 +34,8 @@ class FitnessAP(Fitness):
         }
 
 
-@register(Fitness, "intersection_over_union")
-class FitnessIOU(Fitness):
+@register(Fitness)
+class IoU(Fitness):
     def __init__(self, reduction="mean", balance=None):
         super().__init__(reduction)
         self.balance = balance
@@ -71,8 +70,8 @@ class FitnessIOU(Fitness):
         }
 
 
-@register(Fitness, "mean_squared_error")
-class FitnessMSE(Fitness):
+@register(Fitness)
+class MSE(Fitness):
     def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
         n_images = len(y_true)
         mse_values = np.zeros(n_images, np.float32)

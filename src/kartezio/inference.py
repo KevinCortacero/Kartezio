@@ -3,9 +3,7 @@ from abc import ABC, abstractmethod
 import cv2
 import numpy as np
 
-from kartezio.components.components import Components
-from kartezio.components.genotype import Genotype
-from kartezio.evolution.decoder import Decoder
+from kartezio.core.components import Components
 from kartezio.plot import plot_mask
 from kartezio.utils.directory import Directory
 from kartezio.utils.io import JsonLoader

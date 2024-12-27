@@ -6,10 +6,10 @@ from kartezio.core.components import (
     Endpoint,
     Library,
     Preprocessing,
+    Fitness,
     UpdatableComponent,
 )
 from kartezio.evolution.decoder import Adapter, DecoderCGP
-from kartezio.evolution.fitness import Fitness
 from kartezio.evolution.strategy import OnePlusLambda
 from kartezio.export import PythonClassWriter
 from kartezio.helpers import Observable

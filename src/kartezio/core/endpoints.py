@@ -72,7 +72,6 @@ class EndpointThreshold(Endpoint):
 
     def __to_dict__(self) -> Dict:
         return {
-            "name": "threshold",
             "args": {
                 "threshold": self.threshold,
                 "normalize": self.normalize,

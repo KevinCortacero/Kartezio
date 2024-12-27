@@ -83,7 +83,7 @@ class ToColorSpace(Preprocessing):
         for xi in x:
             # assuming that the image (3 first elements) is in RGB
             rgb_image = cv2.merge(xi[:3])
-            transformed = rgb_to(rgb_image, self.color_space)
+            transformed = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2HSV)
             transformed = list(cv2.split(transformed))
             # append existing channels and transformed channels
             new_x.append(transformed)

@@ -425,6 +425,7 @@ class Endpoint(Node, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Endpoint":
+        from kartezio.core.endpoints import Endpoint
         """
         Create an Endpoint instance from a dictionary representation.
 
@@ -436,7 +437,7 @@ class Endpoint(Node, ABC):
         """
         return Components.instantiate(
             "Endpoint",
-            dict_infos["name"].lower().replace(" ", "_"),
+            dict_infos["name"],
             **dict_infos["args"],
         )
 
@@ -480,9 +481,10 @@ class Fitness(KartezioComponent, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Fitness":
+        from kartezio.core.fitness import Fitness
         return Components.instantiate(
             "Fitness",
-            dict_infos["name"].lower().replace(" ", "_"),
+            dict_infos["name"],
             **dict_infos["args"],
         )
 
@@ -734,6 +736,3 @@ class RandomInit(Initialization, Mutation):
     def random(self):
         genotype = self.adapter.new_genotype()
         return self.mutate(genotype)
-
-
-print(Components._registry)

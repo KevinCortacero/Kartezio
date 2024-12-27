@@ -1,5 +1,5 @@
 from kartezio.core.endpoints import EndpointThreshold
-from kartezio.core.fitness import FitnessIOU
+from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
 from kartezio.primitives.array import create_array_lib
 from kartezio.utils.dataset import one_cell_dataset
@@ -17,7 +17,7 @@ def main():
     endpoint = EndpointThreshold(
         128, mode="tozero"
     )  # Define the endpoint for the model
-    fitness = FitnessIOU()  # Define the fitness metric
+    fitness = IoU()  # Define the fitness metric
 
     # Build the model with specified components
     model = KartezioTrainer(

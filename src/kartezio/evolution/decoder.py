@@ -14,6 +14,7 @@ from kartezio.core.components import (
     register,
 )
 from kartezio.evolution.population import Population
+from kartezio.primitives.array import Identity
 from kartezio.primitives.fourier import FFT
 from kartezio.primitives.scalar import MeanValue
 from kartezio.types import TypeArray, TypeFourier, TypeScalar
@@ -336,31 +337,3 @@ class DecoderCGP(Decoder):
             },
             "endpoint": dump_component(self.endpoint),
         }
-
-
-"""
-@register(Decoder, "iterative")
-class IterativeDecoder(Decoder):
-    def __init__(self, n_inputs, n_nodes, library, endpoint, reduction):
-        super().__init__(n_inputs, n_nodes, library, endpoint)
-        self.reduction = reduction
-
-    def decode(self, genotype: Genotype, x: List[np.ndarray]):
-        all_y_pred = []
-        all_times = []
-        graphs = self.parse_to_graphs(genotype)
-        for series in x:
-            start_time = time.time()
-            y_pred_series = []
-            # for each image
-            for xi in x:
-                y_pred = self._parse_one(genotype, graphs, xi)
-                y_pred_series.append(y_pred)
-            y_pred = self.reduction.call(y_pred_series)
-            if self.endpoint is not None:
-                y_pred = self.endpoint.call(y_pred)
-            all_times.append(time.time() - start_time)
-            all_y_pred.append(y_pred)
-        whole_time = np.mean(np.array(all_times))
-        return all_y_pred, whole_time
-"""
