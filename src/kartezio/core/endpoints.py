@@ -1,41 +1,332 @@
+from abc import ABC
 from typing import Dict
 
 import cv2
 import numpy as np
-from scipy import ndimage
-from skimage.feature import peak_local_max
-from skimage.segmentation import watershed
 from skimage.transform import hough_ellipse
 
-from kartezio.core.components import Endpoint, register
-from kartezio.preprocessing import Resize
-from kartezio.primitives.array import Sobel
+from kartezio.core.components import Endpoint, registry
+
+# from kartezio.preprocessing import Resize
+# from kartezio.primitives.array import Sobel
 from kartezio.types import TypeArray, TypeLabels
 from kartezio.vision.common import (
-    WatershedSkimage,
     contours_fill,
     contours_find,
     image_new,
     threshold_tozero,
 )
+from kartezio.vision.watershed import (
+    _connected_components,
+    distance_watershed,
+    double_threshold_watershed,
+    local_max_watershed,
+    marker_controlled_watershed,
+    threshold_local_max_watershed,
+    threshold_watershed,
+)
 
 
-@register(Endpoint)
-class ToLabels(Endpoint):
+class EndpointWatershed(Endpoint, ABC):
+    def __init__(self, arity, watershed_line=True):
+        super().__init__([TypeArray] * arity)
+        self.watershed_line = watershed_line
+
+
+class PeakedMarkersWatershed(EndpointWatershed, ABC):
+    def __init__(self, watershed_line=True, min_distance=1, downsample=0):
+        super().__init__(1, watershed_line=watershed_line)
+        self.min_distance = min_distance
+        self.downsample = downsample
+
+
+@registry.add_as(Endpoint)
+class MarkerControlledWatershed(EndpointWatershed):
+    """
+    MarkerControlledWatershed
+
+    An endpoint class for a Cartesian Genetic Programming pipeline (or other plugin system)
+    that applies a marker-controlled watershed algorithm to segment an image.
+
+    The input is expected to be a list/tuple of two NumPy arrays:
+        1) `x[0]`: The primary image (e.g., grayscale or distance-transformed) to be segmented.
+        2) `x[1]`: The binary or labeled marker array specifying the regions or points
+                   from which the watershed should grow.
+
+    Parameters
+    ----------
+    watershed_line : bool, optional
+        If True, the watershed algorithm computes a "line" (pixel value = 0)
+        that separates adjacent segmented regions. Defaults to True.
+
+    Examples
+    --------
+    >>> # Suppose 'img' is a 2D NumPy array (grayscale)
+    >>> # and 'markers' is a 2D array of the same shape, with nonzero regions.
+    >>> segmenter = MarkerControlledWatershed(watershed_line=False)
+    >>> segmented = segmenter.call([img, markers])[0]
+    >>> segmented.shape
+    (height, width)
+    """
+
+    def __init__(self, watershed_line=True):
+        super().__init__(2, watershed_line=watershed_line)
+
     def call(self, x):
+        """
+        Apply the marker-controlled watershed transform to the given input and marker arrays.
+
+        Parameters
+        ----------
+        x : list or tuple of np.ndarray
+            A container with two arrays:
+              - x[0]: The primary image (2D ndarray) to be segmented.
+              - x[1]: The marker array (2D ndarray) identifying regions/seeds.
+
+        Returns
+        -------
+        list of np.ndarray
+            A single-element list containing the segmented (labeled) image as a 2D ndarray.
+            Each connected region is assigned a unique integer label.
+        """
+        return [marker_controlled_watershed(x[0], x[1], self.watershed_line)]
+
+
+@registry.add_as(Endpoint)
+class LocalMaxWatershed(PeakedMarkersWatershed):
+    """
+    LocalMaxWatershed
+
+    An endpoint that finds local maxima within a single input image (which may
+    be a grayscale or distance-transformed image) to generate markers, then
+    applies the watershed transform.
+
+    Parameters
+    ----------
+    min_distance : int, optional
+        The minimum distance separating local maxima. Defaults to 10.
+    watershed_line : bool, optional
+        If True, produces watershed lines (pixel = 0) where regions meet.
+        Defaults to True.
+    downsample : int, optional
+        If > 0, downsample the input by 2^downsample before detecting maxima.
+        Defaults to 0 (no downsampling).
+    """
+
+    def __init__(
+        self, watershed_line: bool, min_distance: int, downsample: int = 0
+    ):
+        super().__init__(
+            watershed_line, min_distance, downsample
+        )  # Single input image
+
+    def call(self, x):
+        """
+        Perform local-maxima-based watershed on the input image.
+
+        Parameters
+        ----------
+        x : list of np.ndarray
+            - x[0] : The image on which to perform watershed (2D ndarray).
+
+        Returns
+        -------
+        list of np.ndarray
+            A single-element list containing the labeled segmentation result.
+        """
         return [
-            x[0],
-            cv2.connectedComponents(
-                x[0], connectivity=self.connectivity, ltype=cv2.CV_16U
-            )[1],
+            local_max_watershed(
+                image=x[0],
+                min_distance=self.min_distance,
+                watershed_line=self.watershed_line,
+                downsample=self.downsample,
+            )
         ]
 
-    def __init__(self, connectivity=4):
+
+@registry.add_as(Endpoint)
+class DistanceWatershed(PeakedMarkersWatershed):
+    """
+    DistanceWatershed
+
+    An endpoint that computes a distance transform internally, finds local maxima,
+    and applies a watershed transform. Typically used for segmenting binary masks
+    (foreground vs. background).
+
+    Parameters
+    ----------
+    min_distance : int, optional
+        Minimum distance to separate local maxima in the distance map. Defaults to 10.
+    watershed_line : bool, optional
+        Whether to produce watershed lines. Defaults to True.
+    downsample : int, optional
+        If > 0, downsample the distance-transformed image before local maxima detection.
+        Defaults to 0.
+    """
+
+    def __init__(
+        self, watershed_line: bool, min_distance: int, downsample: int = 0
+    ):
+        super().__init__(
+            watershed_line, min_distance, downsample
+        )  # Single input (binary mask recommended)
+
+    def call(self, x):
+        """
+        Perform distance-based watershed on a binary mask or grayscale image.
+
+        Parameters
+        ----------
+        x : list of np.ndarray
+            - x[0] : The input image (2D ndarray), typically a binary mask.
+
+        Returns
+        -------
+        list of np.ndarray
+            A single-element list containing the labeled segmentation.
+        """
+        return [
+            distance_watershed(
+                image=x[0],
+                min_distance=self.min_distance,
+                watershed_line=self.watershed_line,
+                downsample=self.downsample,
+            )
+        ]
+
+
+@registry.add_as(Endpoint)
+class ThresholdLocalMaxWatershed(PeakedMarkersWatershed):
+    """
+    ThresholdLocalMaxWatershed
+
+    An endpoint that first thresholds the input image (zeroing out pixels below
+    the threshold), then detects local maxima in the thresholded image and applies
+    a watershed transform.
+
+    Parameters
+    ----------
+    threshold : float, optional
+        Pixel intensity threshold. Pixels below are zeroed out. Defaults to 128.0.
+    min_distance : int, optional
+        Minimum distance separating local maxima. Defaults to 10.
+    watershed_line : bool, optional
+        If True, produce watershed lines. Defaults to True.
+    downsample : int, optional
+        If > 0, downsample before local maxima detection. Defaults to 0.
+    """
+
+    def __init__(
+        self,
+        watershed_line: bool = True,
+        min_distance: int = 10,
+        downsample: int = 0,
+        threshold: int = 128,
+    ):
+        super().__init__(
+            watershed_line, min_distance, downsample
+        )  # Single input image
+        self.threshold = threshold
+        self.min_distance = min_distance
+        self.watershed_line = watershed_line
+        self.downsample = downsample
+
+    def call(self, x):
+        """
+        Apply threshold + local maxima + watershed to the input image.
+
+        Parameters
+        ----------
+        x : list of np.ndarray
+            - x[0] : The input image (2D ndarray) to be thresholded & segmented.
+
+        Returns
+        -------
+        list of np.ndarray
+            A single-element list containing the labeled segmentation result.
+        """
+        return [
+            threshold_local_max_watershed(
+                image=x[0],
+                threshold=self.threshold,
+                min_distance=self.min_distance,
+                watershed_line=self.watershed_line,
+                downsample=self.downsample,
+            )
+        ]
+
+
+@registry.add_as(Endpoint)
+class ThresholdWatershed(EndpointWatershed):
+    """
+    ThresholdWatershed
+
+    An endpoint that applies a threshold to the input image to generate a marker
+    array, then directly performs a marker-controlled watershed.
+
+    Parameters
+    ----------
+    threshold : float, optional
+        Pixel intensity threshold below which pixels become 0 in the marker array.
+        Defaults to 128.0.
+    watershed_line : bool, optional
+        If True, produce watershed lines. Defaults to True.
+    """
+
+    def __init__(
+        self, watershed_line: bool, threshold: int = 128, threshold_2=None
+    ):
+        super().__init__(1, watershed_line)  # Single input image
+        self.threshold = threshold
+        self.threshold_2 = threshold_2
+        if threshold_2 is not None:
+            if not (self.threshold < self.threshold_2):
+                raise ValueError(
+                    f"threshold1 ({self.threshold}) must be < threshold2 ({self.threshold_2})"
+                )
+
+    def call(self, x):
+        """
+        Apply threshold-based watershed to the input image.
+
+        Parameters
+        ----------
+        x : list of np.ndarray
+            - x[0] : The input image (2D ndarray).
+
+        Returns
+        -------
+        list of np.ndarray
+            A single-element list containing the labeled segmentation result.
+        """
+        if self.threshold_2 is not None:
+            return [
+                double_threshold_watershed(
+                    image=x[0],
+                    threshold1=self.threshold1,
+                    threshold2=self.threshold2,
+                    watershed_line=self.watershed_line,
+                )
+            ]
+        return [
+            threshold_watershed(
+                image=x[0],
+                threshold=self.threshold,
+                watershed_line=self.watershed_line,
+            )
+        ]
+
+
+@registry.add_as(Endpoint)
+class ToLabels(Endpoint):
+    def __init__(self):
         super().__init__([TypeArray])
-        self.connectivity = connectivity
+
+    def call(self, x):
+        return [_connected_components(x[0])]
 
 
-@register(Endpoint)
+@registry.add_as(Endpoint)
 class EndpointSubtract(Endpoint):
     def __init__(self):
         super().__init__([TypeArray, TypeArray])
@@ -43,41 +334,33 @@ class EndpointSubtract(Endpoint):
     def call(self, x):
         return [cv2.subtract(x[0], x[1])]
 
-    def __to_dict__(self) -> Dict:
-        return {
-            "name": "subtract",
-            "args": {},
-        }
 
-
-@register(Endpoint)
+@registry.add_as(Endpoint)
 class EndpointThreshold(Endpoint):
-    def __init__(self, threshold, normalize=False, mode="binary"):
+    def __init__(self, threshold):
         super().__init__([TypeArray])
         self.threshold = threshold
-        self.normalize = normalize
-        self.mode = mode
 
     def call(self, x):
-        image = x[0]
-        if self.normalize:
-            image = cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
-        if self.mode == "binary":
-            return [
-                cv2.threshold(image, self.threshold, 255, cv2.THRESH_BINARY)[1]
-            ]
-        return [
-            cv2.threshold(image, self.threshold, 255, cv2.THRESH_TOZERO)[1]
-        ]
+        return [threshold_tozero(x[0], self.threshold)]
 
     def __to_dict__(self) -> Dict:
         return {
             "args": {
                 "threshold": self.threshold,
-                "normalize": self.normalize,
-                "mode": self.mode,
             },
         }
+
+
+print(registry.display())
+test_endpoint = Endpoint.from_config(
+    {
+        "name": "ThresholdWatershed",
+        "args": {"watershed_line": True, "threshold": 128},
+    }
+)
+print(test_endpoint)
+print(test_endpoint.__to_dict__())
 
 
 @register(Endpoint)
@@ -206,136 +489,6 @@ class EndpointEllipse(Endpoint):
                 "keep_mask": self.keep_mask,
                 "as_labels": self.as_labels,
             },
-        }
-
-
-@register(Endpoint)
-class EndpointWatershed(Endpoint):
-    def __init__(self):
-        super().__init__([TypeArray, TypeArray])
-
-    def call(self, x):
-        markers = cv2.connectedComponents(
-            x[1], connectivity=8, ltype=cv2.CV_16U
-        )[1]
-        scaled = cv2.exp((x[0] / 255.0).astype(np.float32))
-        labels = watershed(
-            -scaled,
-            markers=markers,
-            mask=x[0] > 0,
-            watershed_line=True,
-        )
-        return [labels]
-
-
-@register(Endpoint)
-class LocalMaxWatershed(Endpoint):
-    """Watershed based KartezioEndpoint, but only based on one single mask.
-    Markers are computed as the local max of the distance transform of the mask
-
-    """
-
-    def __init__(self, min_distance=21):
-        super().__init__([TypeArray])
-        self.min_distance = min_distance
-
-    def call(self, x):
-        distance = cv2.distanceTransform(x[0], cv2.DIST_L2, 3)
-        distance = cv2.normalize(distance, None, 0.0, 1.0, cv2.NORM_MINMAX)
-        # distance[distance < 0.5] = 0
-        # distance = (distance * 255).astype(np.uint8)
-        # markers = cv2.connectedComponents(distance, connectivity=8, ltype=cv2.CV_16U)[1]
-        scaled = cv2.exp((x[0] / 255.0).astype(np.float32))
-        markers = _fast_local_max(distance, min_distance=self.min_distance)
-        labels = watershed(
-            -scaled,
-            markers=markers,
-            mask=x[0] > 0,
-            watershed_line=True,
-        )
-        return [labels]
-
-    def __to_dict__(self) -> Dict:
-        return {
-            "name": "local-max_watershed",
-            "args": {
-                "min_distance": self.min_distance,
-            },
-        }
-
-
-def _peak_local_max(image, min_distance=21):
-    peak_idx = peak_local_max(
-        image,
-        min_distance=min_distance,
-        exclude_border=0,
-    )
-    peak_mask = np.zeros_like(image, dtype=np.uint8)
-    labels = list(range(1, peak_idx.shape[0] + 1))
-    peak_mask[tuple(peak_idx.T)] = labels
-    return peak_mask
-
-
-def _fast_local_max(image, min_distance=21):
-    image_down = cv2.pyrDown(image)
-    peak_idx = peak_local_max(
-        image_down,
-        min_distance=min_distance // 2,
-        exclude_border=0,
-    )
-    peak_mask = np.zeros_like(image, dtype=np.uint8)
-    labels = list(range(1, peak_idx.shape[0] + 1))
-    remaped_peaks = (peak_idx * 2).astype(np.int32)
-    peak_mask[tuple(remaped_peaks.T)] = labels
-    return peak_mask
-
-
-@register(Endpoint)
-class RawWatershed(Endpoint):
-    def __init__(self, min_distance=21):
-        super().__init__([TypeArray])
-        self.min_distance = min_distance
-
-    def call(self, x):
-        marker_labels = _fast_local_max(x[0], min_distance=self.min_distance)
-        labels = watershed(
-            -x[0],
-            markers=marker_labels,
-            mask=x[0] > 0,
-            watershed_line=True,
-        )
-        return [labels]
-
-
-@register(Endpoint)
-class RawLocalMaxWatershed(Endpoint):
-    """Watershed based KartezioEndpoint, but only based on one single mask.
-    Markers are computed as the local max of the mask
-
-    """
-
-    def __init__(self, threshold=1, markers_distance=21):
-        super().__init__([TypeArray])
-        self.wt = WatershedSkimage(markers_distance=markers_distance)
-        self.threshold = threshold
-
-    def call(self, x):
-        mask = threshold_tozero(x[0], self.threshold)
-        mask, markers, labels = self.wt.apply(
-            mask, markers=None, mask=mask > 0
-        )
-        return {
-            "mask_raw": x[0],
-            "mask": mask,
-            "markers": markers,
-            "count": len(np.unique(labels)) - 1,
-            "labels": labels,
-        }
-
-    def _to_json_kwargs(self) -> dict:
-        return {
-            "threshold": self.threshold,
-            "markers_distance": self.wt.markers_distance,
         }
 
 

@@ -138,58 +138,59 @@ class Components:
     def display():
         pprint(Components._registry)
 
+    def add_as(self, fundamental: type, replace: type = None):
+        """
+        Register a component to the Components registry.
 
-def register(fundamental: type, replace: type = None):
-    """
-    Register a component to the Components registry.
+        Args:
+            fundamental (type): The fundamental type of the component.
+            replace (type): If not None, replace an existing component with the type.
 
-    Args:
-        fundamental (type): The fundamental type of the component.
-        replace (type): If not None, replace an existing component with the type.
+        Returns:
+            Callable: A decorator for registering the component.
+        """
+        fundamental_name = fundamental.__name__
 
-    Returns:
-        Callable: A decorator for registering the component.
-    """
-    fundamental_name = fundamental.__name__
+        def inner(item_cls):
+            name = item_cls.__name__
+            if Components._contains(fundamental_name, name):
+                if not replace:
+                    raise KeyError(
+                        f"""Error registering {fundamental_name} called '{name}'.
+                        Here is the list of all registered {fundamental_name} components:
+                        \n{Components._registry[fundamental_name].keys()}.
+                        \n > Replace it using 'replace=True' in @register, or use another name.
+                    """
+                    )
+            if replace:
+                replace_name = replace.__name__
+                if Components._contains(fundamental_name, replace_name):
+                    print(
+                        f"Component '{fundamental_name}/{replace_name}' will be replaced by '{name}'"
+                    )
+                    Components.add(fundamental_name, replace_name, item_cls)
+            else:
+                Components.add(fundamental_name, name, item_cls)
+            return item_cls
 
-    def inner(item_cls):
-        name = item_cls.__name__
-        if Components._contains(fundamental_name, name):
-            if not replace:
-                raise KeyError(
-                    f"""Error registering {fundamental_name} called '{name}'.
-                    Here is the list of all registered {fundamental_name} components:
-                    \n{Components._registry[fundamental_name].keys()}.
-                    \n > Replace it using 'replace=True' in @register, or use another name.
-                """
-                )
-        if replace:
-            replace_name = replace.__name__
-            if Components._contains(fundamental_name, replace_name):
-                print(
-                    f"Component '{fundamental_name}/{replace_name}' will be replaced by '{name}'"
-                )
-                Components.add(fundamental_name, replace_name, item_cls)
-        else:
-            Components.add(fundamental_name, name, item_cls)
-        return item_cls
+        return inner
 
-    return inner
+    def declare(self):
+        """
+        Register a fundamental component to the Components registry.
+
+        Returns:
+            Callable: A decorator for registering the fundamental component.
+        """
+
+        def inner(item_cls):
+            Components.add_component(item_cls.__name__)
+            return item_cls
+
+        return inner
 
 
-def component():
-    """
-    Register a fundamental component to the Components registry.
-
-    Returns:
-        Callable: A decorator for registering the fundamental component.
-    """
-
-    def inner(item_cls):
-        Components.add_component(item_cls.__name__)
-        return item_cls
-
-    return inner
+registry = Components()
 
 
 def load_component(
@@ -223,7 +224,7 @@ def dump_component(component: KartezioComponent) -> Dict:
     return base_dict
 
 
-@component()
+@registry.declare()
 class Node(KartezioComponent, ABC):
     """
     Abstract base class for a Node in the CGP framework.
@@ -232,7 +233,7 @@ class Node(KartezioComponent, ABC):
     pass
 
 
-@component()
+@registry.declare()
 class Preprocessing(Node, ABC):
     """
     Preprocessing node, called before training loop.
@@ -265,7 +266,7 @@ class Preprocessing(Node, ABC):
         return self
 
 
-@component()
+@registry.declare()
 class Primitive(Node, ABC):
     """
     Primitive function called inside the CGP Graph.
@@ -286,7 +287,7 @@ class Primitive(Node, ABC):
         return {"name": self.name}
 
 
-@component()
+@registry.declare()
 class Genotype(KartezioComponent):
     """
     Represents the genotype for Cartesian Genetic Programming (CGP).
@@ -392,7 +393,7 @@ class Genotype(KartezioComponent):
         return copy.deepcopy(self)
 
 
-@component()
+@registry.declare()
 class Reducer(Node, ABC):
     def batch(self, x: List):
         y = []
@@ -405,7 +406,7 @@ class Reducer(Node, ABC):
         pass
 
 
-@component()
+@registry.declare()
 class Endpoint(Node, ABC):
     """
     Represents the final node in a CGP graph, responsible for producing the final outputs.
@@ -425,7 +426,6 @@ class Endpoint(Node, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Endpoint":
-        from kartezio.core.endpoints import Endpoint
         """
         Create an Endpoint instance from a dictionary representation.
 
@@ -441,8 +441,14 @@ class Endpoint(Node, ABC):
             **dict_infos["args"],
         )
 
+    @classmethod
+    def from_config(cls, config):
+        return registry.instantiate(
+            cls.__name__, config["name"], **config["args"]
+        )
 
-@component()
+
+@registry.declare()
 class Fitness(KartezioComponent, ABC):
     def __init__(self, reduction="mean"):
         super().__init__()
@@ -482,6 +488,7 @@ class Fitness(KartezioComponent, ABC):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Fitness":
         from kartezio.core.fitness import Fitness
+
         return Components.instantiate(
             "Fitness",
             dict_infos["name"],
@@ -489,7 +496,7 @@ class Fitness(KartezioComponent, ABC):
         )
 
 
-@component()
+@registry.declare()
 class Library(KartezioComponent):
     def __init__(self, rtype):
         super().__init__()
@@ -596,7 +603,7 @@ class Library(KartezioComponent):
         return len(self._primitives)
 
 
-@component()
+@registry.declare()
 class Mutation(KartezioComponent, ABC):
     def __init__(self, adapter):
         super().__init__()
@@ -685,7 +692,7 @@ class Mutation(KartezioComponent, ABC):
         return {}
 
 
-@component()
+@registry.declare()
 class Initialization(KartezioComponent, ABC):
     """ """
 
@@ -693,7 +700,7 @@ class Initialization(KartezioComponent, ABC):
         super().__init__()
 
 
-@register(Initialization)
+@registry.add_as(Initialization)
 class CopyGenotype(Initialization):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "CopyGenotype":
@@ -707,7 +714,7 @@ class CopyGenotype(Initialization):
         return self.genotype.clone()
 
 
-@register(Initialization)
+@registry.add_as(Initialization)
 class RandomInit(Initialization, Mutation):
     """
     Can be used to initialize genome (genome) randomly
@@ -736,3 +743,8 @@ class RandomInit(Initialization, Mutation):
     def random(self):
         genotype = self.adapter.new_genotype()
         return self.mutate(genotype)
+
+
+if __name__ == "__main__":
+    registry.display()
+    print("Done!")
