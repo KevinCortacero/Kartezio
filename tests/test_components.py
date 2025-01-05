@@ -3,12 +3,12 @@ import unittest
 from kartezio.core.components import (
     Components,
     KartezioComponent,
-    component,
+    fundamental,
     register,
 )
 
 
-@component()
+@fundamental()
 class Geometry(KartezioComponent):
     pass
 

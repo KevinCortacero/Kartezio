@@ -2,18 +2,20 @@ import unittest
 
 from kartezio.core.components import Components
 from kartezio.core.endpoints import EndpointThreshold
-from kartezio.core.fitness import FitnessIOU
+from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
 from kartezio.primitives.array import create_array_lib
 
 
 class TestModel(unittest.TestCase):
     def setUp(self) -> None:
-        model = KartezioTrainer(
-            1, 5, create_array_lib(), FitnessIOU(), EndpointThreshold(128)
+        self.model = KartezioTrainer(
+            1,
+            5,
+            create_array_lib(),
+            EndpointThreshold(128),
+            IoU(),
         )
-        Components.display()
-        # self.model = model.(200, 4, callbacks=[])
 
     def test_something(self):
         self.assertEqual(self.model.decoder.adapter.n_inputs, 1)

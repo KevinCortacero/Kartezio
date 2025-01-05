@@ -1,18 +1,19 @@
-from kartezio.components.components import UpdatableComponent
-from kartezio.components.genotype import Genotype
+from kartezio.core.components import Genotype, UpdatableComponent
 from kartezio.evolution.decoder import Adapter
-from kartezio.mutation.base import MutationRandom
+from kartezio.mutation.base import PointMutation
 from kartezio.mutation.behavioral import MutationBehavior
 from kartezio.mutation.decay import MutationDecay
-from kartezio.mutation.edges import MutationEdges
+from kartezio.mutation.edges import MutationEdges, MutationEdgesUniform
 from kartezio.mutation.effect import MutationEffect, MutationUniform
 
 
 class MutationHandler:
     def __init__(self, adapter: Adapter):
-        self.mutation = MutationRandom(adapter)
+        self.mutation = PointMutation(adapter)
         self.behavior = None
         self.decay = None
+        self.effect = MutationUniform()
+        self.edges_weights = MutationEdgesUniform()
         self.node_rate = None
         self.out_rate = None
 
@@ -23,18 +24,26 @@ class MutationHandler:
         self.decay = decay
 
     def set_effect(self, effect: MutationEffect):
-        self.mutation.parameters = effect
+        self.effect = effect
 
     def set_edges(self, edges: MutationEdges):
-        self.mutation.edges_weights = edges
+        self.edges_weights = edges
 
     def set_mutation_rates(self, node_rate, out_rate):
         self.node_rate = node_rate
         self.out_rate = out_rate
 
     def compile(self, n_iterations: int):
+        assert (
+            self.node_rate is not None
+        ), "Node rate must be set before compiling the mutation handler."
+        assert (
+            self.out_rate is not None
+        ), "Output rate must be set before compiling the mutation handler."
         self.mutation.node_rate = self.node_rate
         self.mutation.out_rate = self.out_rate
+        self.mutation.edges_weights = self.edges_weights
+        self.mutation.parameters = self.effect
         self.mutation.parameters.compile(n_iterations)
         if self.behavior:
             self.behavior.set_mutation(self.mutation)

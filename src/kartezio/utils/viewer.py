@@ -2,9 +2,10 @@ from io import BytesIO
 
 import networkx as nx
 import pygraphviz as pgv
-from kartezio.core.components import Decoder
 from networkx.drawing.nx_agraph import from_agraph
 from PIL import Image
+
+from kartezio.core.components import Decoder
 
 
 class KartezioViewer(Decoder):
@@ -48,7 +49,9 @@ class KartezioViewer(Decoder):
                     label = f"- {node} -\n{inputs[node]}"
                 else:
                     label = f"- {node} -\nIN_{node}"
-                cluster_inputs.add_primitive(node, label=label, fillcolor="#B6D7A8")
+                cluster_inputs.add_primitive(
+                    node, label=label, fillcolor="#B6D7A8"
+                )
 
         with G.subgraph(
             range(self.infos.inputs, self.infos.out_idx),
@@ -58,14 +61,20 @@ class KartezioViewer(Decoder):
             for node in range(self.infos.inputs, self.infos.out_idx):
                 if only_active and node not in active_nodes:
                     continue
-                function_index = self.read_function(genome, node - self.infos.inputs)
+                function_index = self.read_function(
+                    genome, node - self.infos.inputs
+                )
                 function_name = self.library.f_name_of(function_index)
-                cluster_genes.add_primitive(node, label=f"- {node} -\n{function_name}")
+                cluster_genes.add_primitive(
+                    node, label=f"- {node} -\n{function_name}"
+                )
                 active_connections = self.library.arity_of(function_index)
                 connections = self.read_active_connections(
                     genome, node - self.infos.inputs, active_connections
                 )
-                parameters = self.read_parameters(genome, node - self.infos.inputs)
+                parameters = self.read_parameters(
+                    genome, node - self.infos.inputs
+                )
 
                 for c in connections:
                     G.add_edge(c, node)
@@ -86,7 +95,9 @@ class KartezioViewer(Decoder):
                     label = f"- {node} -\n{outputs[node - self.infos.out_idx]}"
                 else:
                     label = f"- {node} -\nOUT_{node}"
-                cluster_outputs.add_primitive(node, label=label, fillcolor="#F9CB9C")
+                cluster_outputs.add_primitive(
+                    node, label=label, fillcolor="#F9CB9C"
+                )
                 G.add_edge(c, node)
 
         # converting pygraphviz graph to networkx graph

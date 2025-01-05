@@ -4,9 +4,9 @@ from typing import Any, List
 from kartezio.callback import Callback, Event
 from kartezio.core.components import (
     Endpoint,
+    Fitness,
     Library,
     Preprocessing,
-    Fitness,
     UpdatableComponent,
 )
 from kartezio.evolution.decoder import Adapter, DecoderCGP
@@ -110,22 +110,25 @@ class KartezioCGP(ObservableModel):
         self.evolver.evaluation(y, y_pred)
 
     def evolve(self, x: List[Any], y: List[Any]):
+        history = []
         self.evaluation(x, y)
-        changed, state = self.evolver.selection()
-        if changed:
+        state = self.evolver.selection()
+        history.append(state)
+        if state.changed:
             self.force_event(Event.Events.NEW_PARENT, state)
         self.force_event(Event.Events.START_LOOP, state)
         while not self.evolver.is_satisfying():
             self.send_event(Event.Events.START_STEP, state)
             self.evolver.reproduction()
             self.evaluation(x, y)
-            changed, state = self.evolver.selection()
-            if changed:
+            state = self.evolver.selection()
+            if state.changed:
                 self.force_event(Event.Events.NEW_PARENT, state)
+            history.append(state)
             self.send_event(Event.Events.END_STEP, state)
             self.evolver.next()
         self.force_event(Event.Events.END_LOOP, state)
-        return self.elite, state
+        return self.elite, history
 
     def preprocess(self, x):
         if self.preprocessing:

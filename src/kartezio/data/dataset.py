@@ -5,11 +5,11 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from kartezio.core.components import Component
+from kartezio.core.components import KartezioComponent
 from kartezio.utils.json_handler import json_read, json_write
 
 
-class DataReader(Component):
+class DataReader(KartezioComponent):
     def __init__(self, directory, scale=1.0):
         super().__init__()
         self.scale = scale
@@ -27,7 +27,7 @@ class DataReader(Component):
         pass
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "Component":
+    def __from_dict__(cls, dict_infos: Dict) -> "DataReader":
         pass
 
     def __to_dict__(self) -> Dict:

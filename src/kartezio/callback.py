@@ -7,11 +7,7 @@ from uuid import uuid4
 import matplotlib.pyplot as plt
 import numpy as np
 
-from kartezio.core.components import Genotype
-from kartezio.enums import JSON_ELITE
-from kartezio.evolution.decoder import Decoder
 from kartezio.helpers import Observer
-from kartezio.utils.directory import Directory
 
 # from kartezio.utils.io import JsonSaver
 from kartezio.utils.json_handler import json_write
@@ -164,11 +160,11 @@ class CallbackSaveElite(Callback):
         )
         self.fitness = fitness.__to_dict__()
 
-    def set_decoder(self, decoder: Decoder):
+    def set_decoder(self, decoder):
         self.decoder = decoder.__to_dict__()
 
     def on_new_parent(self, iteration, event_content):
-        elite: Genotype = event_content.individuals[0].genotype
+        elite = event_content.individuals[0].genotype
         json_data = {
             "iteration": iteration,
             "dataset": self.dataset,

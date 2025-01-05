@@ -1,4 +1,4 @@
-from kartezio.components.genotype import Genotype
+from kartezio.core.components import Genotype
 from kartezio.evolution.decoder import Decoder
 from kartezio.mutation.base import Mutation
 

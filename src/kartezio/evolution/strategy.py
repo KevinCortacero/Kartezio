@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from kartezio.components.initializer import RandomInit
+
+from kartezio.core.initialization import RandomInit
 from kartezio.evolution.population import Population, PopulationWithElite
+from kartezio.mutation.base import PointMutation
 from kartezio.mutation.handler import MutationHandler
 
 
@@ -20,7 +22,7 @@ class OnePlusLambda(Strategy):
     def __init__(self, adapter):
         self.n_parents = 1
         self.n_children = 4
-        self.initializer = RandomInit(adapter)
+        self.initializer = None
         self.mutation_handler = MutationHandler(adapter)
         self.gamma = None
         self.required_fps = None
@@ -37,6 +39,7 @@ class OnePlusLambda(Strategy):
 
     def create_population(self):
         population = PopulationWithElite(self.n_children)
+        self.initializer = RandomInit(self.mutation_handler.mutation)
         for i in range(population.size):
             individual = self.initializer.random()
             population.individuals[i] = individual
@@ -60,4 +63,6 @@ class OnePlusLambda(Strategy):
     def reproduction(self, population: PopulationWithElite):
         elite = population.get_elite()
         for i in range(self.n_parents, population.size):
-            population.individuals[i] = self.mutation_handler.mutate(elite.clone())
+            population.individuals[i] = self.mutation_handler.mutate(
+                elite.clone()
+            )

@@ -92,7 +92,9 @@ def kuwahara_filter(original, winsize):
         stddevs[k] = (stddevs[k] - avgs[k]) ** 2  # variance on subwindow
 
     # Choice of index with minimum variance
-    indices = np.argmin(stddevs, 0)  # returns index of subwindow with smallest variance
+    indices = np.argmin(
+        stddevs, 0
+    )  # returns index of subwindow with smallest variance
 
     # Building the filtered image (with nested for loops)
     filtered = np.zeros(original.shape)

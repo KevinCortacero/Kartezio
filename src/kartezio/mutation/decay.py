@@ -4,10 +4,11 @@ from typing import Dict
 import numpy as np
 
 from kartezio.callback import Event
-from kartezio.components.components import UpdatableComponent, register
+from kartezio.core.components import UpdatableComponent, fundamental, register
 from kartezio.mutation.base import Mutation
 
 
+@fundamental()
 class MutationDecay(UpdatableComponent, ABC):
     def __init__(self):
         super().__init__()
@@ -21,7 +22,21 @@ class MutationDecay(UpdatableComponent, ABC):
             self._mutation.node_rate = self.stored[event.iteration]
 
 
-@register(MutationDecay, "linear")
+@register(MutationDecay)
+class ConstantDecay(MutationDecay):
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "ConstantDecay":
+        pass
+
+    def __init__(self, value: float):
+        super().__init__()
+        self.value = value
+
+    def _precompute(self):
+        return np.ones(self.n_iterations) * self.value
+
+
+@register(MutationDecay)
 class LinearDecay(MutationDecay):
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "LinearDecay":
@@ -36,61 +51,35 @@ class LinearDecay(MutationDecay):
         return np.linspace(self.start, self.end, self.n_iterations)
 
 
-@register(MutationDecay, "geometric")
-class GeometricDecay(MutationDecay):
+@register(MutationDecay)
+class DegreeDecay(MutationDecay):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "GeometricDecay":
+    def __from_dict__(cls, dict_infos: Dict) -> "DegreeDecay":
         pass
 
-    def __init__(self, start: float, end: float):
+    def __init__(self, degree: int, start: float, end: float):
         super().__init__()
+        self.degree = degree
         self.start = start
         self.end = end
 
     def _precompute(self):
-        return np.geomspace(self.start, self.end, self.n_iterations)
+        x = np.linspace(0, 1, self.n_iterations)
+        return (self.end - self.start) * np.power(x, self.degree) + self.start
 
 
-@register(MutationDecay, "geometric_inv")
-class GeometricInvDecay(MutationDecay):
+@register(MutationDecay)
+class InvDegreeDecay(MutationDecay):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "GeometricInvDecay":
+    def __from_dict__(cls, dict_infos: Dict) -> "InvDegreeDecay":
         pass
 
-    def __init__(self, start: float, end: float):
+    def __init__(self, degree: int, start: float, end: float):
         super().__init__()
+        self.degree = degree
         self.start = start
         self.end = end
 
     def _precompute(self):
-        abs_diff = np.abs(
-            np.geomspace(self.start, self.end, self.n_iterations)
-            - np.linspace(self.start, self.end, self.n_iterations)
-        )
-        return np.linspace(self.start, self.end, self.n_iterations) + abs_diff
-
-
-if __name__ == "__main__":
-    n_iterations = 20000
-    start = 0.15
-    end = 0.01
-    test_decay_linear = LinearDecay(start, end)
-    test_decay_linear.compile(n_iterations)
-    print(test_decay_linear.stored)
-
-    test_decay_factor = GeometricInvDecay(start, end)
-    test_decay_factor.compile(n_iterations)
-    print(test_decay_factor.stored)
-
-    test_decay_geometric = GeometricDecay(start, end)
-    test_decay_geometric.compile(n_iterations)
-    print(test_decay_geometric.stored)
-
-    # plot 3 curves to compare the decays
-    import matplotlib.pyplot as plt
-
-    plt.plot(test_decay_linear.stored, label="Linear")
-    plt.plot(test_decay_factor.stored, label="Factor")
-    plt.plot(test_decay_geometric.stored, label="Geometric")
-    plt.legend()
-    plt.show()
+        x = np.linspace(1, 0, self.n_iterations)
+        return -(self.end - self.start) * np.power(x, self.degree) + self.end

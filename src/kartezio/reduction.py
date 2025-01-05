@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+
 from kartezio.core.components.base import register
 from kartezio.core.components.reduction import Reduction
 from kartezio.vision.common import threshold_tozero

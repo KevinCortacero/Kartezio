@@ -3,7 +3,7 @@ from typing import Dict
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from kartezio.core.components import register, Fitness
+from kartezio.core.components import Fitness, register
 from kartezio.thirdparty.cellpose import cellpose_ap
 from kartezio.vision.metrics import balanced_metric, iou
 

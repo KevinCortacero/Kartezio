@@ -1,19 +1,15 @@
-from abc import ABC, abstractmethod
 from typing import Dict
 
 import numpy as np
 
-from kartezio.components.components import Component, register
-from kartezio.components.genotype import Genotype
+from kartezio.core.components import Genotype, Mutation, register
 from kartezio.evolution.decoder import Adapter
-from kartezio.mutation.edges import MutationEdgesNormal, MutationEdgesUniform
-from kartezio.mutation.effect import MutationUniform
 
 
-@register(Mutation, "random")
-class MutationRandom(Mutation):
+@register(Mutation)
+class PointMutation(Mutation):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "MutationRandom":
+    def __from_dict__(cls, dict_infos: Dict) -> "PointMutation":
         pass
 
     def __init__(self, adapter: Adapter):

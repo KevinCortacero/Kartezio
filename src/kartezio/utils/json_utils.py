@@ -3,6 +3,7 @@ import json
 from typing import List
 
 import numpy as np
+
 from kartezio.core.components.adapter import Adapter
 from kartezio.population import IndividualHistory
 

@@ -1,12 +1,12 @@
 """Data type conversion functions for images."""
 
-
 import cv2
 import numpy as np
 
 
 class DType:
     """Data type conversion functions for images."""
+
     def __init__(self, range, dtype):
         self.range = range
         self.dtype = dtype
@@ -22,7 +22,7 @@ class DType:
             norm_type=cv2.NORM_MINMAX,
             dtype=target_dtype.dtype,
         )
-    
+
     def _remap_dtype(self, image) -> "DType":
         """Remap the data type of the image."""
         dtype = _dtype_from_image(image)
@@ -64,6 +64,3 @@ if __name__ == "__main__":
     print(u16(image_test))
     print(u16(image_test).dtype)
     print(f64(u8(u16(uf32(u8(u16(uf32(image_test))))))))
-
-
-

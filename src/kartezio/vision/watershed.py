@@ -8,9 +8,6 @@ finding local maxima (peak_local_max) and performing the watershed algorithm.
 
 Functions Overview
 ------------------
-- _pyrdown(image, n=1):
-    Downsamples an image by repeatedly applying cv2.pyrDown n times.
-    
 - watershed_transform(image, markers, watershed_line):
     Applies the watershed transform using negative-exponential-scaled intensity.
     
@@ -62,27 +59,7 @@ from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
 
 from kartezio.vision.common import threshold_tozero
-
-
-def _pyrdown(image, n=1):
-    """
-    Downsample an image n times using cv2.pyrDown.
-
-    Parameters
-    ----------
-    image : np.ndarray
-        Input image.
-    n : int, optional
-        Number of times to downsample (default is 1).
-
-    Returns
-    -------
-    np.ndarray
-        The downsampled image.
-    """
-    for _ in range(n):
-        image = cv2.pyrDown(image)
-    return image
+from kartezio.vision.rescale import pyrdown
 
 
 def watershed_transform(image, markers, watershed_line):
@@ -175,7 +152,7 @@ def coordinates_to_mask(coordinates, shape, scale):
     """
     mask = np.zeros(shape, dtype=np.uint8)
     coordinates = (coordinates * scale).astype(np.int32)
-    mask[coordinates[:, 0], coordinates[:, 1]] = 1
+    mask[coordinates[:, 0], coordinates[:, 1]] = 255
     return mask
 
 
@@ -222,7 +199,7 @@ def _fast_local_max_markers(image, min_distance, n):
         Binary mask of local maxima upsampled to match the original image size.
     """
     scale = 2**n
-    image_down = _pyrdown(image, n)
+    image_down = pyrdown(image, n)
     peak_coordinates = peak_local_max(
         image_down,
         min_distance=min_distance // scale,

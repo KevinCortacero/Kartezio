@@ -4,9 +4,10 @@ from typing import Dict
 import numpy as np
 
 from kartezio.callback import Event
-from kartezio.components.components import UpdatableComponent, register
+from kartezio.core.components import UpdatableComponent, fundamental, register
 
 
+@fundamental()
 class MutationEffect(UpdatableComponent, ABC):
     def __init__(self):
         super().__init__()
@@ -17,7 +18,7 @@ class MutationEffect(UpdatableComponent, ABC):
         pass
 
 
-@register(MutationEffect, "uniform")
+@register(MutationEffect)
 class MutationUniform(MutationEffect):
     def adjust(self, _, new_parameters):
         return new_parameters
@@ -29,7 +30,7 @@ class MutationUniform(MutationEffect):
         return None
 
 
-@register(MutationEffect, "weighted")
+@register(MutationEffect)
 class MutationWeighted(MutationEffect):
     def __init__(self, start=0.5, end=None):
         super().__init__()
@@ -52,7 +53,7 @@ class MutationWeighted(MutationEffect):
             self.weight = self.stored[event.iteration]
 
 
-@register(MutationEffect, "normal")
+@register(MutationEffect)
 class MutationNormal(MutationEffect):
     def __init__(self, start=0.5, end=None):
         super().__init__()

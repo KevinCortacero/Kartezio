@@ -1,6 +1,11 @@
 import os
 
-from kartezio.core.components import load_component, Genotype, Preprocessing, Fitness
+from kartezio.core.components import (
+    Fitness,
+    Genotype,
+    Preprocessing,
+    load_component,
+)
 from kartezio.evolution.decoder import DecoderCGP
 from kartezio.utils.directory import Directory
 from kartezio.utils.json_handler import json_read, json_write

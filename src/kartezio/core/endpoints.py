@@ -2,20 +2,11 @@ from abc import ABC
 from typing import Dict
 
 import cv2
-import numpy as np
-from skimage.transform import hough_ellipse
 
-from kartezio.core.components import Endpoint, registry
-
-# from kartezio.preprocessing import Resize
-# from kartezio.primitives.array import Sobel
+from kartezio.core.components import Endpoint, register
 from kartezio.types import TypeArray, TypeLabels
-from kartezio.vision.common import (
-    contours_fill,
-    contours_find,
-    image_new,
-    threshold_tozero,
-)
+from kartezio.vision.common import threshold_tozero
+from kartezio.vision.hough import circles_to_labels, hough_circles
 from kartezio.vision.watershed import (
     _connected_components,
     distance_watershed,
@@ -40,7 +31,7 @@ class PeakedMarkersWatershed(EndpointWatershed, ABC):
         self.downsample = downsample
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class MarkerControlledWatershed(EndpointWatershed):
     """
     MarkerControlledWatershed
@@ -92,7 +83,7 @@ class MarkerControlledWatershed(EndpointWatershed):
         return [marker_controlled_watershed(x[0], x[1], self.watershed_line)]
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class LocalMaxWatershed(PeakedMarkersWatershed):
     """
     LocalMaxWatershed
@@ -144,7 +135,7 @@ class LocalMaxWatershed(PeakedMarkersWatershed):
         ]
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class DistanceWatershed(PeakedMarkersWatershed):
     """
     DistanceWatershed
@@ -195,7 +186,7 @@ class DistanceWatershed(PeakedMarkersWatershed):
         ]
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class ThresholdLocalMaxWatershed(PeakedMarkersWatershed):
     """
     ThresholdLocalMaxWatershed
@@ -256,7 +247,7 @@ class ThresholdLocalMaxWatershed(PeakedMarkersWatershed):
         ]
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class ThresholdWatershed(EndpointWatershed):
     """
     ThresholdWatershed
@@ -317,7 +308,7 @@ class ThresholdWatershed(EndpointWatershed):
         ]
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class ToLabels(Endpoint):
     def __init__(self):
         super().__init__([TypeArray])
@@ -326,7 +317,7 @@ class ToLabels(Endpoint):
         return [_connected_components(x[0])]
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class EndpointSubtract(Endpoint):
     def __init__(self):
         super().__init__([TypeArray, TypeArray])
@@ -335,7 +326,7 @@ class EndpointSubtract(Endpoint):
         return [cv2.subtract(x[0], x[1])]
 
 
-@registry.add_as(Endpoint)
+@register(Endpoint)
 class EndpointThreshold(Endpoint):
     def __init__(self, threshold):
         super().__init__([TypeArray])
@@ -352,7 +343,6 @@ class EndpointThreshold(Endpoint):
         }
 
 
-print(registry.display())
 test_endpoint = Endpoint.from_config(
     {
         "name": "ThresholdWatershed",
@@ -364,184 +354,44 @@ print(test_endpoint.__to_dict__())
 
 
 @register(Endpoint)
-class EndpointHoughCircle(Endpoint):
-    def __init__(
-        self, min_dist=21, p1=128, p2=64, min_radius=20, max_radius=120
-    ):
-        super().__init__([TypeArray])
-        self.min_dist = min_dist
-        self.p1 = p1
-        self.p2 = p2
-        self.min_radius = min_radius
-        self.max_radius = max_radius
-
-    def call(self, x):
-        mask = x[0]
-        n = 0
-        new_mask = image_new(mask.shape)
-        circles = cv2.HoughCircles(
-            mask,
-            cv2.HOUGH_GRADIENT,
-            1,
-            self.min_dist,
-            param1=self.p1,
-            param2=self.p2,
-            minRadius=self.min_radius,
-            maxRadius=self.max_radius,
-        )
-        if circles is not None:
-            circles = np.uint16(np.around(circles))
-            for i, circle in enumerate(circles[0, :]):
-                center = (circle[0], circle[1])
-                # circle outline
-                radius = circle[2]
-                cv2.circle(new_mask, center, radius, (i + 1), -1)
-                n += 1
-
-        return [new_mask]
-
-
-@register(Endpoint)
-class EndpointEllipse(Endpoint):
+class HoughCircle(Endpoint):
     def __init__(
         self,
-        min_axis=10,
-        max_axis=30,
-        min_ratio=0.5,
-        backend="opencv",
-        keep_mask=True,
-        as_labels=False,
+        min_dist=21,
+        p1=128,
+        p2=64,
+        min_radius=20,
+        max_radius=120,
+        downscale=0,
     ):
-        super().__init__([TypeArray])
-        self.min_axis = min_axis
-        self.max_axis = max_axis
-        self.min_ratio = min_ratio
-        self.backend = backend
-        self.keep_mask = keep_mask
-        self.as_labels = as_labels
-
-    def call(self, x, args=None):
-        mask = x[0]
-        n = 0
-        new_labels = image_new(mask.shape)
-        new_mask = image_new(mask.shape)
-        labels = []
-        # edges = self.edge_detector.call([mask], [3, 3])
-        if self.backend == "opencv":
-            cnts = contours_find(x[0], exclude_holes=True)
-            for cnt in cnts:
-                if len(cnt) >= 5:
-                    center, (MA, ma), angle = cv2.fitEllipse(cnt)
-                    if (
-                        self.min_axis <= MA <= self.max_axis
-                        and self.min_axis <= ma <= self.max_axis
-                        and ma / MA >= self.min_ratio
-                    ):
-                        if self.keep_mask:
-                            new_mask = contours_fill(new_mask, [cnt], n + 1)
-                        else:
-                            cv2.ellipse(
-                                new_mask,
-                                (center, (MA, ma), angle),
-                                n + 1,
-                                thickness=-1,
-                            )
-                            labels.append((center, (MA, ma), angle))
-                        n += 1
-            if self.keep_mask:
-                if self.as_labels:
-                    new_mask[new_mask >= 1] = mask[new_mask >= 1]
-                else:
-                    new_mask[new_mask >= 1] = x[0][new_mask >= 1]
-
-        elif self.backend == "skimage":
-            print("skimage")
-
-            print("edges", edges)
-            ellipses = hough_ellipse(
-                edges,
-                threshold=128,
-                min_size=self.min_axis,
-                max_size=self.max_axis,
-            )
-            for ellipse in ellipses:
-                print(ellipse)
-                _, y0, x0, a, b, o = ellipse
-                cv2.ellipse(
-                    new_labels,
-                    ((x0, y0), (a, b), o),
-                    n + 1,
-                    thickness=-1,
-                )
-                labels.append((x0, y0, a, b))
-                n += 1
-
-        return [new_mask]
-
-    def __to_dict__(self) -> Dict:
-        return {
-            "name": "fit_ellipse",
-            "args": {
-                "min_axis": self.min_axis,
-                "max_axis": self.max_axis,
-                "min_ratio": self.min_ratio,
-                "backend": self.backend,
-                "keep_mask": self.keep_mask,
-                "as_labels": self.as_labels,
-            },
-        }
-
-
-@register(Endpoint)
-class EndpointHoughCircleSmall(Endpoint):
-    def __init__(self, min_dist=4, p1=256, p2=8, min_radius=2, max_radius=12):
         super().__init__([TypeArray])
         self.min_dist = min_dist
         self.p1 = p1
         self.p2 = p2
         self.min_radius = min_radius
         self.max_radius = max_radius
-        self.edge_detector = Sobel()
-
-    def _to_json_kwargs(self) -> dict:
-        return {
-            "min_dist": self.min_dist,
-            "p1": self.p1,
-            "p2": self.p2,
-            "min_radius": self.min_radius,
-            "max_radius": self.max_radius,
-        }
+        self.downscale = downscale
 
     def call(self, x):
-        mask_raw = x[0]
-        new_mask = image_new(mask_raw.shape)
-        mask = self.edge_detector.call([mask_raw], [3, 3])
-        circles = cv2.HoughCircles(
-            mask,
-            cv2.HOUGH_GRADIENT,
-            1,
-            self.min_dist,
-            param1=self.p1,
-            param2=self.p2,
-            minRadius=self.min_radius,
-            maxRadius=self.max_radius,
+        circles = hough_circles(
+            x[0],
+            min_dist=self.min_dist,
+            p1=self.p1,
+            p2=self.p2,
+            min_radius=self.min_radius,
+            max_radius=self.max_radius,
+            downscale=self.downscale,
         )
-
-        if circles is not None:
-            circles = np.uint16(np.around(circles))
-            for i, circle in enumerate(circles[0, :]):
-                center = (circle[0], circle[1])
-                # circle outline
-                radius = circle[2]
-                cv2.circle(new_mask, center, radius, (i + 1), -1)
-        return [new_mask]
+        return [
+            circles_to_labels(x[0], circles),
+        ]
 
 
 @register(Endpoint)
-class EndpointRescale(Endpoint):
-    def __init__(self, scale, method):
+class RescaleUp(Endpoint):
+    def __init__(self, upscale, method):
         super().__init__([TypeArray])
-        self.resize = Resize(scale, method)
+        self.rescaler = Resize(upscale, method)
 
     def call(self, x):
         return self.resize.call([x])[0]

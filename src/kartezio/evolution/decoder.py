@@ -9,8 +9,8 @@ from kartezio.core.components import (
     Genotype,
     KartezioComponent,
     Library,
-    component,
     dump_component,
+    fundamental,
     register,
 )
 from kartezio.evolution.population import Population
@@ -20,7 +20,7 @@ from kartezio.primitives.scalar import MeanValue
 from kartezio.types import TypeArray, TypeFourier, TypeScalar
 
 
-@component()
+@fundamental()
 class Adapter(KartezioComponent):
     """
     Adpater Design Pattern: https://refactoring.guru/design-patterns/adapter
@@ -140,7 +140,7 @@ class Adapter(KartezioComponent):
         return [self.types_map[_type] for _type in types]
 
 
-@component()
+@fundamental()
 class Decoder(KartezioComponent, ABC):
     pass
 

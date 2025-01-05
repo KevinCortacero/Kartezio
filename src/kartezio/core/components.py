@@ -1,3 +1,4 @@
+import copy
 from abc import ABC, abstractmethod
 from pprint import pprint
 from typing import Dict, List
@@ -128,69 +129,73 @@ class Components:
     @staticmethod
     def name_of(component_class: type) -> str:
         if component_class.__name__ not in Components._reverse.keys():
-            # print(f"Component '{component_class.__name__}'
-            # not properly registered, please make sure use
-            # '@register' over your Class definition.")
             return component_class.__name__
         return Components._reverse[component_class.__name__].split("/")[1]
+
+    @staticmethod
+    def list(group_name: str):
+        if group_name not in Components._registry.keys():
+            raise KeyError(
+                f"Fundamental Component '{group_name}' not found in the registry."
+            )
+        return Components._registry[group_name].keys()
 
     @staticmethod
     def display():
         pprint(Components._registry)
 
-    def add_as(self, fundamental: type, replace: type = None):
-        """
-        Register a component to the Components registry.
 
-        Args:
-            fundamental (type): The fundamental type of the component.
-            replace (type): If not None, replace an existing component with the type.
+def register(fundamental: type, replace: type = None):
+    """
+    Register a component to the Components registry.
 
-        Returns:
-            Callable: A decorator for registering the component.
-        """
-        fundamental_name = fundamental.__name__
+    Args:
+        fundamental (type): The fundamental type of the component.
+        replace (type): If not None, replace an existing component with the type.
 
-        def inner(item_cls):
-            name = item_cls.__name__
-            if Components._contains(fundamental_name, name):
-                if not replace:
-                    raise KeyError(
-                        f"""Error registering {fundamental_name} called '{name}'.
-                        Here is the list of all registered {fundamental_name} components:
-                        \n{Components._registry[fundamental_name].keys()}.
-                        \n > Replace it using 'replace=True' in @register, or use another name.
-                    """
-                    )
-            if replace:
-                replace_name = replace.__name__
-                if Components._contains(fundamental_name, replace_name):
-                    print(
-                        f"Component '{fundamental_name}/{replace_name}' will be replaced by '{name}'"
-                    )
-                    Components.add(fundamental_name, replace_name, item_cls)
-            else:
-                Components.add(fundamental_name, name, item_cls)
-            return item_cls
+    Returns:
+        Callable: A decorator for registering the component.
+    """
+    fundamental_name = fundamental.__name__
 
-        return inner
+    def inner(item_cls):
+        name = item_cls.__name__
+        if Components._contains(fundamental_name, name):
+            if not replace:
+                raise KeyError(
+                    f"""Error registering {fundamental_name} called '{name}'.
+                    Here is the list of all registered {fundamental_name} components:
+                    \n{Components._registry[fundamental_name].keys()}.
+                    \n > Replace it using 'replace=True' in @register, or use another name.
+                """
+                )
+        if replace:
+            replace_name = replace.__name__
+            if Components._contains(fundamental_name, replace_name):
+                print(
+                    f"Component '{fundamental_name}/{replace_name}' will be replaced by '{name}'"
+                )
+                Components.add(fundamental_name, replace_name, item_cls)
+        else:
+            Components.add(fundamental_name, name, item_cls)
+        return item_cls
 
-    def declare(self):
-        """
-        Register a fundamental component to the Components registry.
-
-        Returns:
-            Callable: A decorator for registering the fundamental component.
-        """
-
-        def inner(item_cls):
-            Components.add_component(item_cls.__name__)
-            return item_cls
-
-        return inner
+    return inner
 
 
-registry = Components()
+def fundamental():
+    """
+    Register a fundamental component to the Components registry.
+
+    Returns:
+        Callable: A decorator for registering the fundamental component.
+    """
+
+    def inner(item_cls):
+        Components.add_component(item_cls.__name__)
+        return item_cls
+
+    return inner
 
 
 def load_component(
@@ -224,7 +229,6 @@ def dump_component(component: KartezioComponent) -> Dict:
     return base_dict
 
 
-@registry.declare()
 class Node(KartezioComponent, ABC):
     """
     Abstract base class for a Node in the CGP framework.
@@ -233,7 +237,7 @@ class Node(KartezioComponent, ABC):
     pass
 
 
-@registry.declare()
+@fundamental()
 class Preprocessing(Node, ABC):
     """
     Preprocessing node, called before training loop.
@@ -266,7 +270,7 @@ class Preprocessing(Node, ABC):
         return self
 
 
-@registry.declare()
+@fundamental()
 class Primitive(Node, ABC):
     """
     Primitive function called inside the CGP Graph.
@@ -287,7 +291,7 @@ class Primitive(Node, ABC):
         return {"name": self.name}
 
 
-@registry.declare()
+@fundamental()
 class Genotype(KartezioComponent):
     """
     Represents the genotype for Cartesian Genetic Programming (CGP).
@@ -393,7 +397,7 @@ class Genotype(KartezioComponent):
         return copy.deepcopy(self)
 
 
-@registry.declare()
+@fundamental()
 class Reducer(Node, ABC):
     def batch(self, x: List):
         y = []
@@ -406,7 +410,7 @@ class Reducer(Node, ABC):
         pass
 
 
-@registry.declare()
+@fundamental()
 class Endpoint(Node, ABC):
     """
     Represents the final node in a CGP graph, responsible for producing the final outputs.
@@ -443,12 +447,12 @@ class Endpoint(Node, ABC):
 
     @classmethod
     def from_config(cls, config):
-        return registry.instantiate(
+        return Components.instantiate(
             cls.__name__, config["name"], **config["args"]
         )
 
 
-@registry.declare()
+@fundamental()
 class Fitness(KartezioComponent, ABC):
     def __init__(self, reduction="mean"):
         super().__init__()
@@ -496,7 +500,7 @@ class Fitness(KartezioComponent, ABC):
         )
 
 
-@registry.declare()
+@fundamental()
 class Library(KartezioComponent):
     def __init__(self, rtype):
         super().__init__()
@@ -603,13 +607,13 @@ class Library(KartezioComponent):
         return len(self._primitives)
 
 
-@registry.declare()
+@fundamental()
 class Mutation(KartezioComponent, ABC):
     def __init__(self, adapter):
         super().__init__()
         self.adapter = adapter
-        self.parameters = MutationUniform()
-        self.edges_weights = MutationEdgesUniform()
+        self.parameters = None  # MutationUniform()
+        self.edges_weights = None  # MutationEdgesUniform()
 
     def random_parameters(self, chromosome: int):
         return np.random.randint(
@@ -692,59 +696,6 @@ class Mutation(KartezioComponent, ABC):
         return {}
 
 
-@registry.declare()
+@fundamental()
 class Initialization(KartezioComponent, ABC):
-    """ """
-
-    def __init__(self):
-        super().__init__()
-
-
-@registry.add_as(Initialization)
-class CopyGenotype(Initialization):
-    @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "CopyGenotype":
-        pass
-
-    def __init__(self, genotype, shape, n_functions):
-        super().__init__(shape, n_functions)
-        self.genotype = genotype
-
-    def mutate(self, genotype):
-        return self.genotype.clone()
-
-
-@registry.add_as(Initialization)
-class RandomInit(Initialization, Mutation):
-    """
-    Can be used to initialize genome (genome) randomly
-    """
-
-    @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "RandomInit":
-        pass
-
-    def __init__(self, adapter):
-        super(Initialization).__init__()
-        super(Mutation).__init__(adapter)
-
-    def mutate(self, genotype: Genotype):
-        # mutate genes
-        for chromosome in self.adapter.chromosomes_infos.keys():
-            for node in range(self.adapter.n_nodes):
-                self.mutate_function(genotype, chromosome, node)
-                self.mutate_edges(genotype, chromosome, node)
-                self.mutate_parameters(genotype, chromosome, node)
-        # mutate outputs
-        for output in range(self.adapter.n_outputs):
-            self.mutate_output(genotype, output)
-        return genotype
-
-    def random(self):
-        genotype = self.adapter.new_genotype()
-        return self.mutate(genotype)
-
-
-if __name__ == "__main__":
-    registry.display()
-    print("Done!")
+    pass

@@ -2,7 +2,6 @@ from typing import List
 
 import cv2
 import numpy as np
-from scipy.stats import kurtosis, skew
 from skimage.feature import local_binary_pattern
 from skimage.filters import frangi, hessian, meijering, sato
 from skimage.morphology import remove_small_holes, remove_small_objects
@@ -494,15 +493,6 @@ class Fill(Primitive):
 
 
 @register(Primitive)
-class FillHoles(Primitive):
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 0)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        return morph_fill(x[0])
-
-
-@register(Primitive)
 class RmSmallObjects(Primitive):
     def __init__(self):
         super().__init__([TypeArray], TypeArray, 1)
@@ -842,7 +832,7 @@ class LaplacianOfGaussian(Primitive):
 
 
 def create_array_lib(use_scalars=False):
-    library_opencv = Library()
+    library_opencv = Library(TypeArray)
     library_opencv.add_primitive(Identity())
     library_opencv.add_primitive(Max())
     library_opencv.add_primitive(Min())

@@ -1,4 +1,5 @@
 import cv2
+
 from kartezio.evolution.decoder import DecoderCGP
 
 
@@ -48,7 +49,9 @@ class PythonClassWriter:
                         chromosome,
                         node - self.decoder.adapter.n_inputs,
                     )
-                    active_edges = self.decoder.arity_of(chromosome, function_index)
+                    active_edges = self.decoder.arity_of(
+                        chromosome, function_index
+                    )
                     edges = self.decoder.adapter.get_active_edges(
                         genotype,
                         chromosome,
@@ -61,7 +64,9 @@ class PythonClassWriter:
                         node - self.decoder.adapter.n_inputs,
                     )
                     f_name = self.decoder.name_of(chromosome, function_index)
-                    c_types = self.decoder.inputs_of(chromosome, function_index)
+                    c_types = self.decoder.inputs_of(
+                        chromosome, function_index
+                    )
                     c_names = [
                         (
                             f"{ctype}_{edge}"

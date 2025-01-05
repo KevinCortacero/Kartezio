@@ -4,6 +4,7 @@ from dataclasses import InitVar, dataclass, field
 from pathlib import Path
 
 import pandas as pd
+
 from kartezio.utils.image import (
     imread_czi,
     imread_rgb,
@@ -53,7 +54,10 @@ class Directory(DriveEntity):
         filepath = str(filepath)
         if extension == EXTENSION_IMAGE_PNG:
             imwrite_rgb(filepath, filedata)
-        if extension == EXTENSION_IMAGE_TIF or extension == EXTENSION_IMAGE_LSM:
+        if (
+            extension == EXTENSION_IMAGE_TIF
+            or extension == EXTENSION_IMAGE_LSM
+        ):
             imwrite_tiff(filepath, filedata)
 
     def read(self, filename):
@@ -66,11 +70,17 @@ class Directory(DriveEntity):
             raise ValueError(_err)
         extension = filepath.suffix
         filepath = str(filepath)
-        if extension == EXTENSION_IMAGE_PNG or extension == EXTENSION_IMAGE_JPG:
+        if (
+            extension == EXTENSION_IMAGE_PNG
+            or extension == EXTENSION_IMAGE_JPG
+        ):
             return imread_rgb(filepath)
         if extension == CSV:
             return pd.read_csv(filepath)
-        if extension == EXTENSION_IMAGE_TIF or extension == EXTENSION_IMAGE_LSM:
+        if (
+            extension == EXTENSION_IMAGE_TIF
+            or extension == EXTENSION_IMAGE_LSM
+        ):
             return imread_tiff(filepath)
         if extension == EXTENSION_IMAGE_CZI:
             return imread_czi(filepath)

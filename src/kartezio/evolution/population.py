@@ -3,10 +3,10 @@ from typing import Dict
 
 import numpy as np
 
-from kartezio.core.components import KartezioComponent, component, register
+from kartezio.core.components import KartezioComponent, fundamental, register
 
 
-@component()
+@fundamental()
 class Population(KartezioComponent, ABC):
     class PopulationScore:
         def __init__(self, fitness, time):
@@ -58,16 +58,17 @@ class Population(KartezioComponent, ABC):
 
 class IndividualHistory:
     def __init__(self):
+        self.genotype = None
         self.fitness = 0.0
         self.time = 0.0
-        self.genotype = None
 
 
 class PopulationHistory:
-    def __init__(self, n_individuals):
+    def __init__(self, n_individuals, changed: bool):
         self.individuals = {}
         for i in range(n_individuals):
             self.individuals[i] = IndividualHistory()
+        self.changed = changed
 
     def get_best_fitness(self):
         return (
@@ -105,10 +106,10 @@ class PopulationWithElite(Population):
         self.score.time[0] = times[best_fitness_idx]
         self.score.raw[0] = raw[best_fitness_idx]
 
-        state = PopulationHistory(self.size)
+        state = PopulationHistory(self.size, changed)
 
         for i in range(len(self.individuals)):
             state.individuals[i].genotype = self.individuals[i].clone()
             state.individuals[i].fitness = fitness[i]
             state.individuals[i].time = times[i]
-        return changed, state
+        return state

@@ -3,10 +3,11 @@ from typing import Dict
 
 import numpy as np
 
-from kartezio.components.components import Component, register
+from kartezio.core.components import KartezioComponent, fundamental, register
 
 
-class MutationEdges(Component, ABC):
+@fundamental()
+class MutationEdges(KartezioComponent, ABC):
     def __init__(self):
         super().__init__()
 
@@ -21,7 +22,7 @@ class MutationEdges(Component, ABC):
         pass
 
 
-@register(MutationEdges, "uniform")
+@register(MutationEdges)
 class MutationEdgesUniform(MutationEdges):
     def __init__(self):
         super().__init__()
@@ -32,7 +33,7 @@ class MutationEdgesUniform(MutationEdges):
         return p
 
 
-@register(MutationEdges, "normal")
+@register(MutationEdges)
 class MutationEdgesNormal(MutationEdges):
     def __init__(self, sigma=3):
         super().__init__()
