@@ -1,6 +1,5 @@
 import unittest
 
-from kartezio.core.components import Components
 from kartezio.core.endpoints import EndpointThreshold
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer

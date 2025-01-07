@@ -3,7 +3,7 @@ from typing import Dict, List
 import cv2
 import numpy as np
 
-from kartezio.core.components import Preprocessing, registry
+from kartezio.core.components import Preprocessing, register
 from kartezio.vision.common import image_split
 
 
