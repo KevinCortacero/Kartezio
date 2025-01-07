@@ -396,7 +396,7 @@ class RescaleUp(Endpoint):
     def call(self, x):
         return self.resize.call([x])[0]
 
-@register(Endpoint, "identity")
+@register(Endpoint)
 class EndpointSimple(Endpoint):
     def __init__(self):
         super().__init__([TypeLabels])

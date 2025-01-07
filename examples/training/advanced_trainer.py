@@ -1,6 +1,6 @@
 from kartezio.callback import CallbackVerbose
 from kartezio.core.endpoints import EndpointThreshold
-from kartezio.core.fitness import FitnessIOU
+from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
 from kartezio.mutation.behavioral import AccumulateBehavior
 from kartezio.mutation.decay import LinearDecay
@@ -26,7 +26,7 @@ def main():
     endpoint = EndpointThreshold(
         128, mode="tozero"
     )  # Define the endpoint for the model
-    fitness = FitnessIOU()  # Define the fitness metric
+    fitness = IoU()  # Define the fitness metric
 
     # Build the model with specified components
     model = KartezioTrainer(
