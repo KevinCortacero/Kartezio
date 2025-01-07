@@ -15,7 +15,7 @@ def main():
     n_inputs = 1
     libraries = create_array_lib()  # Create a library of array operations
     endpoint = EndpointThreshold(
-        128, mode="tozero"
+        128
     )  # Define the endpoint for the model
     fitness = IoU()  # Define the fitness metric
 
