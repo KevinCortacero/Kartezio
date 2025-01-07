@@ -395,3 +395,17 @@ class RescaleUp(Endpoint):
 
     def call(self, x):
         return self.resize.call([x])[0]
+
+@register(Endpoint, "identity")
+class EndpointSimple(Endpoint):
+    def __init__(self):
+        super().__init__([TypeLabels])
+
+
+    def call(self, x):
+        labels = x[0]
+        return [labels]
+
+
+    def _to_json_kwargs(self) -> dict:
+        return {}
