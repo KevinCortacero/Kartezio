@@ -198,3 +198,9 @@ def draw_overlay(
                 overlayed, contours, thickness=thickness, color=border_color
             )
     return overlayed
+
+
+def fill_polyhedron_as_labels(mask,labels,z_slice, contours):
+    for label,z_slice, polygon in zip(labels,z_slice,contours):
+        cv2.fillPoly(mask[z_slice], pts=np.int32([polygon]), color=label)
+    return mask

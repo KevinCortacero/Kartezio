@@ -4,6 +4,7 @@ from typing import Dict
 import cv2
 
 from kartezio.core.components import Endpoint, register
+from kartezio.preprocessing import Resize
 from kartezio.types import TypeArray, TypeLabels
 from kartezio.vision.common import threshold_tozero
 from kartezio.vision.hough import circles_to_labels, hough_circles
@@ -16,6 +17,7 @@ from kartezio.vision.watershed import (
     threshold_local_max_watershed,
     threshold_watershed,
 )
+from kartezio.vision.watershed_3d import watershed_3d
 
 
 class EndpointWatershed(Endpoint, ABC):
@@ -342,17 +344,6 @@ class EndpointThreshold(Endpoint):
             },
         }
 
-
-test_endpoint = Endpoint.from_config(
-    {
-        "name": "ThresholdWatershed",
-        "args": {"watershed_line": True, "threshold": 128},
-    }
-)
-print(test_endpoint)
-print(test_endpoint.__to_dict__())
-
-
 @register(Endpoint)
 class HoughCircle(Endpoint):
     def __init__(
@@ -418,50 +409,32 @@ class RawLocalMaxWatershed3D(EndpointWatershed):
     Markers are computed as the local max of the mask
 
     """
-
     def __init__(self,
         arity = 3,
         watershed_line: bool = True,
-        min_distance: int = 10,
-        downsample: int = 0,
-        threshold: int = 128,):
+        threshold: int = 192):
         super().__init__(arity, watershed_line=watershed_line)
         self.threshold = threshold
-        self.min_distance = min_distance
         self.watershed_line = watershed_line
-        self.wt = WatershedSkimage3D(markers_distance=markers_distance)
 
     def call(self, x):
-        mask = x[0].copy()
-        mask[mask < self.threshold] = 0 # threshold_tozero(x[0], self.threshold)
-        mask, markers, labels = self.wt.apply(mask, mask>0)
-        return {
-            "image": x[0],
-            "mask": mask,
-            "markers": markers,
-            "count": len(np.unique(labels)) - 1,
-            "labels": labels,
-        }
-
-    # return [
-    #     threshold_local_max_watershed(
-    #         image=x[0],
-    #         threshold=self.threshold,
-    #         min_distance=self.min_distance,
-    #         watershed_line=self.watershed_line,
-    #         downsample=self.downsample,
-    #     )
-    # ]
-
-    def _to_json_kwargs(self) -> dict:
-        return {
-            "threshold": self.threshold,
-            "markers_distance": self.wt.markers_distance,
-        }
-
-@register(Endpoint)
+        return [
+            watershed_3d(
+                cube=x[0],
+                threshold=self.threshold,
+                watershed_line=self.watershed_line,
+            )
+        ]
 
 
+test_endpoint = Endpoint.from_config(
+    {
+        "name": "ThresholdWatershed",
+        "args": {"watershed_line": True, "threshold": 128},
+    }
+)
+print(test_endpoint)
+print(test_endpoint.__to_dict__())
 
 
 

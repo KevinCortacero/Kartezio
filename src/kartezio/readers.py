@@ -8,11 +8,12 @@ from kartezio.utils.image import imread_gray, imread_rgb, imread_tiff
 from kartezio.utils.imagej import read_polygons_from_roi
 from kartezio.vision.common import (
     fill_polygons_as_labels,
+    fill_polyhedron_as_labels,
     gray2rgb,
     image_new,
     image_split,
 )
-
+from roifile import ImagejRoi
 
 class ImageMaskReader(DataReader):
     def _read(self, filepath, shape=None):
@@ -93,7 +94,7 @@ class ImageChannelsReader(DataReader):
         return DataItem(channels, shape, None, visual=preview)
 
 ### nouveauté a tester
-@register(DataReader, "roi_polyhedron")
+
 class RoiPolyhedronReader(DataReader):
     def _read(self, filepath, shape=None):
         label_mask = image_new(shape)
@@ -110,7 +111,7 @@ class RoiPolyhedronReader(DataReader):
         return DataItem([label_mask], shape, len(contours))
 
 
-@register(DataReader,"image_channels3d")
+
 class ImageChannelsMask3dReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
@@ -146,7 +147,6 @@ class ImageChannelsMask3dReader(DataReader):
 
 
 
-@register(DataReader,"image_gray3d")
 class ImageGray3dReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
@@ -166,7 +166,7 @@ class ImageGray3dReader(DataReader):
         return DataItem([image], shape, None, visual=previews)
 
 
-@register(DataReader,"image_label3d")
+
 class ImageLabel3dReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
@@ -175,7 +175,7 @@ class ImageLabel3dReader(DataReader):
         return DataItem([image], shape, image.max(), visual=image)
 
 
-@register(DataReader,"image_gray3dcut")
+
 class ImageGray3dCutReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
