@@ -408,3 +408,60 @@ class EndpointSimple(Endpoint):
 
     def _to_json_kwargs(self) -> dict:
         return {}
+
+
+### nouveauté a testé
+
+@register(Endpoint)
+class RawLocalMaxWatershed3D(EndpointWatershed):
+    """Watershed based KartezioEndpoint, but only based on one single mask.
+    Markers are computed as the local max of the mask
+
+    """
+
+    def __init__(self,
+        arity = 3,
+        watershed_line: bool = True,
+        min_distance: int = 10,
+        downsample: int = 0,
+        threshold: int = 128,):
+        super().__init__(arity, watershed_line=watershed_line)
+        self.threshold = threshold
+        self.min_distance = min_distance
+        self.watershed_line = watershed_line
+        self.wt = WatershedSkimage3D(markers_distance=markers_distance)
+
+    def call(self, x):
+        mask = x[0].copy()
+        mask[mask < self.threshold] = 0 # threshold_tozero(x[0], self.threshold)
+        mask, markers, labels = self.wt.apply(mask, mask>0)
+        return {
+            "image": x[0],
+            "mask": mask,
+            "markers": markers,
+            "count": len(np.unique(labels)) - 1,
+            "labels": labels,
+        }
+
+    # return [
+    #     threshold_local_max_watershed(
+    #         image=x[0],
+    #         threshold=self.threshold,
+    #         min_distance=self.min_distance,
+    #         watershed_line=self.watershed_line,
+    #         downsample=self.downsample,
+    #     )
+    # ]
+
+    def _to_json_kwargs(self) -> dict:
+        return {
+            "threshold": self.threshold,
+            "markers_distance": self.wt.markers_distance,
+        }
+
+@register(Endpoint)
+
+
+
+
+
