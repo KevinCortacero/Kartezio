@@ -12,7 +12,7 @@ from kartezio.core.components import (
 from kartezio.types import TypeArray
 
 
-@register(Endpoint, "my_endpoint")
+@register(Endpoint)
 class MyExampleEndpoint(Endpoint):
     """
     A custom endpoint used as the final output node in a CGP graph.
@@ -75,7 +75,7 @@ def main():
 
     # Instantiate the endpoint from the component registry and apply it
     my_endpoint_2 = Components.instantiate(
-        "Endpoint", "my_endpoint", n_classes=3
+        "Endpoint", "MyExampleEndpoint", n_classes=3
     )
     output_2 = my_endpoint_2.call(inputs)  # Expected Output: 0
     print(f"Output from my_endpoint_2: {output_2}")

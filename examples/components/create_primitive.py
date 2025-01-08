@@ -6,7 +6,7 @@ from kartezio.core.components import Components, Primitive, register
 from kartezio.types import TypeArray
 
 
-@register(Primitive, "my_primitive")
+@register(Primitive)
 class MyExamplePrimitive(Primitive):
     """
     A custom primitive operation that replaces specific pixel values.
@@ -44,7 +44,7 @@ def main():
     output = my_primitive.call(inputs)  # Apply the primitive operation
     print(output)  # Output: [1, 0, 1, 0]
 
-    my_primitive_2 = Components.instantiate("Primitive", "my_primitive")
+    my_primitive_2 = Components.instantiate("Primitive", "MyExamplePrimitive")
     output_2 = my_primitive_2.call(inputs)
     print(output_2)  # Output: [1, 0, 1, 0]
 

@@ -1,9 +1,9 @@
 from kartezio.callback import CallbackVerbose
-from kartezio.core.endpoints import EndpointThreshold
+from kartezio.core.endpoints import EndpointThreshold, ThresholdWatershed
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
 from kartezio.mutation.behavioral import AccumulateBehavior
-from kartezio.mutation.decay import LinearDecay
+from kartezio.mutation.decay import LinearDecay, DegreeDecay
 from kartezio.mutation.edges import MutationEdgesNormal
 from kartezio.mutation.effect import MutationNormal
 from kartezio.primitives.array import create_array_lib
@@ -23,9 +23,8 @@ def main():
         create_array_lib(use_scalars=True),
         library_scalar,
     ]  # Create a library of array operations
-    endpoint = EndpointThreshold(
-        128, mode="tozero"
-    )  # Define the endpoint for the model
+    endpoint = EndpointThreshold(128)  # Define the endpoint for the model
+    endpoint = ThresholdWatershed(True, 128, 192)
     fitness = IoU()  # Define the fitness metric
 
     # Build the model with specified components
@@ -38,7 +37,7 @@ def main():
     )
 
     model.set_mutation_rates(node_rate=0.5, out_rate=0.2)
-    model.set_decay(LinearDecay(0.5, 0.01))
+    model.set_decay(DegreeDecay(4, 0.5, 0.01))
     model.set_behavior(AccumulateBehavior())
     model.set_mutation_effect(MutationNormal(0.5, 0.005))
     model.set_mutation_edges(MutationEdgesNormal(10))

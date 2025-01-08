@@ -294,8 +294,8 @@ class ThresholdWatershed(EndpointWatershed):
             return [
                 double_threshold_watershed(
                     image=x[0],
-                    threshold1=self.threshold1,
-                    threshold2=self.threshold2,
+                    threshold1=self.threshold,
+                    threshold2=self.threshold_2,
                     watershed_line=self.watershed_line,
                 )
             ]

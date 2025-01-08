@@ -3,7 +3,7 @@ import ast
 import cv2
 import numpy as np
 
-from kartezio.components.components import register
+from kartezio.core.components import register
 from kartezio.data.dataset import DataItem, DataReader
 from kartezio.utils.image import imread_gray, imread_rgb, imread_tiff
 from kartezio.utils.imagej import read_polygons_from_roi
@@ -15,7 +15,6 @@ from kartezio.vision.common import (
 )
 
 
-@register(DataReader, "image_mask")
 class ImageMaskReader(DataReader):
     def _read(self, filepath, shape=None):
         if filepath == "":
@@ -28,7 +27,6 @@ class ImageMaskReader(DataReader):
         )
 
 
-@register(DataReader, "image_labels")
 class ImageLabels(DataReader):
     def _read(self, filepath, shape=None):
         image = cv2.imread(filepath, cv2.IMREAD_ANYDEPTH)
@@ -37,7 +35,6 @@ class ImageLabels(DataReader):
         return DataItem([image], image.shape[:2], image.max(), visual=image)
 
 
-@register(DataReader, "image_color")
 class ImageRGBReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_rgb(filepath)
@@ -46,7 +43,6 @@ class ImageRGBReader(DataReader):
         )
 
 
-@register(DataReader, "image_grayscale")
 class ImageGrayscaleReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_gray(filepath)
@@ -54,7 +50,6 @@ class ImageGrayscaleReader(DataReader):
         return DataItem([image], image.shape, None, visual=visual)
 
 
-@register(DataReader, "roi_polygon")
 class RoiPolygonReader(DataReader):
     def _read(self, filepath, shape=None):
         label_mask = image_new(shape)
@@ -65,14 +60,12 @@ class RoiPolygonReader(DataReader):
         return DataItem([label_mask], shape, len(polygons))
 
 
-@register(DataReader, "one-hot_vector")
 class OneHotVectorReader(DataReader):
     def _read(self, filepath, shape=None):
         label = np.array(ast.literal_eval(filepath.split("/")[-1]))
         return DataItem([label], shape, None)
 
 
-@register(DataReader, "image_channels")
 class ImageChannelsReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)

@@ -1,7 +1,6 @@
 from typing import Dict
 
 import numpy as np
-from scipy.optimize import linear_sum_assignment
 
 from kartezio.core.components import Fitness, register
 from kartezio.thirdparty.cellpose import cellpose_ap

@@ -1,5 +1,6 @@
 import numpy as np
 from numba import jit
+from scipy.optimize import linear_sum_assignment
 
 
 @jit(nopython=True)
@@ -90,8 +91,8 @@ def cellpose_ap(y_true, y_pred, threshold):
     tp = np.zeros(n_images, np.float32)
     fp = np.zeros(n_images, np.float32)
     fn = np.zeros(n_images, np.float32)
-    n_true = np.array(list(map(np.max, y_true)))
-    n_pred = np.array(list(map(np.max, y_pred)))
+    n_true = np.array([len(np.unique(mask)) - 1 for mask in y_true])
+    n_pred = np.array([len(np.unique(mask)) - 1 for mask in y_pred])
     for n in range(n_images):
         if n_pred[n]:
             iou = _intersection_over_union(y_true[n][0], y_pred[n][0])[1:, 1:]
