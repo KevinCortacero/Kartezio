@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from kartezio.helpers import Observer
-
-# from kartezio.utils.io import JsonSaver
 from kartezio.utils.json_handler import json_write
 
 

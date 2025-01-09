@@ -2,13 +2,12 @@ from typing import List
 
 import numpy as np
 
-from kartezio.core.components.base import register
-from kartezio.core.components.reduction import Reduction
+from kartezio.core.components import Reducer, register
 from kartezio.vision.common import threshold_tozero
 
 
-@register(Reduction, "basic")
-class BasicReducton(Reduction):
+@register(Reducer, "basic")
+class BasicReducton(Reducer):
     def _to_json_kwargs(self) -> dict:
         return {
             "mode": self.mode,

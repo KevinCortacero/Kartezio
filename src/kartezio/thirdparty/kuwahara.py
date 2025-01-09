@@ -2,10 +2,6 @@
 # originally in MatLab
 import cv2
 import numpy as np
-from scipy.signal import convolve2d
-from skimage.data import cell
-
-# help on convolve2d: http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.convolve2d.html
 
 
 def kuwahara_filter(original, winsize):
@@ -136,13 +132,3 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
-
-
-if __name__ == "__main__":
-    image = cell()
-    print(image)
-    print(image.shape)
-    cv2.imwrite("original.png", image)
-
-    filtered = kuwahara_filter(image, 11)
-    cv2.imwrite("filtered.png", filtered)
