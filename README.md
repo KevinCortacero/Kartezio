@@ -9,7 +9,7 @@ Built on top of [OpenCV](https://opencv.org/), Kartezio empowers researchers, en
 Originally developed for biomedical image segmentation, Kartezio has been successfully showcased in [Nature Communications](https://www.nature.com/articles/s41467-023-42664-x). Although it shines in medical and life science applications, Kartezio’s underlying principles are domain-agnostic.   
 Whether you’re working with industrial quality control, satellite imagery, embedded vision, or robotics, Kartezio helps you craft custom CV pipelines that are **transparent, fast, frugal  and efficient**.
 
-## Key Features
+## Why you should try kartezio
 
 :nut_and_bolt:   **Modular and Customizable**  
    Kartezio is built from interchangeable building blocks, called **Components**, that you can mix, match, or replace. Adapt the pipeline to your project’s unique requirements.
