@@ -26,6 +26,9 @@ Whether you’re working with industrial quality control, satellite imagery, emb
 :microscope:   **Broad Applicability**  
    While proven in biomedical image segmentation, Kartezio’s methods readily extend to other fields—like industrial machine vision, space imaging, drone footage analysis, or any custom image-based problem.
 
+:books:   **Educational Value and Traditional Computer Vision** 
+Kartezio offers a straightforward, interpretable way to play traditional CV techniques side by side. This makes it an excellent resource for **teaching and learning** about image processing fundamentals.
+
 ## Getting Started
 
 1. **Installation:**
