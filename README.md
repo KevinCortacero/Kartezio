@@ -27,7 +27,7 @@ Whether you’re working with industrial quality control, satellite imagery, emb
    While proven in biomedical image segmentation, Kartezio’s methods readily extend to other fields—like industrial machine vision, space imaging, drone footage analysis, or any custom image-based problem.
 
 :books:   **Traditional Computer Vision**  
-Kartezio offers a straightforward, interpretable way to learn and play with traditional CV filters. This makes it an excellent resource for **teaching and learning** about Image Processing fundamentals.
+Kartezio offers a straightforward, interpretable way to learn and play with traditional CV filters. This makes it an excellent resource for teaching and learning about Image Processing fundamentals.
 
 ## Getting Started
 
