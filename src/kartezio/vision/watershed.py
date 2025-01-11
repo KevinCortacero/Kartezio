@@ -226,7 +226,7 @@ def marker_controlled_watershed(image, markers, watershed_line):
     np.ndarray
         Integer-labeled segmented image.
     """
-    # markers = _connected_components(markers)
+    markers = _connected_components(markers)
     return watershed_transform(image, markers, watershed_line)
 
 
@@ -363,12 +363,13 @@ def double_threshold_watershed(image, threshold1, threshold2, watershed_line):
     np.ndarray
         Labeled segmentation from watershed.
     """
-    """
+
     image = threshold_tozero(image, threshold1)
     markers = threshold_tozero(image, threshold2)
     """
     markers = np.zeros_like(image)
     markers[image < threshold1] = 1
     markers[image > threshold2] = 2
-    
+    """
+
     return marker_controlled_watershed(image, markers, watershed_line)

@@ -3,7 +3,6 @@ import ast
 import cv2
 import numpy as np
 
-from kartezio.core.components import register
 from kartezio.data.dataset import DataItem, DataReader
 from kartezio.utils.image import imread_gray, imread_rgb, imread_tiff
 from kartezio.utils.imagej import read_polygons_from_roi

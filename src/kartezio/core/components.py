@@ -162,8 +162,8 @@ def register(fundamental: type, replace: type = None):
         name = item_cls.__name__
         if Components._contains(fundamental_name, name):
             if not replace:
-                raise KeyError(
-                    f"""Error registering {fundamental_name} called '{name}'.
+                print(
+                    f"""Warning registering {fundamental_name} called '{name}'.
                     Here is the list of all registered {fundamental_name} components:
                     \n{Components._registry[fundamental_name].keys()}.
                     \n > Replace it using 'replace=True' in @register, or use another name.

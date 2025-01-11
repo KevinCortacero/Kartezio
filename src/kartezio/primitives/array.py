@@ -13,7 +13,6 @@ from kartezio.vision.common import (
     convolution,
     gradient_magnitude,
     morph_fill,
-    threshold_binary,
     threshold_tozero,
 )
 from kartezio.vision.kernel import (
@@ -291,19 +290,6 @@ class Sobel(Primitive):
     def call(self, x: List[np.ndarray], args: List[int]):
         gx, gy = cv2.spatialGradient(x[0])
         return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
-
-
-@register(Primitive)
-class Deriche(Primitive):
-    def __init__(self):
-        super().__init__([TypeArray], TypeArray, 0)
-        self.alpha = 1.0
-        self.omega = 1.0
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        gx = cv2.ximgproc.GradientDericheX(x[0], self.alpha, self.omega)
-        gy = cv2.ximgproc.GradientDericheY(x[0], self.alpha, self.omega)
-        return gradient_magnitude(gx, gy)
 
 
 @register(Primitive)
@@ -866,7 +852,6 @@ def create_array_lib(use_scalars=False):
     library_opencv.add_primitive(Log())
     library_opencv.add_primitive(Laplacian())
     library_opencv.add_primitive(Sobel())
-    library_opencv.add_primitive(Deriche())
     library_opencv.add_primitive(Roberts())
     library_opencv.add_primitive(Canny())
     library_opencv.add_primitive(Sharpen())

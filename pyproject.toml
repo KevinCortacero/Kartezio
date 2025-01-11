@@ -4,23 +4,20 @@ version = "1.0.0a2"
 description = ""
 homepage = "https://kartezio.com"
 repository = "https://github.com/KevinCortacero/Kartezio"
-authors = ["Kevin Cortacero <kevin.cortacero@inserm.fr>"]
+authors = ["Kevin Cortacero <kevin.cortacero@protonmail.com>"]
 readme = "README.md"
 packages = [{include = "kartezio", from = "src"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-opencv-python = "*"
+numpy = ">=1.24.0"
 pandas = "*"
+scikit-image = "*"
+opencv-python = "*"
+numba = "*"
 czifile = "^2019.7.2"
 tabulate = "^0.9.0"
-numpy = ">=1.24.0"
-numba = "*"
-tomli = "^2.0.1"
-tomli-w = "^1.0.0"
 roifile = ">=2023.2.12"
-scikit-image = "*"
-
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
@@ -30,6 +27,7 @@ flake8 = ">=5.0.4"
 pytest-cov = "^5.0.0"
 isort = "^5.13.2"
 pre-commit = "*"
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]

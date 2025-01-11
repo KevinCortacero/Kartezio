@@ -1,19 +1,13 @@
+from abc import abstractmethod
 from dataclasses import dataclass, field
 from typing import List, Tuple
-from abc import abstractmethod
-
-from kartezio.core.components import Components
-from kartezio.utils.directory import Directory
-from kartezio.vision.common import draw_overlay
-from kartezio.utils.json_handler import json_read, json_write
-
-
 
 import numpy as np
 
+from kartezio.utils.directory import Directory
+from kartezio.vision.common import draw_overlay
 
 CSV_DATASET = "dataset.csv"
-JSON_META = "meta.json"
 
 
 class Dataset:
@@ -39,13 +33,9 @@ class Dataset:
         def xyv(self):
             return self.x, self.y, self.v
 
-    def __init__(
-        self, train_set, test_set, name, label_name, inputs, indices=None
-    ):
+    def __init__(self, train_set, test_set, inputs, indices=None):
         self.train_set = train_set
         self.test_set = test_set
-        self.name = name
-        self.label_name = label_name
         self.inputs = inputs
         self.indices = indices
 
@@ -94,73 +84,42 @@ class Dataset:
         return self.train_x, self.train_y, self.test_x, self.test_y
 
 
+class DataReader:
+    def __init__(self, directory, scale=1.0):
+        self.scale = scale
+        self.directory = directory
 
-class DatasetMeta:
-    @staticmethod
-    def write(
-        filepath,
-        name,
-        input_type,
-        input_format,
-        label_type,
-        label_format,
-        label_name,
-        scale=1.0,
-        mode="dataframe",
-        meta_filename=JSON_META,
-    ):
-        json_data = {
-            "name": name,
-            "scale": scale,
-            "label_name": label_name,
-            "mode": mode,
-            "input": {"type": input_type, "format": input_format},
-            "label": {"type": label_type, "format": label_format},
-        }
-        json_write(filepath + "/" + meta_filename, json_data)
+    def read(self, filename, shape=None):
+        if str(filename) == "nan":
+            filepath = ""
+        else:
+            filepath = f"{self.directory}/{filename}"
+        return self._read(filepath, shape)
 
-    @staticmethod
-    def read(filepath, meta_filename):
-        return json_read(filepath / meta_filename)
+    @abstractmethod
+    def _read(self, filepath, shape=None):
+        pass
 
 
 @dataclass
 class DatasetReader(Directory):
-    counting: bool = False
+    x_reader: DataReader
+    y_reader: DataReader
     preview: bool = False
     preview_dir: Directory = field(init=False)
+    color_preview = (51, 152, 75)
 
     def __post_init__(self, path):
         super().__post_init__(path)
         if self.preview:
             self.preview_dir = self.next("__preview__")
 
-    def _read_meta(self, meta_filename):
-        from kartezio.readers import ImageRGBReader, RoiPolygonReader
-        meta = DatasetMeta.read(self._path, meta_filename=meta_filename)
-        self.name = meta["name"]
-        self.scale = meta["scale"]
-        self.mode = meta["mode"]
-        self.label_name = meta["label_name"]
-        input_reader_name = (
-            f"{meta['input']['type']}_{meta['input']['format']}"
-        )
-        label_reader_name = (
-            f"{meta['label']['type']}_{meta['label']['format']}"
-        )
-        self.input_reader = ImageRGBReader(self)  # Components.instantiate("DataReader", input_reader_name, directory=self, scale=self.scale)
-        self.label_reader = RoiPolygonReader(self)  # Components.instantiate("DataReader", label_reader_name, directory=self, scale=self.scale)
-
     def read_dataset(
         self,
         dataset_filename=CSV_DATASET,
-        meta_filename=JSON_META,
         indices=None,
     ):
-        self._read_meta(meta_filename)
-        if self.mode == "dataframe":
-            return self._read_from_dataframe(dataset_filename, indices)
-        raise AttributeError(f"{self.mode} is not handled yet")
+        return self._read_from_dataframe(dataset_filename, indices)
 
     def _read_from_dataframe(self, dataset_filename, indices):
         dataframe = self.read(dataset_filename)
@@ -184,14 +143,13 @@ class DatasetReader(Directory):
             )
 
         if self.preview:
-            color = [98, 36, 97]
             for i in range(len(training.x)):
                 visual = training.v[i]
                 label = training.y[i][0]
                 preview = draw_overlay(
                     visual,
                     label.astype(np.uint8),
-                    color=color,
+                    color=self.color_preview,
                     alpha=0.5,
                     thickness=3,
                 )
@@ -202,14 +160,12 @@ class DatasetReader(Directory):
                 preview = draw_overlay(
                     visual,
                     label.astype(np.uint8),
-                    color=color,
+                    color=self.color_preview,
                     alpha=0.5,
                     thickness=3,
                 )
                 self.preview_dir.write(f"test_{i}.png", preview)
-        return Dataset(
-            training, testing, self.name, self.label_name, inputs, indices
-        )
+        return Dataset(training, testing, inputs, indices)
 
     def _read_auto(self, dataset):
         pass
@@ -220,14 +176,10 @@ class DatasetReader(Directory):
         if indices:
             dataframe = dataframe.loc[indices]
         for row in dataframe.itertuples():
-            x = self.input_reader.read(row.input, shape=None)
-            y = self.label_reader.read(row.label, shape=x.shape)
-            if self.counting:
-                y = [y.datalist[0], y.count]
-            else:
-                y = y.datalist
+            x = self.x_reader.read(row.input, shape=None)
+            y = self.y_reader.read(row.label, shape=x.shape)
             dataset.n_inputs = x.size
-            dataset.add_item(x.datalist, y)
+            dataset.add_item(x.datalist, y.datalist)
             visual_from_table = False
             if "visual" in dataframe.columns:
                 if str(row.visual) != "nan":
@@ -236,23 +188,6 @@ class DatasetReader(Directory):
             if not visual_from_table:
                 dataset.add_visual(x.visual)
         return dataset
-
-
-class DataReader:
-    def __init__(self, directory, scale=1.0):
-        self.scale = scale
-        self.directory = directory
-
-    def read(self, filename, shape=None):
-        if str(filename) == "nan":
-            filepath = ""
-        else:
-            filepath = str(self.directory / filename)
-        return self._read(filepath, shape)
-
-    @abstractmethod
-    def _read(self, filepath, shape=None):
-        pass
 
 
 @dataclass
@@ -269,18 +204,35 @@ class DataItem:
 
 def read_dataset(
     dataset_path,
+    x_reader,
+    y_reader,
     filename=CSV_DATASET,
-    meta_filename=JSON_META,
     indices=None,
-    counting=False,
     preview=False,
-    reader=None,
 ):
-    dataset_reader = DatasetReader(
-        dataset_path, counting=counting, preview=preview
+    from kartezio.readers import (
+        ImageGrayscaleReader,
+        ImageLabels,
+        ImageRGBReader,
+        RoiPolygonReader,
     )
-    if reader is not None:
-        dataset_reader.add_reader(reader)
+
+    if isinstance(x_reader, str):
+        match x_reader:
+            case "rgb":
+                x_reader = ImageRGBReader(dataset_path)
+            case "grayscale":
+                x_reader = ImageGrayscaleReader(dataset_path)
+    if isinstance(y_reader, str):
+        match y_reader:
+            case "labels":
+                y_reader = ImageLabels(dataset_path)
+            case "imagej":
+                y_reader = RoiPolygonReader(dataset_path)
+
+    dataset_reader = DatasetReader(
+        dataset_path, x_reader, y_reader, preview=preview
+    )
     return dataset_reader.read_dataset(
-        dataset_filename=filename, meta_filename=meta_filename, indices=indices
+        dataset_filename=filename, indices=indices
     )

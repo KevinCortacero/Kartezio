@@ -212,7 +212,8 @@ class SelectChannels(Preprocessing):
             "args": {"channels": self.channels},
         }
 
-@register(Preprocessing,"format_3d")
+
+@register(Preprocessing)
 class Format3D(Preprocessing):
     def __init__(self, channels=None, z_range=None):
         super().__init__()
@@ -226,10 +227,14 @@ class Format3D(Preprocessing):
             if self.channels:
                 if self.z_range:
                     for z in self.z_range:
-                        one_item.append([x[i][channel][z] for channel in self.channels])
+                        one_item.append(
+                            [x[i][channel][z] for channel in self.channels]
+                        )
                 else:
                     for z in range(len(x[i][0])):
-                        one_item.append([x[i][channel][z] for channel in self.channels])
+                        one_item.append(
+                            [x[i][channel][z] for channel in self.channels]
+                        )
             else:
                 if self.z_range:
                     for z in self.z_range:
