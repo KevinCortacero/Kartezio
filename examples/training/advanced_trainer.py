@@ -3,7 +3,7 @@ from kartezio.core.endpoints import EndpointThreshold, ThresholdWatershed
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
 from kartezio.mutation.behavioral import AccumulateBehavior
-from kartezio.mutation.decay import LinearDecay, DegreeDecay
+from kartezio.mutation.decay import DegreeDecay, LinearDecay
 from kartezio.mutation.edges import MutationEdgesNormal
 from kartezio.mutation.effect import MutationNormal
 from kartezio.primitives.array import create_array_lib

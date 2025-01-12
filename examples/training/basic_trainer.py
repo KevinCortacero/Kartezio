@@ -14,9 +14,7 @@ def main():
     # Define the number of inputs and create required components
     n_inputs = 1
     libraries = create_array_lib()  # Create a library of array operations
-    endpoint = EndpointThreshold(
-        128
-    )  # Define the endpoint for the model
+    endpoint = EndpointThreshold(128)  # Define the endpoint for the model
     fitness = IoU()  # Define the fitness metric
 
     # Build the model with specified components
