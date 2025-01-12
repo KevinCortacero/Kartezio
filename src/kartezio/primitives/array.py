@@ -707,13 +707,12 @@ class Hessian(Primitive):
         return cv2.convertScaleAbs(hessian(x[0], sigmas=self.sigmas) * 255)
 
 
-@register(Primitive)
-class Gabor11(Primitive):
-    def __init__(self):
+class Gabor(Primitive):
+    def __init__(self, ksize):
         super().__init__([TypeArray], TypeArray, 2)
-        self.ksize = 11
+        self.ksize = ksize
         self.sigma = 2.0
-        self.angles = [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4]
+        self.angles = np.linspace(0, 2, 9)[:8] * np.pi
 
     def call(self, x, args=None):
         lambd = args[0] / 255.0
@@ -733,53 +732,33 @@ class Gabor11(Primitive):
 
 
 @register(Primitive)
-class Gabor7(Primitive):
+class Gabor3(Gabor):
     def __init__(self):
-        super().__init__([TypeArray], TypeArray, 2)
-        self.ksize = 7
-        self.sigma = 1.0
-        self.angles = [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4]
-
-    def call(self, x, args=None):
-        lambd = args[0] / 255.0
-        gamma = args[1] // 16
-        gabored = []
-        for angle in self.angles:
-            gabor_kernel = cv2.getGaborKernel(
-                (self.ksize, self.ksize),
-                self.sigma,
-                angle,
-                lambd,
-                gamma,
-                psi=0,
-            )
-            gabored.append(cv2.filter2D(x[0], -1, gabor_kernel))
-        return np.max(gabored, axis=0)
+        super().__init__(3)
 
 
 @register(Primitive)
-class Gabor3(Primitive):
+class Gabor5(Gabor):
     def __init__(self):
-        super().__init__([TypeArray], TypeArray, 2)
-        self.ksize = 3
-        self.sigma = 1.0
-        self.angles = [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4]
+        super().__init__(5)
 
-    def call(self, x, args=None):
-        lambd = args[0] / 255.0
-        gamma = args[1] // 16
-        gabored = []
-        for angle in self.angles:
-            gabor_kernel = cv2.getGaborKernel(
-                (self.ksize, self.ksize),
-                self.sigma,
-                angle,
-                lambd,
-                gamma,
-                psi=0,
-            )
-            gabored.append(cv2.filter2D(x[0], -1, gabor_kernel))
-        return np.max(gabored, axis=0)
+
+@register(Primitive)
+class Gabor7(Gabor):
+    def __init__(self):
+        super().__init__(7)
+
+
+@register(Primitive)
+class Gabor9(Gabor):
+    def __init__(self):
+        super().__init__(9)
+
+
+@register(Primitive)
+class Gabor11(Gabor):
+    def __init__(self):
+        super().__init__(11)
 
 
 @register(Primitive)
@@ -880,7 +859,9 @@ def create_array_lib(use_scalars=False):
     library_opencv.add_primitive(Denoize())
     library_opencv.add_primitive(LocalBinaryPattern())
     library_opencv.add_primitive(Gabor3())
+    library_opencv.add_primitive(Gabor5())
     library_opencv.add_primitive(Gabor7())
+    library_opencv.add_primitive(Gabor9())
     library_opencv.add_primitive(Gabor11())
     library_opencv.add_primitive(LaplacianOfGaussian())
     library_opencv.add_primitive(Meijiring())
