@@ -12,6 +12,7 @@ from kartezio.vision.common import (
     gray2rgb,
     image_new,
     image_split,
+    contours_as_labels_and_foreground
 )
 from roifile import ImagejRoi
 
@@ -96,6 +97,11 @@ class ImageChannelsReader(DataReader):
 ### nouveauté a tester
 
 class RoiPolyhedronReader(DataReader):
+    """
+        3D datareader , label reader from ROI.
+        load ROI mask in 3D , roi_name must be  numberLabels_Znumber  ex 1_Z2  label 1 in z slice 2
+        generate label polygon on each z slice
+        """
     def _read(self, filepath, shape=None):
         label_mask = image_new(shape)
         if filepath == "":
@@ -110,9 +116,12 @@ class RoiPolyhedronReader(DataReader):
         label_mask = fill_polyhedron_as_labels(label_mask,labels,z_slice, contours)
         return DataItem([label_mask], shape, len(contours))
 
-
-
-class ImageChannelsMask3dReader(DataReader):
+class TiffImageChannelsMask3dReader(DataReader):
+    """
+           3D datareader , data reader from ROI.
+           load ROI mask in 3D , roi_name must be  numberLabels_Znumber  ex 1_Z2  label 1 in z slice 2
+           generate label polygon on each z slice
+           """
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
         if image.dtype == np.uint16:
@@ -145,9 +154,10 @@ class ImageChannelsMask3dReader(DataReader):
             #cv2.imwrite("rgb_image.png", preview)
         return DataItem(channels, shape, None, visual=previews)
 
-
-
-class ImageGray3dReader(DataReader):
+class TiffImageGray3dReader(DataReader):
+    """
+            3D datareader , image reader tiff mono channel shape (z,h,w)
+    """
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
         if image.dtype == np.uint16:
@@ -165,37 +175,24 @@ class ImageGray3dReader(DataReader):
             raise ValueError(f"Image must be shape (z,h,w) ({filepath})")
         return DataItem([image], shape, None, visual=previews)
 
-
-
 class ImageLabel3dReader(DataReader):
+    """
+            3D datareader , label reader from tiff images.
+    """
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
         for i, current_value in enumerate(np.unique(image)):
             image[image == current_value] = i
         return DataItem([image], shape, image.max(), visual=image)
 
-
-
-class ImageGray3dCutReader(DataReader):
+class RoiForegroundOutlineReader(DataReader):
+    """
+            2D datareader , label reader ,  item labelling 1 , outlines labelling 2 , foreground labelling 0
+    """
     def _read(self, filepath, shape=None):
-        image = imread_tiff(filepath)
-        if image.dtype == np.uint16:
-            raise ValueError(f"Image must be 8bits! ({filepath})")
-        shape = (image.shape[0],) + image.shape[-2:]
-        z, c, x, y = image.shape
-        # Ensure that x and y dimensions are divisible by 2
-        assert x % 2 == 0 and y % 2 == 0, \
-            "x and y dimensions must be divisible by 2"
-        # Calculate half dimensions
-        if len(image.shape) != 3:
-            raise ValueError(f"Image must be shape (z,h,w) ({filepath})")
-        half_x, half_y = x // 2, y // 2
-        # (z, h, w)
-        previews = []
-        for z in range(image.shape[0]):
-            preview = image[z].astype(np.uint8),
-
-            previews.append(preview)
-        previews = np.asarray(previews).reshape(shape)
-
-        return DataItem([image], shape, None, visual=previews)
+        label_mask = image_new(shape)
+        if filepath == "":
+            return DataItem([label_mask], shape, 0)
+        contours = read_polygons_from_roi(filepath)
+        label_mask = contours_as_labels_and_foreground(label_mask, contours)
+        return DataItem([label_mask], shape, len(contours))

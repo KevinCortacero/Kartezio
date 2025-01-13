@@ -247,3 +247,41 @@ class Format3D(Preprocessing):
 
     def _to_json_kwargs(self) -> dict:
         pass
+
+### nouveauté a tester
+@register(Preprocessing)
+class Format3DNoChannel(Preprocessing):
+    """
+    Preprocessing for tiff images shape ( z,h,w)
+    """
+    def __init__(self, z_range=None,threshold=1):
+        super().__init__()
+        self.z_range = z_range
+        self.threshold = threshold
+
+    def preprocess(self, x):
+        new_x = []
+        for i in range(len(x)):
+            one_item = []
+            if self.z_range:
+                for z in self.z_range:
+                    one_item.append([
+                        np.where(
+                            x[i][:][z] > self.threshold,
+                            x[i][:][z],
+                            0
+                        ) if self.threshold is not None else x[i][z]
+                    ])
+            else:
+                for z in range(len(x[i][0])):
+                    one_item.append([
+                        np.where(
+                            x[i][0][z,:,:] > self.threshold,
+                            x[i][0][z,:,:],
+                            0
+                        ) if self.threshold is not None else x[i][z]])
+            new_x.append(one_item)
+        return new_x
+
+    def _to_json_kwargs(self) -> dict:
+        pass
