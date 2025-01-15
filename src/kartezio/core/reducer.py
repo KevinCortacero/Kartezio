@@ -6,7 +6,7 @@ from kartezio.core.components import Reducer, register
 from kartezio.vision.common import threshold_tozero
 
 
-@register(Reducer, "basic")
+@register(Reducer)
 class BasicReducton(Reducer):
     def _to_json_kwargs(self) -> dict:
         return {

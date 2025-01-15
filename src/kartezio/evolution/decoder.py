@@ -146,6 +146,7 @@ class Decoder(KartezioComponent, ABC):
 
 
 @register(Decoder)
+@fundamental()
 class DecoderCGP(Decoder):
     def __init__(
         self,

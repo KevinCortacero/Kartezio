@@ -10,10 +10,7 @@ from roifile import ImagejRoi
 import shutil
 import zipfile
 
-
-
-
-
+from kartezio.utils.directory import Directory
 
 
 class ReaderTestCase(unittest.TestCase):
@@ -29,8 +26,6 @@ class ReaderTestCase(unittest.TestCase):
             np.testing.assert_array_equal(array1, array2, "Datalist arrays do not match.")
 
     def setUp(self) -> None:
-
-        self.reader = DatasetReader('.',False,False)
         # Directory to temporarily store .roi files
         temp_dir = "tmp_test"
         os.makedirs(temp_dir, exist_ok=True)
@@ -38,10 +33,16 @@ class ReaderTestCase(unittest.TestCase):
         # Create the Square ROI
         square_roi = ImagejRoi.frompoints(np.array([[0,0],[0,10],[10,10],[10,0]]))
         # Save the ROI to a file
+        square_roi.name ="1_Z0"
+        square_roi.z_position = 1
         square_roi.tofile("tmp_test/1_Z0.roi")
+        square_roi.z_position = 2
+        square_roi.name = "1_Z1"
         square_roi.tofile("tmp_test/1_Z1.roi")
 
         square_roi = ImagejRoi.frompoints(np.array([[11, 11], [11, 20], [20, 20], [20, 11]]))
+        square_roi.z_position = 3
+        square_roi.name = "2_Z2"
         # Save the ROI to a file
         square_roi.tofile("tmp_test/2_Z2.roi")
         zip_filename = "tmp_test/rois.zip"
@@ -51,15 +52,15 @@ class ReaderTestCase(unittest.TestCase):
                     zipf.write(os.path.join("tmp_test",file),file)
 
     def tearDown(self):
-        shutil.rmtree("path/to/folder")
+        shutil.rmtree("tmp_test")
         print("'tmp_test' folder removed")
 
 
     def test_RoiPolygon(self):
         raw_image = np.zeros((20,20)).astype(np.uint8)
         raw_image[:11,:11] = 1
-        input_reader = RoiPolygonReader(self.reader)
-        labels = input_reader.read("1_Z0.roi", (20, 20))
+        input_reader = RoiPolygonReader('.')
+        labels = input_reader.read("tmp_test/1_Z0.roi", (20, 20))
         gt = DataItem([raw_image], (20, 20), 1)
         self.assertDataItemEqual(labels,gt)
 
@@ -69,12 +70,11 @@ class ReaderTestCase(unittest.TestCase):
         raw_image[0,:11,:11] = 1
         raw_image[1, :11, :11] = 1
         raw_image[2,11:,11:] = 2
-        input_reader = RoiPolyhedronReader(self.reader)
-        path = "/home/eliott.gaudillat/Documents/CRCT2024/SourceData/lamp_detection/dataset/train/train_y/train2.zip" # "tmp_test/rois.zip"
+        input_reader = RoiPolyhedronReader('.')
         path = "tmp_test/rois.zip"
         labels = input_reader.read(path, (5,20, 20))
         print(labels)
-        gt = DataItem([raw_image], (20, 20), 1)
+        gt = DataItem([raw_image], (5,20, 20), 3)
         self.assertDataItemEqual(labels,gt)
 
 

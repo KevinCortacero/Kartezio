@@ -283,5 +283,7 @@ class Format3DNoChannel(Preprocessing):
             new_x.append(one_item)
         return new_x
 
-    def _to_json_kwargs(self) -> dict:
-        pass
+    def __to_dict__(self) -> Dict:
+        return {
+            "args": {"z_range": self.z_range,"threshold":self.threshold}
+        }

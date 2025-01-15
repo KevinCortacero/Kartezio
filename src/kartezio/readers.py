@@ -175,7 +175,7 @@ class TiffImageGray3dReader(DataReader):
             raise ValueError(f"Image must be shape (z,h,w) ({filepath})")
         return DataItem([image], shape, None, visual=previews)
 
-class ImageLabel3dReader(DataReader):
+class TiffImageLabel3dReader(DataReader):
     """
             3D datareader , label reader from tiff images.
     """

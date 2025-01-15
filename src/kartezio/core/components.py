@@ -198,20 +198,7 @@ def fundamental():
     return inner
 
 
-def load_component(
-    component_class: type, json_data: Dict
-) -> KartezioComponent:
-    """
-    Load a component from its dictionary representation.
 
-    Args:
-        component_class (type): The class of the component to load.
-        json_data (Dict): The dictionary containing component data.
-
-    Returns:
-        Component: An instance of the component created from the given data.
-    """
-    return component_class.__from_dict__(json_data)
 
 
 def dump_component(component: KartezioComponent) -> Dict:
@@ -408,6 +395,25 @@ class Reducer(Node, ABC):
     @abstractmethod
     def reduce(self, x):
         pass
+
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Reducer":
+        """
+        Create an Reducer instance from a dictionary representation.
+
+        Args:
+            dict_infos (Dict): A dictionary containing the name and arguments for the Endpoint.
+
+        Returns:
+            Reducer: A new Reducer instance created from the given dictionary.
+        """
+        return Components.instantiate(
+            "Reducer",
+            dict_infos["name"],
+            **dict_infos["args"],
+        )
+
 
 
 @fundamental()
@@ -699,3 +705,20 @@ class Mutation(KartezioComponent, ABC):
 @fundamental()
 class Initialization(KartezioComponent, ABC):
     pass
+
+def load_component(
+    component_class: type, json_data: Dict
+) -> KartezioComponent:
+    from kartezio.core.endpoints import EndpointThreshold
+    from kartezio.core.fitness import IoU
+    """
+    Load a component from its dictionary representation.
+
+    Args:
+        component_class (type): The class of the component to load.
+        json_data (Dict): The dictionary containing component data.
+
+    Returns:
+        Component: An instance of the component created from the given data.
+    """
+    return component_class.__from_dict__(json_data)

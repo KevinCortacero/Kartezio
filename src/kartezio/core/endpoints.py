@@ -339,6 +339,7 @@ class EndpointThreshold(Endpoint):
 
     def __to_dict__(self) -> Dict:
         return {
+
             "args": {
                 "threshold": self.threshold,
             },
@@ -426,6 +427,13 @@ class RawLocalMaxWatershed3D(EndpointWatershed):
             )
         ]
 
+    def __to_dict__(self) -> Dict:
+        return {
+            "args": {
+                "threshold": self.threshold,
+            },
+        }
+
 
 test_endpoint = Endpoint.from_config(
     {
@@ -433,8 +441,8 @@ test_endpoint = Endpoint.from_config(
         "args": {"watershed_line": True, "threshold": 128},
     }
 )
-print(test_endpoint)
-print(test_endpoint.__to_dict__())
+# print(test_endpoint)
+# print(test_endpoint.__to_dict__())
 
 
 

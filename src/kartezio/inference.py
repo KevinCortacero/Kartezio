@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 
 from kartezio.core.components import Components
-from kartezio.plot import plot_mask
 from kartezio.utils.directory import Directory
 from kartezio.utils.io import JsonLoader
 from kartezio.vision.common import bgr2rgb
@@ -138,9 +137,3 @@ class KartezioModel(InferenceModel):
     def show_graph(self, inputs, outputs, jupyter=False):
         return show_graph(self._model, inputs, outputs, jupyter=jupyter)
     """
-
-    def plot_predictions(self, dataset, subset="test"):
-        x, y, v = dataset.train_xyv if subset == "train" else dataset.test_xyv
-        p, t = self.predict(x)
-        for visual_image, y_true, y_pred in zip(v, y, p):
-            plot_mask(bgr2rgb(visual_image), y_pred["mask"], gt=y_true[0])
