@@ -5,7 +5,7 @@ import pygraphviz as pgv
 from networkx.drawing.nx_agraph import from_agraph
 from PIL import Image
 
-from kartezio.core.components import Decoder
+from kartezio.evolution.decoder import Decoder
 
 
 class KartezioViewer(Decoder):

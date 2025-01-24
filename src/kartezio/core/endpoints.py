@@ -411,7 +411,7 @@ class RawLocalMaxWatershed3D(EndpointWatershed):
 
     """
     def __init__(self,
-        arity = 3,
+        arity = 5,
         watershed_line: bool = True,
         threshold: int = 192):
         super().__init__(arity, watershed_line=watershed_line)

@@ -227,6 +227,8 @@ def read_dataset(
                 x_reader = ImageGrayscaleReader(dataset_path)
             elif x_reader == "tiff_mono_3d":
                 x_reader = TiffImageGray3dReader(dataset_path)
+            elif x_reader == "tiff_labels_3d" :
+                x_reader = TiffImageLabel3dReader(dataset_path)
             else :
                 raise ValueError(
                     f"unnknown x_reader: {x_reader}")

@@ -181,8 +181,17 @@ class TiffImageLabel3dReader(DataReader):
     """
     def _read(self, filepath, shape=None):
         image = imread_tiff(filepath)
-        for i, current_value in enumerate(np.unique(image)):
-            image[image == current_value] = i
+
+        # Get unique values
+        unique_values = np.unique(image)
+        # Generate the expected range
+        expected_values = np.arange(unique_values.min(), unique_values.max() + 1)
+        # Check if unique values match the expected range, to avoid problem in fitness calcul, labels need to be
+        # in continue series of int [ 0,1,2,3..n]
+        is_continuous = np.array_equal(unique_values, expected_values)
+        if not is_continuous :
+            for i, current_value in enumerate(unique_values):
+                image[image == current_value] = i
         return DataItem([image], shape, image.max(), visual=image)
 
 class RoiForegroundOutlineReader(DataReader):
