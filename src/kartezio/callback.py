@@ -159,7 +159,7 @@ class CallbackSaveElite(Callback):
         self.fitness = dump_component(fitness)
 
     def set_decoder(self, decoder):
-        self.decoder = decoder.__to_dict__()
+        self.decoder = dump_component(decoder)
 
     def on_new_parent(self, iteration, event_content):
         elite = event_content.individuals[0].genotype
