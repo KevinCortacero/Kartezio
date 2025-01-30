@@ -504,7 +504,7 @@ class Fitness(KartezioComponent, ABC):
 class Library(KartezioComponent):
     def __init__(self, rtype):
         super().__init__()
-        self._primitives: Dict[int, Primitive] = {}
+        self._primitives: List[Primitive] = []
         self.rtype = rtype
 
     def __to_dict__(self) -> Dict:
@@ -519,7 +519,7 @@ class Library(KartezioComponent):
         library = Library(rtype)
         size = len(dict_infos["primitives"])
         for i in range(size):
-            library.add_by_name(dict_infos["primitives"][str(i)])
+            library.add_by_name(dict_infos["primitives"][i])
         return library
 
     def add_by_name(self, name):
@@ -531,11 +531,19 @@ class Library(KartezioComponent):
 
     def add_primitive(self, primitive: Primitive):
         assert isinstance(primitive, Primitive)
-        self._primitives[len(self._primitives)] = primitive
+        self._primitives.append(primitive)
 
     def add_library(self, library):
-        for p in library.primitives:
+        for p in library._primitives:
             self.add_primitive(p)
+
+    def discard(self, names):
+        indices_to_remove = []
+        for i, primitive in enumerate(self._primitives):
+            if primitive.name in names:
+                indices_to_remove.append(i)
+        for i in sorted(indices_to_remove, reverse=True):
+            del self._primitives[i]
 
     def name_of(self, i):
         return self._primitives[i].name
@@ -555,7 +563,7 @@ class Library(KartezioComponent):
     def display(self):
         headers = ["Id", "Name", "Inputs", "Outputs", "Arity", "Parameters"]
         full_list = []
-        for i, primitive in self._primitives.items():
+        for i, primitive in enumerate(self._primitives):
             one_primitive_infos = [
                 i,
                 self.name_of(i),
@@ -587,12 +595,8 @@ class Library(KartezioComponent):
         return len(self._primitives) - 1
 
     @property
-    def primitives(self):
-        return list(self._primitives.values())
-
-    @property
     def keys(self):
-        return list(self._primitives.keys())
+        return list(range(self.size))
 
     @property
     def max_arity(self):
