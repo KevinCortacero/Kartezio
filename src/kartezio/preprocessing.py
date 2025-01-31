@@ -8,6 +8,28 @@ from kartezio.vision.common import image_split
 
 
 @register(Preprocessing)
+class Normalizer(Preprocessing):
+    def __init__(self, pmin=3, pmax=99.8):
+        super().__init__()
+        self.pmin = pmin
+        self.pmax = pmax
+        self.eps = 1e-20
+
+    def preprocess(self, x):
+        mi = np.percentile(x, self.pmin, keepdims=True)
+        ma = np.percentile(x, self.pmax, keepdims=True)
+        x = (x - mi) / (ma - mi + self.eps)
+        x = np.clip(x, 0, 1)
+        x = (x * 255).astype(np.uint8)
+        return x
+
+    def __to_dict__(self) -> Dict:
+        return {
+            "args": {"pmin": self.pmin, "pmax": self.pmax},
+        }
+
+
+@register(Preprocessing)
 class PyrMeanShift(Preprocessing):
     def __init__(self, sp=2, sr=16):
         super().__init__()
