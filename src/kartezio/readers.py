@@ -29,9 +29,14 @@ class ImageMaskReader(DataReader):
 class ImageLabels(DataReader):
     def _read(self, filepath, shape=None):
         image = cv2.imread(filepath, cv2.IMREAD_ANYDEPTH)
+        labels = np.zeros_like(image, dtype=np.uint16)
         for i, current_value in enumerate(np.unique(image)):
-            image[image == current_value] = i
-        return DataItem([image], image.shape[:2], image.max(), visual=image)
+            if current_value == 0:
+                continue
+            if i == 0:
+                continue
+            labels[image == current_value] = i
+        return DataItem([labels], image.shape[:2], labels.max(), visual=image)
 
 
 class ImageRGBReader(DataReader):
