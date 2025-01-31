@@ -349,8 +349,6 @@ test_endpoint = Endpoint.from_config(
         "args": {"watershed_line": True, "threshold": 128},
     }
 )
-print(test_endpoint)
-print(test_endpoint.__to_dict__())
 
 
 @register(Endpoint)
