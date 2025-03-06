@@ -155,7 +155,7 @@ class CallbackSaveElite(Callback):
 
         self.dataset = (dataset.__to_dict__() if type(dataset) != dict else dataset )
         self.decoder = None
-        self.preprocessing = dump_component(preprocessing)
+        self.preprocessing = dump_component(preprocessing) if preprocessing != None else None
         self.fitness = dump_component(fitness)
 
     def set_decoder(self, decoder):
@@ -166,11 +166,14 @@ class CallbackSaveElite(Callback):
         json_data = {
             "iteration": iteration,
             "dataset": self.dataset,
-            "elite": {
-                "chromosomes": {
-                    k: v.tolist() for k, v in elite._chromosomes.items()
-                }
-            },
+            "elite":elite.__to_dict__(),
+            #     {"genotype":
+            #     elite.__to_dict__()
+            # # "chromosomes": {
+            # #     chromo_key: {k: v.__to_dict__() for k, v in chromo_val.sequence.items()}
+            # #     for chromo_key, chromo_val in elite._chromosomes.items()
+            # #     }
+            # },
             "preprocessing": self.preprocessing,
             "decoder": self.decoder,
             "fitness": self.fitness,

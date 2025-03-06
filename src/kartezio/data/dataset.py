@@ -4,7 +4,6 @@ from typing import List, Tuple
 
 import numpy as np
 
-
 from kartezio.utils.directory import Directory
 from kartezio.vision.common import draw_overlay
 
@@ -218,8 +217,8 @@ def read_dataset(
         RoiPolygonReader,
         TiffImageGray3dReader,
         TiffImageLabel3dReader,
+        RoiPolyhedronReader,
     )
-
     if isinstance(x_reader, str):
             if x_reader == "rgb":
                 x_reader = ImageRGBReader(dataset_path)
@@ -239,6 +238,8 @@ def read_dataset(
                 y_reader = RoiPolygonReader(dataset_path)
             elif y_reader == "tiff_labels_3d" :
                 y_reader = TiffImageLabel3dReader(dataset_path)
+            elif y_reader == "polyhedron":
+                y_reader = RoiPolyhedronReader(dataset_path)
             else :
                 raise ValueError(
                     f"unnknown y_reader: {y_reader}")
