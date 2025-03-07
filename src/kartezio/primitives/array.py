@@ -711,8 +711,9 @@ class Gabor(Primitive):
     def __init__(self, ksize):
         super().__init__([TypeArray], TypeArray, 2)
         self.ksize = ksize
-        self.sigma = 2.0
-        self.angles = np.linspace(0, 2, 9)[:8] * np.pi
+        self.sigma = 1.0
+        self.psi = 0.0
+        self.angles = np.linspace(0, 1, 5)[:4] * np.pi
 
     def call(self, x, args=None):
         lambd = args[0] / 255.0
@@ -725,7 +726,7 @@ class Gabor(Primitive):
                 angle,
                 lambd,
                 gamma,
-                psi=0,
+                self.psi,
             )
             gabored.append(cv2.filter2D(x[0], -1, gabor_kernel))
         return np.max(gabored, axis=0)

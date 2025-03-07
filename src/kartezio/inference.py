@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 
 from kartezio.core.components import Components
-from kartezio.plot import plot_mask
 from kartezio.utils.directory import Directory
 from kartezio.utils.io import JsonLoader
 from kartezio.vision.common import bgr2rgb
