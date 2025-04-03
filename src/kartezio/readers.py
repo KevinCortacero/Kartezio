@@ -111,7 +111,7 @@ class RoiPolyhedronReader(DataReader):
             return [rois.coordinates()]
         contours = [roi.coordinates() for roi in rois]
         labels = [int(roi.name.split('_')[0]) for roi in rois]  # name in regex #label_Z#slice
-        z_slice = [roi.z_position - 1 for roi in rois]
+        z_slice = [int(roi.name.split('Z')[-1])-1 for roi in rois]
         label_mask = image_new(shape)
         label_mask = fill_polyhedron_as_labels(label_mask,labels,z_slice, contours)
         return DataItem([label_mask], shape, len(contours))
