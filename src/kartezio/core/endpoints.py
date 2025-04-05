@@ -3,7 +3,7 @@ from typing import Dict
 
 import cv2
 
-from kartezio.core.components import Endpoint, register
+from kartezio.core.components import Endpoint, register, to_u8
 from kartezio.types import TypeArray, TypeLabels
 from kartezio.vision.common import threshold_tozero
 from kartezio.vision.hough import circles_to_labels, hough_circles
@@ -80,7 +80,11 @@ class MarkerControlledWatershed(EndpointWatershed):
             A single-element list containing the segmented (labeled) image as a 2D ndarray.
             Each connected region is assigned a unique integer label.
         """
-        return [marker_controlled_watershed(x[0], x[1], self.watershed_line)]
+        return [
+            marker_controlled_watershed(
+                to_u8(x[0]), to_u8(x[1]), self.watershed_line
+            )
+        ]
 
 
 @register(Endpoint)

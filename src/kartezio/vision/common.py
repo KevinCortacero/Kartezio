@@ -78,7 +78,7 @@ def image_normalize(image):
 
 
 def gradient_magnitude(gx, gy):
-    return cv2.convertScaleAbs(cv2.magnitude(gx, gy))
+    return cv2.magnitude(gx, gy)
 
 
 def convolution(image, kernel):

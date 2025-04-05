@@ -19,8 +19,7 @@ class Normalizer(Preprocessing):
         mi = np.percentile(x, self.pmin, keepdims=True)
         ma = np.percentile(x, self.pmax, keepdims=True)
         x = (x - mi) / (ma - mi + self.eps)
-        x = np.clip(x, 0, 1)
-        x = (x * 255).astype(np.uint8)
+        x = np.clip(x, 0.0, 1.0).astype(np.float32)
         return x
 
     def __to_dict__(self) -> Dict:

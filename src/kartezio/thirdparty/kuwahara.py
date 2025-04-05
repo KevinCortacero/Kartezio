@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 
-def kuwahara_filter(original, winsize):
+def kuwahara_filter(original, ksize):
     """
     Kuwahara filters an image using the Kuwahara filter
 
@@ -45,18 +45,16 @@ def kuwahara_filter(original, winsize):
     from https://github.com/adussault/python-kuwahara
     """
 
-    image = original.astype(np.float32)
-
     # Build subwindows
-    height, width = image.shape[:2]
+    height, width = original.shape[:2]
 
     # Padding the image to handle borders
-    half_winsize = (winsize - 1) // 2
+    half_winsize = (ksize - 1) // 2
 
     tmpAvgKerRow = np.hstack(
         (np.ones((1, half_winsize + 1)), np.zeros((1, half_winsize)))
     )
-    tmpPadder = np.zeros((1, winsize))
+    tmpPadder = np.zeros((1, ksize))
     tmpavgker = np.tile(tmpAvgKerRow, (half_winsize + 1, 1))
     tmpavgker = np.vstack((tmpavgker, np.tile(tmpPadder, (half_winsize, 1))))
     tmpavgker = tmpavgker / np.sum(tmpavgker)
@@ -64,14 +62,14 @@ def kuwahara_filter(original, winsize):
     # tmpavgker is a 'north-west' subwindow (marked as 'a' above)
     # we build a vector of convolution kernels for computing average and
     # variance
-    avgker = np.empty((4, winsize, winsize))  # make an empty vector of arrays
+    avgker = np.empty((4, ksize, ksize))  # make an empty vector of arrays
     avgker[0] = tmpavgker  # North-west (a)
     avgker[1] = np.fliplr(tmpavgker)  # North-east (b)
     avgker[2] = np.flipud(tmpavgker)  # South-west (c)
     avgker[3] = np.fliplr(avgker[2])  # South-east (d)
 
     # Create a pixel-by-pixel square of the image
-    squaredImg = image**2
+    squaredImg = original**2
 
     # preallocate these arrays to make it apparently %15 faster
     avgs = np.zeros([4, height, width])
@@ -80,7 +78,7 @@ def kuwahara_filter(original, winsize):
     # Calculation of averages and variances on subwindows
     for k in range(4):
         avgs[k] = cv2.filter2D(
-            src=image, ddepth=-1, kernel=avgker[k]
+            src=original, ddepth=-1, kernel=avgker[k]
         )  # convolve2d(image, avgker[k],mode='same') 	    # mean on subwindow
         stddevs[k] = cv2.filter2D(
             src=squaredImg, ddepth=-1, kernel=avgker[k]
@@ -99,7 +97,7 @@ def kuwahara_filter(original, winsize):
             filtered[row, col] = avgs[indices[row, col], row, col]
 
     # filtered=filtered.astype(np.uint8)
-    return filtered.astype(np.uint8)
+    return filtered.astype(original.dtype)
 
 
 """

@@ -42,8 +42,10 @@ class ImageLabels(DataReader):
 class ImageRGBReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_rgb(filepath)
+        visual = image.copy()
+        image = (image / 255.0).astype(np.float32)
         return DataItem(
-            image_split(image), image.shape[:2], None, visual=image
+            image_split(image), image.shape[:2], None, visual=visual
         )
 
 
@@ -51,6 +53,7 @@ class ImageGrayscaleReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_gray(filepath)
         visual = cv2.merge((image, image, image))
+        image = (image / 255.0).astype(np.float32)
         return DataItem([image], image.shape, None, visual=visual)
 
 

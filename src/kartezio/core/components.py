@@ -270,6 +270,34 @@ class Preprocessing(Node, ABC):
         return self
 
 
+def assert_f32(image):
+    if image.dtype != np.float32:
+        raise ValueError(
+            "Image must be of type float32, not {}".format(image.dtype)
+        )
+
+
+def clip_f32(image):
+    return np.clip(image, -1.0, 1.0)
+
+
+def assert_clipped(image):
+    if image.max() > 1.0 or image.min() < -1.0:
+        raise ValueError("Image values must be in the range [-1, 1]")
+
+
+def to_u8(image):
+    if image.dtype == np.uint8:
+        return image
+    image = np.clip(image, 0, 1).astype(np.float32)
+    return (image * 255).astype(np.uint8)
+
+
+def to_f32(image):
+    new_image = image.astype(np.float32) / 255.0
+    return clip_f32(new_image)
+
+
 @fundamental()
 class Primitive(Node, ABC):
     """
@@ -282,6 +310,21 @@ class Primitive(Node, ABC):
         self.output = output
         self.arity = len(inputs)
         self.n_parameters = n_parameters
+
+    def call_f32(self, x: List[np.ndarray], args: List[int]):
+        """
+        Call the primitive function with float32 inputs.
+
+        Args:
+            x (List[np.ndarray]): List of input arrays.
+            args (List[int]): List of arguments for the function.
+
+        Returns:
+            np.ndarray: The result of the function call.
+        """
+        filtered = self.call(x, args)
+        clip_f32(filtered)
+        return filtered
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Primitive":
@@ -558,7 +601,8 @@ class Library(KartezioComponent):
         return self._primitives[i].inputs
 
     def execute(self, f_index, x: List[np.ndarray], args: List[int]):
-        return self._primitives[f_index].call(x, args)
+        y = self._primitives[f_index].call_f32(x, args)
+        return y
 
     def display(self):
         headers = ["Id", "Name", "Inputs", "Outputs", "Arity", "Parameters"]
