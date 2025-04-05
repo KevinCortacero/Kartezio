@@ -24,7 +24,6 @@ def main():
         library_scalar,
     ]  # Create a library of array operations
     endpoint = EndpointThreshold(128)  # Define the endpoint for the model
-    endpoint = ThresholdWatershed(True, 192)
     fitness = IoU()  # Define the fitness metric
 
     # Build the model with specified components

@@ -2,46 +2,46 @@
 watershed.py
 
 This module provides a collection of image segmentation routines based on the
-watershed transform. It relies on OpenCV (cv2) for image processing operations 
-(e.g., distance transforms, connected components) and on scikit-image for 
+watershed transform. It relies on OpenCV (cv2) for image processing operations
+(e.g., distance transforms, connected components) and on scikit-image for
 finding local maxima (peak_local_max) and performing the watershed algorithm.
 
 Functions Overview
 ------------------
 - watershed_transform(image, markers, watershed_line):
     Applies the watershed transform using negative-exponential-scaled intensity.
-    
+
 - _connected_components(image):
     Labels connected components of a binary image using cv2.connectedComponents.
-    
+
 - _distance_transform(image, normalize=False):
     Computes the distance transform of a binary image; optionally normalizes it.
-    
+
 - coordinates_to_mask(coordinates, shape, scale):
     Converts peak coordinates into a binary mask, optionally rescaling them.
-    
+
 - _local_max_markers(image, min_distance):
     Creates markers for watershed by identifying local maxima in an image.
-    
+
 - _fast_local_max_markers(image, min_distance, n):
     Performs local maxima detection on a downsampled image, then scales results.
-    
+
 - marker_controlled_watershed(image, markers, watershed_line):
     Runs a watershed transform using the given marker image.
-    
+
 - local_max_watershed(image, min_distance, watershed_line, downsample):
     Combines a distance transform or intensity-based approach with local maxima
     to produce markers and apply watershed.
-    
+
 - distance_watershed(image, min_distance, watershed_line, downsample=0):
     Shortcut to compute a distance transform, detect local maxima, and run watershed.
-    
+
 - threshold_local_max_watershed(image, threshold, min_distance, watershed_line, downsample=0):
     Applies a threshold, finds local maxima, and runs watershed with those markers.
-    
+
 - threshold_watershed(image, threshold, watershed_line):
     Applies a threshold directly as markers for watershed.
-    
+
 - double_threshold_watershed(image, threshold1, threshold2, watershed_line):
     Uses two thresholds to create marker regions for watershed.
 

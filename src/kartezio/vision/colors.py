@@ -1,4 +1,4 @@
-""" Color conversion functions """
+"""Color conversion functions"""
 
 import cv2
 import numpy as np

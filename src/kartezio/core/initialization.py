@@ -1,7 +1,6 @@
 from typing import Dict
 
 from kartezio.core.components import Genotype, Initialization, register
-from kartezio.mutation.base import PointMutation
 
 
 @register(Initialization)
