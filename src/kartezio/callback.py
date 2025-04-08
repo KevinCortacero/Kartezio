@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import matplotlib.pyplot as plt
 import numpy as np
+from codecarbon import EmissionsTracker
 
 from kartezio.helpers import Observer
 from kartezio.utils.json_handler import json_write
@@ -81,6 +82,19 @@ class Callback(Observer, ABC):
 
     def on_evolution_end(self, iteration: int, event_content):
         pass
+
+
+class CarbonCallback(Callback):
+    def __init__(self):
+        super().__init__()
+        self.tracker = EmissionsTracker()
+
+    def on_evolution_start(self, _, __):
+        self.tracker.start()
+
+    def on_evolution_end(self, _, __):
+        self.tracker.stop()
+        print(self.tracker.final_emissions_data)
 
 
 class CallbackVerbose(Callback):
