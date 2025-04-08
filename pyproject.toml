@@ -15,6 +15,7 @@ dependencies = [
     "czifile",
     "tabulate",
     "roifile",
+    "codecarbon>=2.8.3",
 ]
 
 [project.urls]
