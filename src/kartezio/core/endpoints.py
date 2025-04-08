@@ -4,7 +4,7 @@ from typing import Dict
 import cv2
 
 from kartezio.core.components import Endpoint, register
-from kartezio.types import TypeArray, TypeLabels
+from kartezio.types import Matrix
 from kartezio.vision.common import threshold_tozero
 from kartezio.vision.hough import circles_to_labels, hough_circles
 from kartezio.vision.watershed import (
@@ -20,7 +20,7 @@ from kartezio.vision.watershed import (
 
 class EndpointWatershed(Endpoint, ABC):
     def __init__(self, arity, watershed_line=True):
-        super().__init__([TypeArray] * arity)
+        super().__init__([Matrix] * arity)
         self.watershed_line = watershed_line
 
 
@@ -311,7 +311,7 @@ class ThresholdWatershed(EndpointWatershed):
 @register(Endpoint)
 class ToLabels(Endpoint):
     def __init__(self):
-        super().__init__([TypeArray])
+        super().__init__([Matrix])
 
     def call(self, x):
         return [_connected_components(x[0])]
@@ -320,7 +320,7 @@ class ToLabels(Endpoint):
 @register(Endpoint)
 class EndpointSubtract(Endpoint):
     def __init__(self):
-        super().__init__([TypeArray, TypeArray])
+        super().__init__([Matrix, Matrix])
 
     def call(self, x):
         return [cv2.subtract(x[0], x[1])]
@@ -329,7 +329,7 @@ class EndpointSubtract(Endpoint):
 @register(Endpoint)
 class EndpointThreshold(Endpoint):
     def __init__(self, threshold):
-        super().__init__([TypeArray])
+        super().__init__([Matrix])
         self.threshold = threshold
 
     def call(self, x):
@@ -362,7 +362,7 @@ class HoughCircle(Endpoint):
         max_radius=120,
         downscale=0,
     ):
-        super().__init__([TypeArray])
+        super().__init__([Matrix])
         self.min_dist = min_dist
         self.p1 = p1
         self.p2 = p2
@@ -388,7 +388,7 @@ class HoughCircle(Endpoint):
 @register(Endpoint)
 class RescaleUp(Endpoint):
     def __init__(self, upscale, method):
-        super().__init__([TypeArray])
+        super().__init__([Matrix])
         self.rescaler = Resize(upscale, method)
 
     def call(self, x):

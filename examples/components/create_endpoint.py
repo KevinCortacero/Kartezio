@@ -9,7 +9,7 @@ from kartezio.core.components import (
     load_component,
     register,
 )
-from kartezio.types import TypeArray
+from kartezio.types import Matrix
 
 
 @register(Endpoint)
@@ -27,7 +27,7 @@ class MyExampleEndpoint(Endpoint):
         Args:
             n_classes (int): The number of classes to handle as inputs.
         """
-        super().__init__(inputs=[TypeArray] * n_classes)
+        super().__init__(inputs=[Matrix] * n_classes)
         self.n_classes = n_classes
 
     def call(self, x, args=None) -> int:

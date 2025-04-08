@@ -6,13 +6,13 @@ import numpy as np
 from scipy.stats import kurtosis, skew
 
 from kartezio.core.components import Library, Primitive, register
-from kartezio.types import TypeArray, TypeScalar
+from kartezio.types import Matrix, Scalar
 
 
 @register(Primitive)
 class Const(Primitive):
     def __init__(self):
-        super().__init__([], TypeScalar, 1)
+        super().__init__([], Scalar, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return float(args[0])
@@ -21,7 +21,7 @@ class Const(Primitive):
 @register(Primitive)
 class MaxValue(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return float(np.max(x[0]))
@@ -30,7 +30,7 @@ class MaxValue(Primitive):
 @register(Primitive)
 class MinValue(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return float(np.min(x[0]))
@@ -39,7 +39,7 @@ class MinValue(Primitive):
 @register(Primitive)
 class MeanValue(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return float(np.mean(x[0]))
@@ -48,7 +48,7 @@ class MeanValue(Primitive):
 @register(Primitive)
 class MedianValue(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return float(np.median(x[0]))
@@ -57,7 +57,7 @@ class MedianValue(Primitive):
 @register(Primitive)
 class AddValues(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return min(x[0] + x[1], 255.0)
@@ -66,7 +66,7 @@ class AddValues(Primitive):
 @register(Primitive)
 class SubtractValues(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return max(x[0] - x[1], 0)
@@ -75,7 +75,7 @@ class SubtractValues(Primitive):
 @register(Primitive)
 class MultiplyValues(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return min(x[0] * x[1], 255.0)
@@ -84,7 +84,7 @@ class MultiplyValues(Primitive):
 @register(Primitive)
 class PowValue(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return min(x[0] ** 2, 255.0)
@@ -93,7 +93,7 @@ class PowValue(Primitive):
 @register(Primitive)
 class SqrtValue(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return sqrt(x[0])
@@ -102,7 +102,7 @@ class SqrtValue(Primitive):
 @register(Primitive)
 class MultiplyBy2(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return min(x[0] * 2.0, 255.0)
@@ -111,7 +111,7 @@ class MultiplyBy2(Primitive):
 @register(Primitive)
 class DivideBy2(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return x[0] / 2.0
@@ -120,7 +120,7 @@ class DivideBy2(Primitive):
 @register(Primitive)
 class MinScalars(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return min(x[0], x[1])
@@ -129,7 +129,7 @@ class MinScalars(Primitive):
 @register(Primitive)
 class MaxScalars(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return max(x[0], x[1])
@@ -138,7 +138,7 @@ class MaxScalars(Primitive):
 @register(Primitive)
 class MeanScalars(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return (x[0] + x[1]) / 2.0
@@ -147,7 +147,7 @@ class MeanScalars(Primitive):
 @register(Primitive)
 class LessThan(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         if x[0] < x[1]:
@@ -158,7 +158,7 @@ class LessThan(Primitive):
 @register(Primitive)
 class GreaterThan(Primitive):
     def __init__(self):
-        super().__init__([TypeScalar, TypeScalar], TypeScalar, 0)
+        super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         if x[0] > x[1]:
@@ -169,7 +169,7 @@ class GreaterThan(Primitive):
 @register(Primitive)
 class Skew(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return max(skew(x[0].reshape(-1)), 0.0)
@@ -178,7 +178,7 @@ class Skew(Primitive):
 @register(Primitive)
 class Kurtosis(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return max(kurtosis(x[0].reshape(-1)), 0.0)
@@ -187,7 +187,7 @@ class Kurtosis(Primitive):
 @register(Primitive)
 class MeanAbsDiff(Primitive):
     def __init__(self):
-        super().__init__([TypeArray] * 2, TypeScalar, 0)
+        super().__init__([Matrix] * 2, Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return np.mean(cv2.absdiff(x[0], x[1]))
@@ -196,7 +196,7 @@ class MeanAbsDiff(Primitive):
 @register(Primitive)
 class Coverage(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return np.count_nonzero(x[0]) / (x[0].shape[0] * x[0].shape[0]) * 255.0
@@ -205,13 +205,13 @@ class Coverage(Primitive):
 @register(Primitive)
 class CountRegions(Primitive):
     def __init__(self):
-        super().__init__([TypeArray], TypeScalar, 0)
+        super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return len(np.unique(cv2.connectedComponents(x[0], connectivity=4)[1]))
 
 
-library_scalar = Library(TypeScalar)
+library_scalar = Library(Scalar)
 library_scalar.add_primitive(Const())
 library_scalar.add_primitive(MaxValue())
 library_scalar.add_primitive(MinValue())

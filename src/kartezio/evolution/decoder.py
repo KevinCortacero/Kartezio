@@ -14,10 +14,6 @@ from kartezio.core.components import (
     register,
 )
 from kartezio.evolution.population import Population
-from kartezio.primitives.array import Identity
-from kartezio.primitives.fourier import FFT
-from kartezio.primitives.scalar import MeanValue
-from kartezio.types import TypeArray, TypeFourier, TypeScalar
 
 
 @fundamental()
@@ -200,16 +196,18 @@ class DecoderCGP(Decoder):
                 chromosome_idx = self.adapter.types_map[
                     self.adapter.returns[idx]
                 ]
+                """
                 if self.adapter.returns[idx] == TypeFourier:
                     node_outputs[chromosome_idx][edge] = FFT().call(
                         [x[edge]], []
                     )
-                elif self.adapter.returns[idx] == TypeScalar:
+                elif self.adapter.returns[idx] == Scalar:
                     node_outputs[chromosome_idx][edge] = MeanValue().call(
                         [x[edge]], []
                     )
-                else:
-                    node_outputs[chromosome_idx][edge] = x[edge]
+                
+                """
+                node_outputs[chromosome_idx][edge] = x[edge]
         self._x_to_output_map(genotype, phenotype, x, node_outputs)
         y = [
             node_outputs[self.adapter.types_map[t]][c]
@@ -253,16 +251,22 @@ class DecoderCGP(Decoder):
                 for c, t in zip(connections, function_input_types):
                     chromosome = self.adapter.types_map[t]
                     # TODO: make it modular
+                    """
                     if c < self.adapter.n_inputs:
                         if t == TypeFourier:
                             inputs.append(FFT().call([x[c]], []))
-                        elif t == TypeScalar:
+                        elif t == Scalar:
                             inputs.append(MeanValue().call([x[c]], []))
                             # inputs.append(0)
                         else:
                             inputs.append(x[c])
                     else:
+                    """
+                    if c < self.adapter.n_inputs:
+                        inputs.append(x[c])
+                    else:
                         inputs.append(node_outputs[chromosome][c])
+
                 value = self.execute(type_index, function_index, inputs, p)
                 node_outputs[self.adapter.types_map[type_index]][
                     node_index

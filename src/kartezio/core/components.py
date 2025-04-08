@@ -7,7 +7,7 @@ import numpy as np
 from tabulate import tabulate
 
 from kartezio.helpers import Observer
-from kartezio.types import KType
+from kartezio.types import DataType
 
 
 class KartezioComponent(ABC):
@@ -276,7 +276,9 @@ class Primitive(Node, ABC):
     Primitive function called inside the CGP Graph.
     """
 
-    def __init__(self, inputs: List[KType], output: KType, n_parameters: int):
+    def __init__(
+        self, inputs: List[DataType], output: DataType, n_parameters: int
+    ):
         super().__init__()
         self.inputs = inputs
         self.output = output
@@ -418,7 +420,7 @@ class Endpoint(Node, ABC):
     The Endpoint is invoked in the training loop but is not involved in the evolutionary process.
     """
 
-    def __init__(self, inputs: List[KType]):
+    def __init__(self, inputs: List[DataType]):
         """
         Initialize an Endpoint instance.
 
@@ -558,6 +560,7 @@ class Library(KartezioComponent):
         return self._primitives[i].inputs
 
     def execute(self, f_index, x: List[np.ndarray], args: List[int]):
+        print("args", args)
         return self._primitives[f_index].call(x, args)
 
     def display(self):

@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from kartezio.core.components import Components, Primitive, register
-from kartezio.types import TypeArray
+from kartezio.types import Matrix
 
 
 @register(Primitive)
@@ -18,7 +18,7 @@ class MyExamplePrimitive(Primitive):
         """
         Initialize the MyExamplePrimitive with a default value of 42.
         """
-        super().__init__([TypeArray], TypeArray, 0)
+        super().__init__([Matrix], Matrix, 0)
         self.value = 42
 
     def call(self, x: List[np.ndarray], args: List[int] = None) -> np.ndarray:
