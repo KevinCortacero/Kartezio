@@ -71,14 +71,16 @@ class KartezioCGP(ObservableModel):
         self,
         n_inputs,
         n_nodes,
+        nb_chromosomes,
         libraries,
         endpoint,
         fitness,
         preprocessing=None,
+
     ):
         super().__init__()
         self.preprocessing = preprocessing
-        self.decoder = DecoderCGP(n_inputs, n_nodes, libraries, endpoint)
+        self.decoder = DecoderCGP(n_inputs, n_nodes,nb_chromosomes,libraries,endpoint)
         self.evolver = GeneticAlgorithm(self.decoder.adapter, fitness)
 
     def collect_updatables(self):
@@ -157,12 +159,13 @@ class KartezioTrainer:
         endpoint: Endpoint,
         fitness: Fitness,
         preprocessing: Preprocessing = None,
+        nb_chromosomes=1
     ):
         super().__init__()
         if not isinstance(libraries, list):
             libraries = [libraries]
         self.model = KartezioCGP(
-            n_inputs, n_nodes, libraries, endpoint, fitness, preprocessing
+            n_inputs, n_nodes,nb_chromosomes,libraries, endpoint, fitness, preprocessing
         )
         self.updatables = []
 

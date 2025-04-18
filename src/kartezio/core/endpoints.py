@@ -2,9 +2,10 @@ from abc import ABC
 from typing import Dict
 
 import cv2
-
+import numpy as np
 from kartezio.core.components import Endpoint, register
-from kartezio.types import Matrix
+from kartezio.preprocessing import Resize
+from kartezio.types import Matrix,TypeLabels
 from kartezio.vision.common import threshold_tozero
 from kartezio.vision.hough import circles_to_labels, hough_circles
 from kartezio.vision.watershed import (
@@ -16,7 +17,8 @@ from kartezio.vision.watershed import (
     threshold_local_max_watershed,
     threshold_watershed,
 )
-
+from kartezio.vision.watershed_3d import watershed_3d ,_extract_markers_dt
+from kartezio.vision.watershed import watershed_transform
 
 class EndpointWatershed(Endpoint, ABC):
     def __init__(self, arity, watershed_line=True):
@@ -406,3 +408,52 @@ class EndpointSimple(Endpoint):
 
     def _to_json_kwargs(self) -> dict:
         return {}
+
+
+### nouveauté a testé
+
+@register(Endpoint)
+class RawLocalMaxWatershed3D(EndpointWatershed):
+    """Watershed based KartezioEndpoint, but only based on one single mask.
+    Markers are computed as the local max of the mask
+
+    """
+    def __init__(self,
+        arity = 5,
+        watershed_line: bool = True,
+        threshold: int = 192):
+        super().__init__(arity, watershed_line=watershed_line)
+        self.threshold = threshold
+        self.watershed_line = watershed_line
+        self.i = 0
+        #cv2.namedWindow("watershed-signal")
+
+    def call(self, x):
+
+        return [
+            watershed_3d(
+                cube=x[0],
+                threshold=self.threshold,
+                watershed_line=self.watershed_line,
+            )
+        ]
+
+    def __to_dict__(self) -> Dict:
+        return {
+            "args": {
+                "threshold": self.threshold,
+            },
+        }
+
+
+test_endpoint = Endpoint.from_config(
+    {
+        "name": "ThresholdWatershed",
+        "args": {"watershed_line": True, "threshold": 128},
+    }
+)
+# print(test_endpoint)
+# print(test_endpoint.__to_dict__())
+
+
+

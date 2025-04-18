@@ -198,3 +198,21 @@ def draw_overlay(
                 overlayed, contours, thickness=thickness, color=border_color
             )
     return overlayed
+
+
+def fill_polyhedron_as_labels(mask,labels,z_slice, contours):
+    for label,slice, polygon in zip(labels,z_slice,contours):
+        cv2.fillPoly(mask[slice], pts=np.int32([polygon]), color=label)
+    return mask
+
+def contours_as_labels_and_foreground(mask, contours):
+    for i, contour in enumerate(contours):
+        cv2.fillPoly(mask, pts=np.int32([contour]), color=1)
+        cv2.polylines(mask, pts=np.int32([contour]), isClosed= True, color=2, thickness=1)
+    mask[0,:] = 0
+    mask[-1,:] = 0
+    mask[:,0] = 0
+    mask[:,-1] = 0
+    mask = cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)))
+    #mask = cv2.GaussianBlur(mask,(3,3),0)
+    return mask #cv2.morphologyEx(mask,cv2.MORPH_DILATE,np.ones((31,31)))

@@ -24,7 +24,6 @@ class AveragePrecision(Fitness):
 
     def __to_dict__(self) -> Dict:
         return {
-            "name": "average_precision",
             "args": {
                 "reduction": self.reduction,
                 "threshold": self.threshold,
@@ -64,7 +63,6 @@ class IoU(Fitness):
 
     def __to_dict__(self) -> Dict:
         return {
-            "name": "intersection_over_union",
             "args": {"reduction": self.reduction, "balance": self.balance},
         }
 

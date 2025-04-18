@@ -61,6 +61,26 @@ class JsonLoader:
         fitness = load_component(Fitness, json_data["fitness"])
         return dataset, individual, decoder, preprocessing, fitness
 
+class JsonLoader3D:
+    def read_individual(self, filepath):
+        json_data = json_read(filepath=filepath)
+        dataset = json_data["dataset"]
+        decoder_type = json_data["decoder"]["name"]
+        decoder_class = globals().get(decoder_type)
+        if decoder_class is None:
+            raise ValueError(f"Decoder class '{decoder_class}' not found.")
+        decoder = load_component(decoder_class, json_data["decoder"])
+        if decoder is None:
+            raise ValueError("Decoder not found.")
+        individual = load_component(Genotype, json_data["elite"])
+        if json_data["preprocessing"] is None:
+            preprocessing = None
+        else:
+            preprocessing = load_component(
+                Preprocessing, json_data["preprocessing"]
+            )
+        fitness = load_component(Fitness, json_data["fitness"])
+        return dataset, individual, decoder, preprocessing, fitness
 
 """
 class JsonSaver:
