@@ -624,7 +624,7 @@ class Library(KartezioComponent):
         library = Library(rtype)
         size = len(dict_infos["primitives"])
         for i in range(size):
-            library.add_by_name(dict_infos["primitives"][i])
+            library.add_by_name(dict_infos["primitives"][str(i)])
         return library
 
     def add_by_name(self, name):
