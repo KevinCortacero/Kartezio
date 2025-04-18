@@ -1,4 +1,4 @@
-from kartezio.callback import CallbackVerbose
+from kartezio.callback import CallbackVerbose ,CallbackSaveElite
 from kartezio.core.endpoints import EndpointThreshold, ThresholdWatershed
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
@@ -43,6 +43,7 @@ def main():
 
     callbacks = []  # Define the callbacks for the model
     callbacks.append(CallbackVerbose(frequency=10))
+    callbacks.append(CallbackSaveElite("elite.json",{"name":"one_cell","indices":None},preprocessing=None,fitness=fitness))
 
     # model = builder.compile(n_iterations=50, n_children=4, callbacks=callbacks)
     # model.summary()  # Display the model summary

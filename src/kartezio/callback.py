@@ -7,6 +7,7 @@ from uuid import uuid4
 import matplotlib.pyplot as plt
 import numpy as np
 from codecarbon import EmissionsTracker
+from kartezio.core.components import dump_component
 
 from kartezio.helpers import Observer
 from kartezio.utils.json_handler import json_write
@@ -56,17 +57,17 @@ class Callback(Observer, ABC):
         if event.iteration % self.frequency != 0 and not event.force:
             return
 
-        match event.name:
-            case Event.Events.START_LOOP:
-                self.on_evolution_start(event.iteration, event.content)
-            case Event.Events.START_STEP:
-                self.on_generation_start(event.iteration, event.content)
-            case Event.Events.END_STEP:
-                self.on_generation_end(event.iteration, event.content)
-            case Event.Events.END_LOOP:
-                self.on_evolution_end(event.iteration, event.content)
-            case Event.Events.NEW_PARENT:
-                self.on_new_parent(event.iteration, event.content)
+
+        if event.name == Event.Events.START_LOOP:
+            self.on_evolution_start(event.iteration, event.content)
+        elif event.name == Event.Events.START_STEP:
+            self.on_generation_start(event.iteration, event.content)
+        elif event.name == Event.Events.END_STEP:
+            self.on_generation_end(event.iteration, event.content)
+        elif event.name == Event.Events.END_LOOP:
+            self.on_evolution_end(event.iteration, event.content)
+        elif event.name == Event.Events.NEW_PARENT:
+            self.on_new_parent(event.iteration, event.content)
 
     def on_new_parent(self, iteration: int, content):
         pass
@@ -165,26 +166,28 @@ class CallbackSaveElite(Callback):
     def __init__(self, filename, dataset, preprocessing, fitness):
         super().__init__()
         self.filename = filename
-        self.dataset = dataset.__to_dict__()
+
+        self.dataset = (dataset.__to_dict__() if type(dataset) != dict else dataset )
         self.decoder = None
-        self.preprocessing = (
-            preprocessing.__to_dict__() if preprocessing else None
-        )
-        self.fitness = fitness.__to_dict__()
+        self.preprocessing = dump_component(preprocessing) if preprocessing != None else None
+        self.fitness = dump_component(fitness)
 
     def set_decoder(self, decoder):
-        self.decoder = decoder.__to_dict__()
+        self.decoder = dump_component(decoder)
 
     def on_new_parent(self, iteration, event_content):
         elite = event_content.individuals[0].genotype
         json_data = {
             "iteration": iteration,
             "dataset": self.dataset,
-            "elite": {
-                "chromosomes": {
-                    k: v.tolist() for k, v in elite._chromosomes.items()
-                }
-            },
+            "elite":elite.__to_dict__(),
+            #     {"genotype":
+            #     elite.__to_dict__()
+            # # "chromosomes": {
+            # #     chromo_key: {k: v.__to_dict__() for k, v in chromo_val.sequence.items()}
+            # #     for chromo_key, chromo_val in elite._chromosomes.items()
+            # #     }
+            # },
             "preprocessing": self.preprocessing,
             "decoder": self.decoder,
             "fitness": self.fitness,

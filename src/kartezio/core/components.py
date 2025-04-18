@@ -198,20 +198,7 @@ def fundamental():
     return inner
 
 
-def load_component(
-    component_class: type, json_data: Dict
-) -> KartezioComponent:
-    """
-    Load a component from its dictionary representation.
 
-    Args:
-        component_class (type): The class of the component to load.
-        json_data (Dict): The dictionary containing component data.
-
-    Returns:
-        Component: An instance of the component created from the given data.
-    """
-    return component_class.__from_dict__(json_data)
 
 
 def dump_component(component: KartezioComponent) -> Dict:
@@ -296,27 +283,23 @@ class Primitive(Node, ABC):
 @fundamental()
 class Genotype(KartezioComponent):
     """
-    Represents the genotype for Cartesian Genetic Programming (CGP).
+    Represents the caryotype  for a Cartesian Genetic Programming (CGP).
 
-    This class stores the "DNA" in the form of Numpy arrays (`ndarray`). No metadata is included in the DNA to
+    This class stores the "DNA" in the form of dict of chromosomes. No metadata is included in the DNA to
     prevent duplication, following the Flyweight design pattern.
 
     Reference:
     Flyweight Pattern - https://refactoring.guru/design-patterns/flyweight
     """
 
-    def __init__(self, n_outputs: int):
+    def __init__(self):
         """
         Initialize a Genotype instance with a specified number of outputs.
-
-        Args:
-            n_outputs (int): The number of outputs for the genotype.
         """
         super().__init__()
-        self._chromosomes: Dict[str, np.ndarray] = {}
-        self._chromosomes["outputs"] = np.zeros(n_outputs, dtype=np.uint8)
+        self._chromosomes: Dict[str, Chromosome] = {}
 
-    def __getitem__(self, item: str) -> np.ndarray:
+    def __getitem__(self, item: str) -> "Chromosome":
         """
         Get the chromosome array by key.
 
@@ -328,7 +311,7 @@ class Genotype(KartezioComponent):
         """
         return self._chromosomes[item]
 
-    def __setitem__(self, key: str, value: np.ndarray) -> None:
+    def __setitem__(self, key: str, value: "Chromosome") -> None:
         """
         Set the chromosome array for a given key.
 
@@ -348,11 +331,11 @@ class Genotype(KartezioComponent):
         Returns:
             Genotype: A deep copy of the genotype instance.
         """
-        new = self.__class__(len(self._chromosomes["outputs"]))
+        new = self.__class__()
         for key, value in self._chromosomes.items():
-            new._chromosomes[key] = value.copy()
+            new._chromosomes[key] = value.clone()
         return new
-
+    # todo: from and to dict need to refine later
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Genotype":
         """
@@ -367,13 +350,9 @@ class Genotype(KartezioComponent):
         assert (
             "chromosomes" in dict_infos
         ), "Expected 'chromosomes' key in dictionary."
-        assert (
-            "outputs" in dict_infos["chromosomes"]
-        ), "Expected 'outputs' key in 'chromosomes' dictionary."
-        n_outputs = len(dict_infos["chromosomes"]["outputs"])
-        genotype = cls(n_outputs)
+        genotype = cls()
         for key, value in dict_infos["chromosomes"].items():
-            genotype[key] = np.asarray(value)
+            genotype[key] = Chromosome.__from_dict__(value)
         return genotype
 
     def __to_dict__(self) -> Dict:
@@ -385,7 +364,7 @@ class Genotype(KartezioComponent):
         """
         return {
             "chromosomes": {
-                key: value.tolist() for key, value in self._chromosomes.items()
+                key: value.__to_dict__() for key, value in self._chromosomes.items()
             }
         }
 
@@ -400,6 +379,111 @@ class Genotype(KartezioComponent):
 
 
 @fundamental()
+class Chromosome(KartezioComponent):
+    """
+    Represents a "Chromosome" for Cartesian Genetic Programming (CGP).
+
+    This class stores the "DNA" in the form of Numpy arrays (`ndarray`). No metadata is included in the DNA to
+    prevent duplication, following the Flyweight design pattern.
+
+    Reference:
+    Flyweight Pattern - https://refactoring.guru/design-patterns/flyweight
+    """
+
+    def __init__(self, n_outputs: int):
+        """
+        Initialize a Genotype instance with a specified number of outputs.
+
+        Args:
+            n_outputs (int): The number of outputs for the genotype.
+        """
+        super().__init__()
+        self.sequence: Dict[str, np.ndarray] = {}
+        self.sequence["outputs"] = np.zeros(n_outputs, dtype=np.uint8)
+
+    def __getitem__(self, item: str) -> np.ndarray:
+        """
+        Get the chromosome array by key.
+
+        Args:
+            item (str): The key representing the chromosome.
+
+        Returns:
+            np.ndarray: The chromosome array corresponding to the provided key.
+        """
+        return self.sequence[item]
+
+    def __setitem__(self, key: str, value: np.ndarray) -> None:
+        """
+        Set the chromosome array for a given key.
+
+        Args:
+            key (str): The key for the chromosome to be set.
+            value (np.ndarray): The new value for the chromosome.
+        """
+        self.sequence[key] = value
+
+    def __deepcopy__(self, memo) -> "Chromosome":
+        """
+        Create a deep copy of the genotype.
+
+        Args:
+            memo (dict): A dictionary of objects that have already been copied to prevent infinite recursion.
+
+        Returns:
+            Genotype: A deep copy of the genotype instance.
+        """
+        new = self.__class__(len(self.sequence["outputs"]))
+        for key, value in self.sequence.items():
+            new.sequence[key] = value.copy()
+        return new
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Chromosome":
+        """
+        Create a Genotype instance from a dictionary representation.
+
+        Args:
+            dict_infos (Dict): A dictionary containing chromosome information.
+
+        Returns:
+            Genotype: A new Genotype instance created from the given dictionary.
+        """
+        # assert (
+        #     "sequence" in dict_infos
+        # ), "Expected 'sequence' key in dictionary."
+        # assert (
+        #     "outputs" in dict_infos["sequence"]
+        # ), "Expected 'outputs' key in 'chromosomes' dictionary."
+        n_outputs = len(dict_infos["sequence"]["outputs"])
+        chromosome = cls(n_outputs)
+        for key, value in dict_infos["sequence"].items():
+            chromosome[key] = np.asarray(value)
+        return chromosome
+
+    def __to_dict__(self) -> Dict:
+        """
+        Convert the genotype to a dictionary representation.
+
+        Returns:
+            Dict: A dictionary containing the chromosome information.
+        """
+        return {
+            "sequence": {
+                key: value.tolist() for key, value in self.sequence.items()
+            }
+        }
+
+    def clone(self) -> "Chromosome":
+        """
+        Create a clone of the genotype using deep copy.
+
+        Returns:
+            Genotype: A cloned instance of the genotype.
+        """
+        return copy.deepcopy(self)
+
+@fundamental()
 class Reducer(Node, ABC):
     def batch(self, x: List):
         y = []
@@ -410,6 +494,25 @@ class Reducer(Node, ABC):
     @abstractmethod
     def reduce(self, x):
         pass
+
+
+    @classmethod
+    def __from_dict__(cls, dict_infos: Dict) -> "Reducer":
+        """
+        Create an Reducer instance from a dictionary representation.
+
+        Args:
+            dict_infos (Dict): A dictionary containing the name and arguments for the Endpoint.
+
+        Returns:
+            Reducer: A new Reducer instance created from the given dictionary.
+        """
+        return Components.instantiate(
+            "Reducer",
+            dict_infos["name"],
+            **dict_infos["args"],
+        )
+
 
 
 @fundamental()
@@ -621,26 +724,26 @@ class Mutation(KartezioComponent, ABC):
         self.parameters = None  # MutationUniform()
         self.edges_weights = None  # MutationEdgesUniform()
 
-    def random_parameters(self, chromosome: int):
+    def random_parameters(self, sequence: int):
         return np.random.randint(
             self.parameters.max_value,
-            size=self.adapter.chromosomes_infos[chromosome].n_parameters,
+            size=self.adapter.chromosomes_infos[sequence].n_parameters,
         )
 
-    def random_function(self, chromosome: str):
+    def random_function(self, sequence: str):
         return np.random.randint(
-            self.adapter.chromosomes_infos[chromosome].n_functions
+            self.adapter.chromosomes_infos[sequence].n_functions
         )
 
-    def mutate_function(self, genotype: Genotype, chromosome: str, idx: int):
+    def mutate_function(self, genotype: Genotype,chromosome:str, sequence: str, idx: int):
         self.adapter.set_function(
-            genotype, chromosome, idx, self.random_function(chromosome)
+            genotype, chromosome,sequence, idx, self.random_function(sequence)
         )
 
     def mutate_edges(
         self,
         genotype: Genotype,
-        chromosome: str,
+        chromosome:str, sequence: str,
         idx: int,
         only_one: int = None,
     ):
@@ -648,7 +751,7 @@ class Mutation(KartezioComponent, ABC):
         p = self.edges_weights.weights_edges(n_previous_nodes)
         new_edges = np.random.choice(
             list(range(n_previous_nodes)),
-            size=self.adapter.chromosomes_infos[chromosome].n_edges,
+            size=self.adapter.chromosomes_infos[sequence].n_edges,
             p=p,
         )
         for edge, new_edge in enumerate(new_edges):
@@ -660,32 +763,32 @@ class Mutation(KartezioComponent, ABC):
                 new_edges[edge] = new_edge - 1 + self.adapter.n_inputs
         if only_one is not None:
             new_value = new_edges[only_one]
-            new_edges = self.adapter.get_edges(genotype, chromosome, idx)
+            new_edges = self.adapter.get_edges(genotype, chromosome,sequence, idx)
             new_edges[only_one] = new_value
-        self.adapter.set_edges(genotype, chromosome, idx, new_edges)
+        self.adapter.set_edges(genotype, chromosome, sequence, idx, new_edges)
 
     def mutate_parameters(
         self,
         genotype: Genotype,
-        chromosome: str,
+        chromosome:str, sequence: str,
         idx: int,
         only_one: int = None,
     ):
-        new_random_parameters = self.random_parameters(chromosome)
-        old_parameters = self.adapter.get_parameters(genotype, chromosome, idx)
+        new_random_parameters = self.random_parameters(sequence)
+        old_parameters = self.adapter.get_parameters(genotype, chromosome,sequence, idx)
         new_parameters = self.parameters.adjust(
             old_parameters, new_random_parameters
         )
         if only_one is not None:
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
-        self.adapter.set_parameters(genotype, chromosome, idx, new_parameters)
+        self.adapter.set_parameters(genotype, chromosome,sequence, idx, new_parameters)
 
-    def mutate_output(self, genotype: Genotype, idx: int):
+    def mutate_output(self, genotype: Genotype,chromosome:str, idx: int):
         n_previous_nodes = 1 + self.adapter.n_nodes
         p = self.edges_weights.weights_edges(n_previous_nodes)
         new_edges = np.random.choice(range(n_previous_nodes), size=1, p=p)
-        self.adapter.set_output(genotype, idx, new_edges)
+        self.adapter.set_output(genotype,chromosome, idx, new_edges)
         for edge, new_edge in enumerate(new_edges):
             if new_edge == 0:
                 # sample from inputs
@@ -705,3 +808,20 @@ class Mutation(KartezioComponent, ABC):
 @fundamental()
 class Initialization(KartezioComponent, ABC):
     pass
+
+def load_component(
+    component_class: type, json_data: Dict
+) -> KartezioComponent:
+    from kartezio.core.endpoints import EndpointThreshold
+    from kartezio.core.fitness import IoU
+    """
+    Load a component from its dictionary representation.
+
+    Args:
+        component_class (type): The class of the component to load.
+        json_data (Dict): The dictionary containing component data.
+
+    Returns:
+        Component: An instance of the component created from the given data.
+    """
+    return component_class.__from_dict__(json_data)

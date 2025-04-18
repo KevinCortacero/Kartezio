@@ -215,20 +215,34 @@ def read_dataset(
         ImageLabels,
         ImageRGBReader,
         RoiPolygonReader,
+        TiffImageGray3dReader,
+        TiffImageLabel3dReader,
+        RoiPolyhedronReader,
     )
-
     if isinstance(x_reader, str):
-        match x_reader:
-            case "rgb":
+            if x_reader == "rgb":
                 x_reader = ImageRGBReader(dataset_path)
-            case "grayscale":
+            elif x_reader == "grayscale":
                 x_reader = ImageGrayscaleReader(dataset_path)
+            elif x_reader == "tiff_mono_3d":
+                x_reader = TiffImageGray3dReader(dataset_path)
+            elif x_reader == "tiff_labels_3d" :
+                x_reader = TiffImageLabel3dReader(dataset_path)
+            else :
+                raise ValueError(
+                    f"unnknown x_reader: {x_reader}")
     if isinstance(y_reader, str):
-        match y_reader:
-            case "labels":
+            if y_reader == "labels":
                 y_reader = ImageLabels(dataset_path)
-            case "imagej":
+            elif y_reader == "imagej":
                 y_reader = RoiPolygonReader(dataset_path)
+            elif y_reader == "tiff_labels_3d" :
+                y_reader = TiffImageLabel3dReader(dataset_path)
+            elif y_reader == "polyhedron":
+                y_reader = RoiPolyhedronReader(dataset_path)
+            else :
+                raise ValueError(
+                    f"unnknown y_reader: {y_reader}")
 
     dataset_reader = DatasetReader(
         dataset_path, x_reader, y_reader, preview=preview
