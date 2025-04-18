@@ -421,34 +421,14 @@ class RawLocalMaxWatershed3D(EndpointWatershed):
         #cv2.namedWindow("watershed-signal")
 
     def call(self, x):
-       
-        cube=x[0]
-        markers = _extract_markers_dt(cube,self.threshold)
-        labels = watershed_transform(cube,markers,self.watershed_line)
 
-        for z in range(len(labels)):
-            max_markers = np.max(markers, axis=0)
-            viridis_slice = labels[z] * 20
-            viridis_slice[np.where(max_markers)] = 255
-            viridis_slice = cv2.applyColorMap(viridis_slice.astype(np.uint8), cv2.COLORMAP_VIRIDIS)
-
-            jet_signal = cv2.applyColorMap(cube[z], cv2.COLORMAP_JET)
-
-            cv2.imshow("watershed-signal", np.hstack((jet_signal, viridis_slice)))
-            cv2.waitKey(1) & 0xFF == ord('0')
-            #cv2.imwrite(f"C:\\Users\\eliott.gaudillat\\Documents\\TestBeforeCalmip\\visual\\train\\patch_176\\train_patch_176_z_{z}.png",np.hstack((jet_signal, viridis_slice)))
-            cv2.imwrite(f"/home/eliott.gaudillat/Documents/Calmip_K2/visual/watershed/_patch_{self.i}_slice_{z}.png",np.hstack((jet_signal, viridis_slice)))
-        self.i += 1
-
-       
-        return [labels]
-        # return [
-        #     watershed_3d(
-        #         cube=x[0],
-        #         threshold=self.threshold,
-        #         watershed_line=self.watershed_line,
-        #     )
-        # ]
+        return [
+            watershed_3d(
+                cube=x[0],
+                threshold=self.threshold,
+                watershed_line=self.watershed_line,
+            )
+        ]
 
     def __to_dict__(self) -> Dict:
         return {
