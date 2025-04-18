@@ -6,7 +6,7 @@ from kartezio.mutation.behavioral import AccumulateBehavior
 from kartezio.mutation.decay import DegreeDecay, LinearDecay
 from kartezio.mutation.edges import MutationEdgesNormal
 from kartezio.mutation.effect import MutationNormal
-from kartezio.primitives.array import create_array_lib
+from kartezio.primitives.matrix import create_array_lib
 from kartezio.primitives.scalar import library_scalar
 from kartezio.utils.dataset import one_cell_dataset
 
@@ -20,8 +20,7 @@ def main():
     # Define the number of inputs and create required components
     n_inputs = 1
     libraries = [
-        create_array_lib(use_scalars=True),
-        library_scalar,
+        create_array_lib(use_scalars=False),
     ]  # Create a library of array operations
     endpoint = EndpointThreshold(128)  # Define the endpoint for the model
     fitness = IoU()  # Define the fitness metric

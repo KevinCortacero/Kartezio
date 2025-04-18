@@ -1,7 +1,7 @@
 from kartezio.core.endpoints import EndpointThreshold
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
-from kartezio.primitives.array import create_array_lib
+from kartezio.primitives.matrix import create_array_lib
 from kartezio.utils.dataset import one_cell_dataset
 
 
@@ -33,7 +33,7 @@ def main():
     )  # Use a simple one-cell dataset for training
 
     # Train the model
-    elite, history = model.fit(1000, train_x, train_y)
+    elite, history = model.fit(100, train_x, train_y)
 
     # Evaluate the model
     evaluation_result = model.evaluate(train_x, train_y)
