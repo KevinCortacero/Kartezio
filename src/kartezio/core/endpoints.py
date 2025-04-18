@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from kartezio.core.components import Endpoint, register
 from kartezio.preprocessing import Resize
-from kartezio.types import Matrix,TypeLabels
+from kartezio.types import Matrix
 from kartezio.vision.common import threshold_tozero
 from kartezio.vision.hough import circles_to_labels, hough_circles
 from kartezio.vision.watershed import (
@@ -423,7 +423,7 @@ class RescaleUp(Endpoint):
 @register(Endpoint)
 class EndpointSimple(Endpoint):
     def __init__(self):
-        super().__init__([TypeLabels])
+        super().__init__([Matrix])
 
     def call(self, x):
         labels = x[0]
