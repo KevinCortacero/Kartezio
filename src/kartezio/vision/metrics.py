@@ -1,4 +1,6 @@
 import numpy as np
+from skimage.filters import sobel
+from skimage.metrics import structural_similarity
 
 
 def _intersection(a, b):
@@ -96,7 +98,68 @@ def accuracy(y_true, y_pred):
 
 
 def mse(y_true, y_pred):
+    """
+    L2 loss (Mean Squared Error) between y_true and y_pred.
+    Penalizes large errors more than small ones, smoother output than MAE.
+    """
     return np.mean((y_true - y_pred) ** 2)
+
+
+def mae(y_true, y_pred):
+    """
+    L1 loss (Mean Absolute Error) between y_true and y_pred.
+    Penalizes all errors equally, more robust to outliers than MSE.
+    """
+    return np.mean(np.abs(y_true - y_pred))
+
+
+def rmse(y_true, y_pred):
+    """
+    Root Mean Squared Error (RMSE) between y_true and y_pred.
+    Similar to MSE but in the same unit as the data.
+    """
+    return np.sqrt(mse(y_true, y_pred))
+
+
+def ssim(y_true, y_pred):
+    """
+    Structural Similarity Index (SSIM) between y_true and y_pred.
+    Measures the similarity between two images, considering luminance, contrast, and structure.
+    """
+    return structural_similarity(y_true, y_pred, multichannel=True)
+
+
+def edge_mse(y_true, y_pred):
+    """
+    Edge Mean Squared Error (Edge MSE) between y_true and y_pred.
+    Computes the MSE on the edges of the images.
+    """
+    y_true_edges = sobel(y_true)
+    y_pred_edges = sobel(y_pred)
+    return mse(y_true_edges, y_pred_edges)
+
+
+def fft_mae(y_true, y_pred):
+    """
+    FFT Mean Absolute Error (FFT MAE) between y_true and y_pred.
+    Computes the MAE in the frequency domain using FFT.
+    """
+    y_true_fft = np.fft.fft2(y_true)
+    y_pred_fft = np.fft.fft2(y_pred)
+    return mae(y_true_fft, y_pred_fft)
+
+
+def psnr(y_true, y_pred):
+    """
+    Peak Signal-to-Noise Ratio (PSNR) between y_true and y_pred.
+    Measures the ratio between the maximum possible power of a signal and the power of corrupting noise.
+    """
+    mse_value = mse(y_true, y_pred)
+    if mse_value == 0:
+        return float("inf")
+    max_pixel = 255.0
+    psnr_value = 20 * np.log10(max_pixel / np.sqrt(mse_value))
+    return psnr_value
 
 
 def balanced_metric(metric, y_true, y_pred, sensitivity=0.5, specificity=0.5):

@@ -13,7 +13,7 @@ class Normalizer(Preprocessing):
         super().__init__()
         self.pmin = pmin
         self.pmax = pmax
-        self.eps = 1e-20
+        self.eps = 1e-5
 
     def preprocess(self, x):
         mi = np.percentile(x, self.pmin, keepdims=True)

@@ -18,6 +18,29 @@ from kartezio.vision.watershed import (
 )
 
 
+@register(Endpoint)
+class NoEndpoint(Endpoint):
+    def __init__(self, inputs):
+        super().__init__(inputs)
+
+    def call(self, x):
+        return x
+
+
+@register(Endpoint)
+class ResizeUp(Endpoint):
+    def __init__(self, method):
+        super().__init__([Matrix])
+        self.method = method
+
+    def call(self, x):
+        return [
+            cv2.resize(
+                x[0], None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4
+            )
+        ]
+
+
 class EndpointWatershed(Endpoint, ABC):
     def __init__(self, arity, watershed_line=True):
         super().__init__([Matrix] * arity)

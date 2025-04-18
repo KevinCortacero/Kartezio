@@ -560,7 +560,6 @@ class Library(KartezioComponent):
         return self._primitives[i].inputs
 
     def execute(self, f_index, x: List[np.ndarray], args: List[int]):
-        print("args", args)
         return self._primitives[f_index].call(x, args)
 
     def display(self):
