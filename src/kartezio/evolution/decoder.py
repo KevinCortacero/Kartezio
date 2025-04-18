@@ -188,7 +188,7 @@ class DecoderCGP(Decoder):
         # for each image
         for xi in x:
             start_time = time.time()
-            y_pred = self._decode_one(genotype, phenotype, xi)
+            y_pred = self._decode_one(genotype,"chromosome_0", phenotype[0], xi)
             if self.endpoint is not None:
                 y_pred = self.endpoint.call(y_pred)
             all_times.append(time.time() - start_time)
@@ -340,13 +340,14 @@ class DecoderCGP(Decoder):
     def __from_dict__(cls, dict_infos: Dict) -> "DecoderCGP":
         n_inputs = dict_infos["adapter"]["n_inputs"]
         n_nodes = dict_infos["adapter"]["n_nodes"]
+        nb_chromosomes = dict_infos["adapter"]["nb_chromosomes"]
         libraries = [
             Library.__from_dict__(lib_infos)
             for lib_infos in dict_infos["libraries"].values()
         ]
         endpoint = Endpoint.__from_dict__(dict_infos["endpoint"])
         return DecoderCGP(
-            n_inputs, n_nodes, libraries=libraries, endpoint=endpoint
+            n_inputs, n_nodes,nb_chromosomes, libraries=libraries, endpoint=endpoint
         )
 
     def __to_dict__(self) -> Dict:
