@@ -1,10 +1,14 @@
 import os
 
-from numena.io.drive import Directory
-from numena.io.json import json_read, json_write
-
-import kartezio.utils.json_utils as json
-from kartezio.model.components import KartezioGenome, KartezioParser
+from kartezio.core.components import (
+    Fitness,
+    Genotype,
+    Preprocessing,
+    load_component,
+)
+from kartezio.evolution.decoder import DecoderCGP
+from kartezio.utils.directory import Directory
+from kartezio.utils.json_handler import json_read, json_write
 
 
 def pack_one_directory(directory_path):
@@ -20,14 +24,18 @@ def pack_one_directory(directory_path):
         generations.append(int(g.name.replace("G", "").split(".")[0]))
     generations.sort()
     for generation in generations:
-        current_generation = json_read(filepath=f"{directory_path}/G{generation}.json")
+        current_generation = json_read(
+            filepath=f"{directory_path}/G{generation}.json"
+        )
         generation_json = {
             "generation": generation,
             "population": current_generation["population"],
         }
         packed_history["generations"].append(generation_json)
     json_write(
-        filepath=f"{directory_path}/history.json", json_data=packed_history, indent=None
+        filepath=f"{directory_path}/history.json",
+        json_data=packed_history,
+        indent=None,
     )
     print(f"All generations packed in {directory_path}.")
     for generation in generations:
@@ -40,21 +48,45 @@ class JsonLoader:
     def read_individual(self, filepath):
         json_data = json_read(filepath=filepath)
         dataset = json_data["dataset"]
-        parser = KartezioParser.from_json(json_data["decoding"])
-        try:
-            individual = KartezioGenome.from_json(json_data["individual"])
-        except KeyError:
-            try:
-                individual = KartezioGenome.from_json(json_data)
-            except KeyError:
-                individual = KartezioGenome.from_json(json_data["population"][0])
-        return dataset, individual, parser
+        decoder = load_component(DecoderCGP, json_data["decoder"])
+        if decoder is None:
+            raise ValueError("Decoder not found.")
+        individual = load_component(Genotype, json_data["elite"])
+        if json_data["preprocessing"] is None:
+            preprocessing = None
+        else:
+            preprocessing = load_component(
+                Preprocessing, json_data["preprocessing"]
+            )
+        fitness = load_component(Fitness, json_data["fitness"])
+        return dataset, individual, decoder, preprocessing, fitness
 
+class JsonLoader3D:
+    def read_individual(self, filepath):
+        json_data = json_read(filepath=filepath)
+        dataset = json_data["dataset"]
+        decoder_type = json_data["decoder"]["name"]
+        decoder_class = globals().get(decoder_type)
+        if decoder_class is None:
+            raise ValueError(f"Decoder class '{decoder_class}' not found.")
+        decoder = load_component(decoder_class, json_data["decoder"])
+        if decoder is None:
+            raise ValueError("Decoder not found.")
+        individual = load_component(Genotype, json_data["elite"])
+        if json_data["preprocessing"] is None:
+            preprocessing = None
+        else:
+            preprocessing = load_component(
+                Preprocessing, json_data["preprocessing"]
+            )
+        fitness = load_component(Fitness, json_data["fitness"])
+        return dataset, individual, decoder, preprocessing, fitness
 
+"""
 class JsonSaver:
-    def __init__(self, dataset, parser):
+    def __init__(self, dataset, parser: Decoder):
         self.dataset_json = json.from_dataset(dataset)
-        self.parser_as_json = parser.dumps()
+        self.parser_as_json = parser.to_toml()
 
     def save_population(self, filepath, population):
         json_data = {
@@ -71,3 +103,4 @@ class JsonSaver:
             "decoding": self.parser_as_json,
         }
         json_write(filepath, json_data)
+"""

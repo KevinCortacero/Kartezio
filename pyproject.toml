@@ -1,0 +1,58 @@
+[project]
+name = "kartezio"
+version = "1.0.0a2"
+description = ""
+authors = [{ name = "Kevin Cortacero", email = "kevin.cortacero@protonmail.com" }]
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-image",
+    "opencv-python",
+    "numba",
+    "matplotlib",
+    "czifile",
+    "tabulate",
+    "roifile",
+    "codecarbon>=2.8.3",
+]
+
+[project.urls]
+Homepage = "https://kartezio.com"
+Repository = "https://github.com/KevinCortacero/Kartezio"
+
+
+[tool.hatch.build.targets.sdist]
+include = ["src/kartezio"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/kartezio"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/kartezio" = "kartezio"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 79
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 79

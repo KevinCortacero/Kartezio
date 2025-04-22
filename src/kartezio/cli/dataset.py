@@ -1,12 +1,14 @@
 import argparse
 
-from kartezio.dataset import DatasetMeta
+from kartezio.data.dataset import DatasetMeta
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("name", help="Name of your dataset", type=str)
-    parser.add_argument("label_name", help="Name of one entity of your set", type=str)
+    parser.add_argument(
+        "label_name", help="Name of one entity of your set", type=str
+    )
     parser.add_argument(
         "--input_type",
         help="Type of your input files",

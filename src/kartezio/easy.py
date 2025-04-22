@@ -1,28 +1,30 @@
 import numpy as np
 
-from kartezio.export import GenomeToPython
-from kartezio.inference import SingleModel
-from kartezio.utils.io import JsonLoader, JsonSaver
+# from kartezio.export import GenomeToPython
+# from kartezio.inference import SingleModel
+from kartezio.utils.io import JsonLoader
 
 
 def read_genome(filepath):
     return JsonLoader().read_individual(filepath)
 
 
-def save_genome(filepath, genome, dataset, parser):
-    JsonSaver(dataset, parser).save_individual(filepath, genome)
+# def save_genome(filepath, genome, dataset, parser):
+#     JsonSaver(dataset, parser).save_individual(filepath, genome)
 
 
-def load_model(filepath, series=False):
-    dataset, elite, parser = read_genome(filepath)
-    return SingleModel(elite, parser)
+# def load_model(filepath, series=False):
+#     dataset, elite, parser = read_genome(filepath)
+#     return SingleModel(elite, parser)
 
 
-def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False):
+def show_graph(
+    model, inputs=None, outputs=None, only_active=True, jupyter=False
+):
     from kartezio.utils.viewer import KartezioViewer
 
     viewer = KartezioViewer(
-        model.parser.shape, model.parser.function_bundle, model.parser.endpoint
+        model.decoder.infos, model.decoder.library, model.decoder.endpoint
     )
     return viewer.get_graph(
         model.genome,
@@ -33,15 +35,16 @@ def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False
     )
 
 
-def generate_python_class(filepath, class_name):
-    _, genome, parser = read_genome(filepath=filepath)
-    python_writer = GenomeToPython(parser)
-    python_writer.to_python_class(class_name, genome)
-
-
-def python_class(model, class_name):
-    python_writer = GenomeToPython(model._model.parser)
-    python_writer.to_python_class(class_name, model._model.genome)
+### old function ####
+# def generate_python_class(filepath, class_name):
+#     _, genome, parser = read_genome(filepath=filepath)
+#     python_writer = GenomeToPython(parser)
+#     python_writer.to_python_class(class_name, genome)
+#
+#
+# def python_class(model, class_name):
+#     python_writer = GenomeToPython(model._model.decoder)
+#     python_writer.to_python_class(class_name, model._model.genome)
 
 
 def print_stats(values, fitness, set_name):
@@ -57,8 +60,8 @@ def print_stats(values, fitness, set_name):
 
 
 def get_model_size(model):
-    return model._model.parser.active_size(model._model.genome)
+    return model._model.decoder.active_size(model._model.genome)
 
 
 def node_histogram(model):
-    return model._model.parser.node_histogram(model._model.genome)
+    return model._model.decoder.node_histogram(model._model.genome)

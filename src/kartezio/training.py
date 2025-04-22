@@ -1,10 +1,10 @@
 import argparse
 
 from kartezio.callback import CallbackSave, CallbackVerbose
-from kartezio.dataset import read_dataset
+from kartezio.core.base import ModelDraft
+from kartezio.core.helpers import singleton
+from kartezio.data import read_dataset
 from kartezio.enums import CSV_DATASET
-from kartezio.model.base import ModelCGP
-from kartezio.model.helpers import singleton
 from kartezio.utils.io import pack_one_directory
 
 
@@ -18,7 +18,9 @@ class TrainingArgs:
         return self.parser.parse_args()
 
     def set_arguments(self):
-        self.parser.add_argument("output_directory", help="path to output directory")
+        self.parser.add_argument(
+            "output_directory", help="path to output directory"
+        )
         self.parser.add_argument(
             "dataset_directory", help="path to the dataset directory"
         )
@@ -35,10 +37,15 @@ class TrainingArgs:
             default=CSV_DATASET,
         )
         self.parser.add_argument(
-            "--genome", help="initial genome to instantiate population", default=None
+            "--genome",
+            help="initial genome to instantiate population",
+            default=None,
         )
         self.parser.add_argument(
-            "--generations", help="Number of generations", default=100, type=int
+            "--generations",
+            help="Number of generations",
+            default=100,
+            type=int,
         )
 
 
@@ -50,7 +57,9 @@ def get_args():
 
 
 class KartezioTraining:
-    def __init__(self, model: ModelCGP, reformat_x=None, frequency=1, preview=False):
+    def __init__(
+        self, model: ModelDraft, reformat_x=None, frequency=1, preview=False
+    ):
         self.args = get_args()
         self.model = model
         self.dataset = read_dataset(
@@ -63,7 +72,9 @@ class KartezioTraining:
             frequency = 1
         self.callbacks = [
             CallbackVerbose(frequency=frequency),
-            CallbackSave(self.args.output_directory, self.dataset, frequency=frequency),
+            CallbackSave(
+                self.args.output_directory, self.dataset, frequency=frequency
+            ),
         ]
         self.reformat_x = reformat_x
 
@@ -74,14 +85,14 @@ class KartezioTraining:
 
         if self.callbacks:
             for callback in self.callbacks:
-                callback.set_parser(self.model.parser)
+                callback.set_decoder(self.model.parser)
                 self.model.attach(callback)
         elite, history = self.model.fit(train_x, train_y)
         return elite
 
 
 def train_model(
-    model,
+    model: ModelDraft,
     dataset,
     output_directory,
     preprocessing=None,
@@ -91,18 +102,20 @@ def train_model(
 ):
     if callbacks == "default":
         verbose = CallbackVerbose(frequency=callback_frequency)
-        save = CallbackSave(output_directory, dataset, frequency=callback_frequency)
+        save = CallbackSave(
+            output_directory, dataset, frequency=callback_frequency
+        )
         callbacks = [verbose, save]
         workdir = str(save.workdir._path)
         print(f"Files will be saved under {workdir}.")
     if callbacks:
         for callback in callbacks:
-            callback.set_parser(model.parser)
+            callback.set_decoder(model.parser)
             model.attach(callback)
 
     train_x, train_y = dataset.train_xy
     if preprocessing:
-        train_x = preprocessing.call(train_x)
+        train_x = preprocessing(train_x)
 
     res = model.fit(train_x, train_y)
     if pack:

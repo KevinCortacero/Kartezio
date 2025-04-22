@@ -1,65 +1,47 @@
 [![Discord Channel](https://dcbadge.limes.pink/api/server/uwFwHyRxub)](https://discord.gg/KnJ4XWdQMK)
 
-<h2 align="center"> Evolutionary design of explainable algorithms for biomedical image segmentation </h5>
-<h5 align="center"> Kartezio Official Python Package </h2>
-
-## Package Description
-Kartezio is a modular Cartesian Genetic Programming framework that generates fully transparent and easily interpretable image processing pipelines.
-
-Link to retated python scripts: [Kartezio scripts](https://github.com/KevinCortacero/KartezioPaper)\
-Link to retated datasets and trained models: [Datasets & Trained Models](https://figshare.com/s/251b1f7cc55e6600826f)\
-Link to include the cellpose dataset: [Cellpose Dataset](https://www.cellpose.org/dataset)\
-Link to publication: [Evolutionary design of explainable algorithms for biomedical image segmentation](https://www.nature.com/articles/s41467-023-42664-x)\
-Link to official website: [kartezio.com](https://www.kartezio.com)
-
-## Installation
-
-Tested on Windows, Ubuntu 18.04, Ubuntu 22.04.
-
-Tested with different versions of Python3: 3.7, 3.8, 3.9 and 3.10.
+<h1 align="center">Kartezio: Evolutionary design of explainable algorithms for biomedical image segmentation</h1>
 
 
-### Creation of a virtualenv is recommanded:
+**Kartezio** is a modular Cartesian Genetic Programming (CGP) framework that enables the automated design of fully interpretable image-processing pipelines, without the need for GPUs or extensive training datasets.  
+Built on top of [OpenCV](https://opencv.org/), Kartezio empowers researchers, engineers, and practitioners to discover novel computer vision (CV) solutions using only a handful of annotated samples and a single CPU core.
 
-```bash
-python3 -m pip install virtualenv
-python3 -m venv <path/to/venv/venv_name>
-source <path/to/venv/venv_name>/bin/activate
-pip install --upgrade pip
-```
+Originally developed for biomedical image segmentation, Kartezio has been successfully showcased in [Nature Communications](https://www.nature.com/articles/s41467-023-42664-x). Although it shines in medical and life science applications, Kartezio’s underlying principles are domain-agnostic.   
+Whether you’re working with industrial quality control, satellite imagery, embedded vision, or robotics, Kartezio helps you craft custom CV pipelines that are **transparent, fast, frugal  and efficient**.
 
-### Installation from Pypi
+## Why you should try Kartezio?
 
-```bash
-(venv_name)$ pip install kartezio
-```
+:nut_and_bolt:   **Modular and Customizable**  
+   Kartezio is built from interchangeable building blocks, called **Components**, that you can mix, match, or replace. Adapt the pipeline to your project’s unique requirements.
 
-### Local installation using pip
+:pencil2:   **Few-Shot Learning**  
+   Forget the need for massive, annotated datasets. Kartezio can evolve solutions from just a few annotated examples, saving both time and computational resources.
 
-```bash
-(venv_name)$ git clone https://github.com/KevinCortacero/Kartezio.git
-(venv_name)$ cd kartezio
-(venv_name)$ python -m pip install -e .
-```
-## First steps
+:white_check_mark:   **Transparent and Certifiable**  
+   Every pipeline produced is fully transparent. Inspect the exact operations used, understand their sequence, and trust the decisions made by your model.
+
+:earth_africa:   **Frugal and Local**  
+   Run everything on a single CPU, without GPUs or massive compute clusters. This makes Kartezio ideal for edge devices, embedded systems, or scenarios with limited computational resources.
+
+:microscope:   **Broad Applicability**  
+   While proven in biomedical image segmentation, Kartezio’s methods readily extend to other fields—like industrial machine vision, space imaging, drone footage analysis, or any custom image-based problem.
+
+:books:   **Traditional Computer Vision**  
+Kartezio offers a straightforward, interpretable way to learn and play with traditional CV filters. This makes it an excellent resource for teaching and learning about Image Processing fundamentals.
+
+## Getting Started
+
+1. **Installation:**
+   ```bash
+   pip install kartezio
+
+2. **First steps**
 [TODO]
 
-## Reported Results
-Kartezio was compared on the Cell Image Library dataset against the reported performance of Cellpose/Stardist/MRCNN (December, 2022) as reported in Stringer et al, Nature Methods, 2021 and published in Cortacero et al, Nature Communnications, 2023:
 
-|                  | Kartezio | Kartezio | Kartezio | Cellpose | Stardist | MRCNN |
-|------------------|----------|----------|----------|----------|----------|-------|
-| Training images  | 8        | 50       | 89       | 89       | 89       | 89    |
-| AP50 on test set | 0.838 (mean)| 0.849 (mean)| 0.858 (mean) | 0.91 (max)   | 0.76 (max)     | 0.80 (max) |
-
-An additional, but not published, comparison was performed against the reported performance of CPP-Net, on BBBC006v1 dataset reported in Chen et al, 2023 (July, 2023):
-
-|                  | Kartezio-s1 | Kartezio-s2 | CPP-Net | Stardist | 
-|------------------|-------------|-------------|---------|----------|
-| Training images  | 20          | 20          | 538     |   538    | 
-| AP50 on test set | 0.822       | 0.879       | 0.9811  | 0.9757   |
 
 ## References and Citation
+If you use Kartezio in your research, please consider citing:
 ```
 @article{cortacero2023evolutionary,
   title={Evolutionary design of explainable algorithms for biomedical image segmentation},
@@ -70,6 +52,16 @@ An additional, but not published, comparison was performed against the reported 
   pages={7112},
   year={2023},
   publisher={Nature Publishing Group UK London}
+}
+```
+If you are using the multimodal version of Kartezio, please also cite:
+```
+@inproceedings{de2024multimodal,
+  title={Multimodal adaptive graph evolution},
+  author={De La Torre, Camilo and Cortacero, K{\'e}vin and Cussat-Blanc, Sylvain and Wilson, Dennis},
+  booktitle={Proceedings of the Genetic and Evolutionary Computation Conference Companion},
+  pages={499--502},
+  year={2024}
 }
 ```
 

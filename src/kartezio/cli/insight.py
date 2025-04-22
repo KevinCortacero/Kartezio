@@ -3,11 +3,11 @@ import argparse
 import cv2
 import numpy as np
 
+from kartezio.core.fitness import FitnessAP, FitnessIOU
+from kartezio.core.registry import registry
 from kartezio.easy import load_model, read_dataset
 from kartezio.export import KartezioInsight
-from kartezio.fitness import FitnessAP, FitnessIOU
 from kartezio.inference import KartezioModel
-from kartezio.model.registry import registry
 
 
 def reformat_x(x):
@@ -32,7 +32,7 @@ def reformat_x(x):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("model", help="Path to the genome", type=str)
+    parser.add_argument("core", help="Path to the genome", type=str)
     parser.add_argument("dataset", help="Path to the Dataset", type=str)
     parser.add_argument(
         "--prefix", help="Prefix to save images", type=str, default=None
@@ -48,9 +48,9 @@ def main():
     args = parser.parse_args()
 
     model = KartezioModel(args.model, registry.fitness.instantiate("AP"))
-    insight = KartezioInsight(model._model.parser)
+    insight = KartezioInsight(model._model.decoder)
     dataset = read_dataset(args.dataset, indices=model.indices)
-    # p, f, t = model.eval(dataset, subset="test", reformat_x=reformat_x)
+    # p, f, t = core.eval(dataset, subset="test", reformat_x=reformat_x)
     # print(1.0 - f)
     # heatmap_color = cv2.applyColorMap(p[0]["labels"].astype(np.uint8)*5, cv2.COLORMAP_VIRIDIS)
     # cv2.imwrite("cellpose_out.png", heatmap_color)

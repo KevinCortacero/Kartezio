@@ -1,16 +1,17 @@
 import ast
+import json
 from typing import List
 
 import numpy as np
-import simplejson
 
-from kartezio.model.components import GenomeShape, KartezioGenome
+from kartezio.core.components.adapter import Adapter
+from kartezio.population import IndividualHistory
 
 """ KartezioGenome Metadata """
 
 
 def to_metadata(json_data):
-    return GenomeShape(
+    return GenotypeInfos(
         json_data["n_in"],
         json_data["columns"],
         json_data["n_out"],
@@ -21,12 +22,12 @@ def to_metadata(json_data):
 
 def to_genome(json_data):
     sequence = np.asarray(ast.literal_eval(json_data["sequence"]))
-    return KartezioGenome(sequence=sequence)
+    return BaseGenotype(sequence=sequence)
 
 
-def from_individual(individual):
+def from_individual(individual: IndividualHistory):
     return {
-        "sequence": simplejson.dumps(individual.sequence.tolist()),
+        "sequence": json.dumps(individual.sequence.tolist()),
         "fitness": individual.fitness,
     }
 
