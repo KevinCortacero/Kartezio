@@ -67,6 +67,6 @@ If you are using the multimodal version of Kartezio, please also cite:
 
 
 ## Licensing
-The Software must be used for Non-Commercial Research only, under the terms and conditions set out in the License file, and You may not use the Software except in compliance with the License.
+The Software is freely available for Non-Commercial and Academic purposes only, under the terms and conditions set out in the License file, and You may not use the Software except in compliance with the License.
 The Software distributed under the License is distributed on an "as is" basis, without warranties or conditions of any kind, either express or implied.
 See the License file for the specific language governing permissions and limitations under the License.
