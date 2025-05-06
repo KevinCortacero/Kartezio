@@ -198,9 +198,6 @@ def fundamental():
     return inner
 
 
-
-
-
 def dump_component(component: KartezioComponent) -> Dict:
     """
     Dump a component to its dictionary representation.
@@ -335,6 +332,7 @@ class Genotype(KartezioComponent):
         for key, value in self._chromosomes.items():
             new._chromosomes[key] = value.clone()
         return new
+
     # todo: from and to dict need to refine later
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Genotype":
@@ -364,7 +362,8 @@ class Genotype(KartezioComponent):
         """
         return {
             "chromosomes": {
-                key: value.__to_dict__() for key, value in self._chromosomes.items()
+                key: value.__to_dict__()
+                for key, value in self._chromosomes.items()
             }
         }
 
@@ -483,6 +482,7 @@ class Chromosome(KartezioComponent):
         """
         return copy.deepcopy(self)
 
+
 @fundamental()
 class Reducer(Node, ABC):
     def batch(self, x: List):
@@ -494,7 +494,6 @@ class Reducer(Node, ABC):
     @abstractmethod
     def reduce(self, x):
         pass
-
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Reducer":
@@ -512,7 +511,6 @@ class Reducer(Node, ABC):
             dict_infos["name"],
             **dict_infos["args"],
         )
-
 
 
 @fundamental()
@@ -596,8 +594,6 @@ class Fitness(KartezioComponent, ABC):
 
     @classmethod
     def __from_dict__(cls, dict_infos: Dict) -> "Fitness":
-        from kartezio.core.fitness import Fitness
-
         return Components.instantiate(
             "Fitness",
             dict_infos["name"],
@@ -663,7 +659,13 @@ class Library(KartezioComponent):
         return self._primitives[i].inputs
 
     def execute(self, f_index, x: List[np.ndarray], args: List[int]):
-        return self._primitives[f_index].call(x, args)
+        res = self._primitives[f_index].call(x, args)
+        """
+        if self.rtype == "scalar":
+            if np.isnan(res) or  res < 0 or res > 255:
+                print(f"Primitive {self.name_of(f_index)} returned {res} for inputs {x} and args {args}")
+        """
+        return res
 
     def display(self):
         headers = ["Id", "Name", "Inputs", "Outputs", "Arity", "Parameters"]
@@ -690,10 +692,6 @@ class Library(KartezioComponent):
                 stralign="center",
             )
         )
-
-    @property
-    def random_index(self):
-        return random.choice(self.keys)
 
     @property
     def last_index(self):
@@ -735,15 +733,18 @@ class Mutation(KartezioComponent, ABC):
             self.adapter.chromosomes_infos[sequence].n_functions
         )
 
-    def mutate_function(self, genotype: Genotype,chromosome:str, sequence: str, idx: int):
+    def mutate_function(
+        self, genotype: Genotype, chromosome: str, sequence: str, idx: int
+    ):
         self.adapter.set_function(
-            genotype, chromosome,sequence, idx, self.random_function(sequence)
+            genotype, chromosome, sequence, idx, self.random_function(sequence)
         )
 
     def mutate_edges(
         self,
         genotype: Genotype,
-        chromosome:str, sequence: str,
+        chromosome: str,
+        sequence: str,
         idx: int,
         only_one: int = None,
     ):
@@ -763,32 +764,39 @@ class Mutation(KartezioComponent, ABC):
                 new_edges[edge] = new_edge - 1 + self.adapter.n_inputs
         if only_one is not None:
             new_value = new_edges[only_one]
-            new_edges = self.adapter.get_edges(genotype, chromosome,sequence, idx)
+            new_edges = self.adapter.get_edges(
+                genotype, chromosome, sequence, idx
+            )
             new_edges[only_one] = new_value
         self.adapter.set_edges(genotype, chromosome, sequence, idx, new_edges)
 
     def mutate_parameters(
         self,
         genotype: Genotype,
-        chromosome:str, sequence: str,
+        chromosome: str,
+        sequence: str,
         idx: int,
         only_one: int = None,
     ):
         new_random_parameters = self.random_parameters(sequence)
-        old_parameters = self.adapter.get_parameters(genotype, chromosome,sequence, idx)
+        old_parameters = self.adapter.get_parameters(
+            genotype, chromosome, sequence, idx
+        )
         new_parameters = self.parameters.adjust(
             old_parameters, new_random_parameters
         )
         if only_one is not None:
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
-        self.adapter.set_parameters(genotype, chromosome,sequence, idx, new_parameters)
+        self.adapter.set_parameters(
+            genotype, chromosome, sequence, idx, new_parameters
+        )
 
-    def mutate_output(self, genotype: Genotype,chromosome:str, idx: int):
+    def mutate_output(self, genotype: Genotype, chromosome: str, idx: int):
         n_previous_nodes = 1 + self.adapter.n_nodes
         p = self.edges_weights.weights_edges(n_previous_nodes)
         new_edges = np.random.choice(range(n_previous_nodes), size=1, p=p)
-        self.adapter.set_output(genotype,chromosome, idx, new_edges)
+        self.adapter.set_output(genotype, chromosome, idx, new_edges)
         for edge, new_edge in enumerate(new_edges):
             if new_edge == 0:
                 # sample from inputs
@@ -809,11 +817,10 @@ class Mutation(KartezioComponent, ABC):
 class Initialization(KartezioComponent, ABC):
     pass
 
+
 def load_component(
     component_class: type, json_data: Dict
 ) -> KartezioComponent:
-    from kartezio.core.endpoints import EndpointThreshold
-    from kartezio.core.fitness import IoU
     """
     Load a component from its dictionary representation.
 

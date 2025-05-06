@@ -5,15 +5,17 @@ from typing import Dict, List
 import numpy as np
 
 from kartezio.core.components import (
+    Chromosome,
     Endpoint,
     Genotype,
     KartezioComponent,
     Library,
     dump_component,
     fundamental,
-    register, Chromosome,
+    register,
 )
 from kartezio.evolution.population import Population
+from kartezio.types import Matrix, Scalar, Vector
 
 
 @fundamental()
@@ -32,7 +34,14 @@ class Adapter(KartezioComponent):
             self.shape = (n_nodes, 1 + self.n_edges + self.n_parameters)
             self.n_functions = n_functions
 
-    def __init__(self, n_inputs, n_nodes,nb_chromosomes, returns,libraries: List[Library]):
+    def __init__(
+        self,
+        n_inputs,
+        n_nodes,
+        nb_chromosomes,
+        returns,
+        libraries: List[Library],
+    ):
         super().__init__()
         self.n_inputs = n_inputs
         self.n_nodes = n_nodes
@@ -62,7 +71,7 @@ class Adapter(KartezioComponent):
         return {
             "n_inputs": self.n_inputs,
             "n_nodes": self.n_nodes,
-            "nb_chromosomes":self.nb_chromosomes,
+            "nb_chromosomes": self.nb_chromosomes,
             "returns": self.returns,
         }
 
@@ -74,14 +83,16 @@ class Adapter(KartezioComponent):
         for i in range(self.nb_chromosomes):
             genotype[f"chromosome_{i}"] = Chromosome(self.n_outputs)
             for sequence, info in self.chromosomes_infos.items():
-                genotype[f"chromosome_{i}"][sequence] = np.zeros(info.shape, dtype=np.uint8)
+                genotype[f"chromosome_{i}"][sequence] = np.zeros(
+                    info.shape, dtype=np.uint8
+                )
         return genotype
 
     def set_function(
         self,
         genotype: Genotype,
         chromosome: str,
-        sequence : str,
+        sequence: str,
         node: int,
         function_id: int,
     ):
@@ -91,7 +102,7 @@ class Adapter(KartezioComponent):
         self,
         genotype: Genotype,
         chromosome: str,
-            sequence: str,
+        sequence: str,
         node: int,
         edges,
     ):
@@ -103,7 +114,7 @@ class Adapter(KartezioComponent):
         self,
         genotype: Genotype,
         chromosome: str,
-        sequence:str,
+        sequence: str,
         node: int,
         parameters,
     ):
@@ -111,13 +122,19 @@ class Adapter(KartezioComponent):
             node, self.chromosomes_infos[sequence].para_idx :
         ] = parameters
 
-    def set_output(self, genotype: Genotype,chromosome, output_index, connection):
+    def set_output(
+        self, genotype: Genotype, chromosome, output_index, connection
+    ):
         genotype[chromosome]["outputs"][output_index] = connection
 
-    def get_function(self, genotype: Genotype, chromosome: str,sequence:str, node: int):
+    def get_function(
+        self, genotype: Genotype, chromosome: str, sequence: str, node: int
+    ):
         return genotype[chromosome][sequence][node, 0]
 
-    def get_edges(self, genotype: Genotype, chromosome: str,sequence:str, node: int):
+    def get_edges(
+        self, genotype: Genotype, chromosome: str, sequence: str, node: int
+    ):
         return genotype[chromosome][sequence][
             node, 1 : self.chromosomes_infos[sequence].para_idx
         ]
@@ -126,13 +143,15 @@ class Adapter(KartezioComponent):
         self,
         genotype: Genotype,
         chromosome: str,
-        sequence:str,
+        sequence: str,
         node: int,
         n_edges: int,
     ):
         return genotype[chromosome][sequence][node, 1 : 1 + n_edges]
 
-    def get_parameters(self, genotype: Genotype, chromosome: str,sequence:str, node: int):
+    def get_parameters(
+        self, genotype: Genotype, chromosome: str, sequence: str, node: int
+    ):
         return genotype[chromosome][sequence][
             node, self.chromosomes_infos[sequence].para_idx :
         ]
@@ -158,7 +177,7 @@ class DecoderCGP(Decoder):
         n_nodes: int,
         nb_chromosomes: int,
         libraries: List[Library],
-        endpoint: Endpoint
+        endpoint: Endpoint,
     ):
         super().__init__()
         self.adapter = Adapter(
@@ -166,7 +185,7 @@ class DecoderCGP(Decoder):
             n_nodes,
             nb_chromosomes,
             returns=endpoint.inputs,
-            libraries=libraries
+            libraries=libraries,
         )
         self.libraries = libraries
         self.endpoint = endpoint
@@ -188,7 +207,9 @@ class DecoderCGP(Decoder):
         # for each image
         for xi in x:
             start_time = time.time()
-            y_pred = self._decode_one(genotype,"chromosome_0", phenotype[0], xi)
+            y_pred = self._decode_one(
+                genotype, "chromosome_0", phenotype[0], xi
+            )
             if self.endpoint is not None:
                 y_pred = self.endpoint.call(y_pred)
             all_times.append(time.time() - start_time)
@@ -196,30 +217,27 @@ class DecoderCGP(Decoder):
         whole_time = np.mean(np.array(all_times))
         return all_y_pred, whole_time
 
-    def _decode_one(self, genotype: Genotype,chromosome:str, phenotype: List, x: List):
+    def _decode_one(
+        self, genotype: Genotype, chromosome: str, phenotype: List, x: List
+    ):
         # fill output_map with inputs
         node_outputs = []
         for _ in range(len(self.adapter.types_map)):
             node_outputs.append({})
-        outputs = self.adapter.get_outputs(genotype,chromosome)
+        outputs = self.adapter.get_outputs(genotype, chromosome)
         for idx, edge in enumerate(outputs):
             if edge < self.adapter.n_inputs:
                 chromosome_idx = self.adapter.types_map[
                     self.adapter.returns[idx]
                 ]
-                """
-                if self.adapter.returns[idx] == TypeFourier:
-                    node_outputs[chromosome_idx][edge] = FFT().call(
-                        [x[edge]], []
-                    )
-                elif self.adapter.returns[idx] == Scalar:
-                    node_outputs[chromosome_idx][edge] = MeanValue().call(
-                        [x[edge]], []
-                    )
-                
-                """
-                node_outputs[chromosome_idx][edge] = x[edge]
-        self._x_to_output_map(genotype, phenotype,chromosome, x, node_outputs)
+                if self.adapter.returns[idx] == Scalar:
+                    node_outputs[chromosome_idx][edge] = np.mean(x[edge])
+                elif self.adapter.returns[idx] == Matrix:
+                    node_outputs[chromosome_idx][edge] = x[
+                        edge
+                    ]  # TODO: make it modular
+
+        self._x_to_output_map(genotype, phenotype, chromosome, x, node_outputs)
         y = [
             node_outputs[self.adapter.types_map[t]][c]
             for c, t in zip(outputs, self.adapter.returns)
@@ -230,7 +248,7 @@ class DecoderCGP(Decoder):
         self,
         genotype: Genotype,
         phenotype: List,
-        chromosome:str,
+        chromosome: str,
         x: List,
         node_outputs,
     ):
@@ -247,14 +265,14 @@ class DecoderCGP(Decoder):
                 real_index = node_index - self.adapter.n_inputs
                 # fill the map with active nodes
                 function_index = self.adapter.get_function(
-                    genotype,chromosome, type_index, real_index
+                    genotype, chromosome, type_index, real_index
                 )
                 p = self.adapter.get_parameters(
-                    genotype,chromosome, type_index, real_index
+                    genotype, chromosome, type_index, real_index
                 )
                 arity = self.arity_of(type_index, function_index)
                 connections = self.adapter.get_active_edges(
-                    genotype,chromosome, type_index, real_index, arity
+                    genotype, chromosome, type_index, real_index, arity
                 )
                 function_input_types = self.inputs_of(
                     type_index, function_index
@@ -262,21 +280,13 @@ class DecoderCGP(Decoder):
                 inputs = []
                 for c, t in zip(connections, function_input_types):
                     output_type = self.adapter.types_map[t]
-                    # TODO: make it modular
-                    """
                     if c < self.adapter.n_inputs:
-                        if t == TypeFourier:
-                            inputs.append(FFT().call([x[c]], []))
-                        elif t == Scalar:
-                            inputs.append(MeanValue().call([x[c]], []))
-                            # inputs.append(0)
+                        if t == Scalar:
+                            inputs.append(np.mean(x[c]))
+                        elif t == Vector:
+                            inputs.append(np.mean(x[c]))
                         else:
-                            inputs.append(x[c])
-                    else:
-                        inputs.append(node_outputs[output_type][c])
-                    """
-                    if c < self.adapter.n_inputs:
-                        inputs.append(x[c])
+                            inputs.append(x[c])  # TODO: make it modular
                     else:
                         inputs.append(node_outputs[output_type][c])
 
@@ -289,11 +299,13 @@ class DecoderCGP(Decoder):
     def parse_to_graphs(self, genotype: Genotype):
         phenotype = []
         for chromosome in genotype._chromosomes.keys():
-            outputs = self.adapter.get_outputs(genotype,chromosome)
+            outputs = self.adapter.get_outputs(genotype, chromosome)
             graphs_list = []
             for output, type_output in zip(outputs, self.adapter.returns):
                 root = {(output, type_output)}
-                graphs_list.append(self._parse_one_graph(genotype,chromosome, root))
+                graphs_list.append(
+                    self._parse_one_graph(genotype, chromosome, root)
+                )
             phenotype.append(graphs_list)
         return phenotype
 
@@ -314,7 +326,9 @@ class DecoderCGP(Decoder):
             function, inputs, parameters
         )
 
-    def _parse_one_graph(self, genotype: Genotype,chromosome: str, graph_source):
+    def _parse_one_graph(
+        self, genotype: Genotype, chromosome: str, graph_source
+    ):
         next_indices = graph_source.copy()
         output_tree = graph_source.copy()
         while next_indices:
@@ -324,12 +338,12 @@ class DecoderCGP(Decoder):
                 continue
             node = next_index - self.adapter.n_inputs
             function_index = self.adapter.get_function(
-                genotype,chromosome, next_type_index, node
+                genotype, chromosome, next_type_index, node
             )
             arity = self.arity_of(next_type_index, function_index)
             types = self.inputs_of(next_type_index, function_index)
             next_connections = self.adapter.get_active_edges(
-                genotype,chromosome, next_type_index, node, arity
+                genotype, chromosome, next_type_index, node, arity
             )
             next_connections_to_pop = set(zip(next_connections, types))
             next_indices = next_indices.union(next_connections_to_pop)
@@ -347,7 +361,11 @@ class DecoderCGP(Decoder):
         ]
         endpoint = Endpoint.__from_dict__(dict_infos["endpoint"])
         return DecoderCGP(
-            n_inputs, n_nodes,nb_chromosomes, libraries=libraries, endpoint=endpoint
+            n_inputs,
+            n_nodes,
+            nb_chromosomes,
+            libraries=libraries,
+            endpoint=endpoint,
         )
 
     def __to_dict__(self) -> Dict:

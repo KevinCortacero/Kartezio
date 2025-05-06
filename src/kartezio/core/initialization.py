@@ -36,12 +36,18 @@ class RandomInit(Initialization):
         for chromosome in genotype._chromosomes.keys():
             for sequence in self.mutation.adapter.chromosomes_infos.keys():
                 for node in range(self.mutation.adapter.n_nodes):
-                    self.mutation.mutate_function(genotype, chromosome,sequence, node)
-                    self.mutation.mutate_edges(genotype, chromosome,sequence, node)
-                    self.mutation.mutate_parameters(genotype, chromosome,sequence, node)
+                    self.mutation.mutate_function(
+                        genotype, chromosome, sequence, node
+                    )
+                    self.mutation.mutate_edges(
+                        genotype, chromosome, sequence, node
+                    )
+                    self.mutation.mutate_parameters(
+                        genotype, chromosome, sequence, node
+                    )
             # mutate outputs
             for output in range(self.mutation.adapter.n_outputs):
-                self.mutation.mutate_output(genotype,chromosome, output)
+                self.mutation.mutate_output(genotype, chromosome, output)
         return genotype
 
     def random(self):

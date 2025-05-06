@@ -6,7 +6,6 @@ import numpy as np
 from kartezio.core.components import Components
 from kartezio.utils.directory import Directory
 from kartezio.utils.io import JsonLoader
-from kartezio.vision.common import bgr2rgb
 
 
 class InferenceModel(ABC):
@@ -77,7 +76,7 @@ class EnsembleModel(InferenceModel):
 class ModelPool:
     def __init__(self, directory, regex=""):
         self.models = []
-        if type(directory) == str:
+        if isinstance(directory, str):
             self.directory = Directory(directory)
         else:
             self.directory = directory

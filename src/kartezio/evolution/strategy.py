@@ -4,7 +4,6 @@ import numpy as np
 
 from kartezio.core.initialization import RandomInit
 from kartezio.evolution.population import Population, PopulationWithElite
-from kartezio.mutation.base import PointMutation
 from kartezio.mutation.handler import MutationHandler
 
 

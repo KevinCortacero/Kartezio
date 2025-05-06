@@ -23,8 +23,7 @@ from kartezio.vision.kernel import (
     KERNEL_ROBERTS_Y,
     SHARPEN_KERNEL,
     correct_ksize,
-    gabor_kernel,
-    kernel_from_parameters,
+    ellipse_kernel,
 )
 
 
@@ -214,10 +213,6 @@ class Exp(Primitive):
         super().__init__([Matrix], Matrix, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        # future:
-        # exp_image = cv2.exp(x[0])
-        # exp_image[exp_image < 1] = 255
-        # return exp_image
         return (cv2.exp((x[0] / 255.0).astype(np.float32)) * 255).astype(
             np.uint8
         )
@@ -277,9 +272,6 @@ class Laplacian(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.convertScaleAbs(cv2.Laplacian(x[0], cv2.CV_8U, ksize=3))
-
-
-# future: def f_sobel_laplacian(x, args=None): return cv2.convertScaleAbs(cv2.Laplacian(x[0], cv2.CV_8U, ksize=3))
 
 
 @register(Primitive)
@@ -357,106 +349,86 @@ class AbsoluteDifference2(Primitive):
 @register(Primitive)
 class Erode(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.erode(x[0], kernel_from_parameters(args))
+        return cv2.erode(x[0], ellipse_kernel(args[0]))
+
+
+@register(Primitive)
+class ErodeScalar(Primitive):
+    def __init__(self):
+        super().__init__([Matrix, Scalar], Matrix, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.erode(x[0], ellipse_kernel(x[1]))
 
 
 @register(Primitive)
 class Dilate(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.dilate(x[0], kernel_from_parameters(args))
+        return cv2.dilate(x[0], ellipse_kernel(args[0]))
+
+
+class DilateScalar(Primitive):
+    def __init__(self):
+        super().__init__([Matrix, Scalar], Matrix, 0)
+
+    def call(self, x: List[np.ndarray], args: List[int]):
+        return cv2.dilate(x[0], ellipse_kernel(x[1]))
 
 
 @register(Primitive)
 class Open(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_OPEN, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_OPEN, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class Close(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_CLOSE, kernel_from_parameters(args)
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_CLOSE, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class Gradient(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.morphologyEx(
-            x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args)
-        )
-
-
-@register(Primitive)
-class MorphGradient(Primitive):
-    def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_GRADIENT, kernel_from_parameters(args)
+            x[0], cv2.MORPH_GRADIENT, ellipse_kernel(args[0])
         )
 
 
 @register(Primitive)
 class TopHat(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.morphologyEx(
-            x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args)
-        )
-
-
-@register(Primitive)
-class MorphTopHat(Primitive):
-    def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_TOPHAT, kernel_from_parameters(args)
+            x[0], cv2.MORPH_TOPHAT, ellipse_kernel(args[0])
         )
 
 
 @register(Primitive)
 class BlackHat(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
         return cv2.morphologyEx(
-            x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args)
-        )
-
-
-@register(Primitive)
-class MorphBlackHat(Primitive):
-    def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_BLACKHAT, kernel_from_parameters(args)
+            x[0], cv2.MORPH_BLACKHAT, ellipse_kernel(args[0])
         )
 
 
@@ -489,24 +461,6 @@ class RmSmallObjects(Primitive):
 
 @register(Primitive)
 class RmSmallHoles(Primitive):
-    def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        return remove_small_holes(x[0] > 0, args[0]).astype(np.uint8)
-
-
-@register(Primitive)
-class RemSmallObjects(Primitive):
-    def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
-
-    def call(self, x: List[np.ndarray], args: List[int]):
-        return remove_small_objects(x[0] > 0, args[0]).astype(np.uint8)
-
-
-@register(Primitive)
-class RemSmallHoles(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 1)
 
@@ -608,7 +562,7 @@ class Kirsch(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 0)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         compass_gradients = [
             cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=kernel)
             for kernel in KERNEL_KIRSCH_COMPASS
@@ -621,7 +575,7 @@ class Embossing(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 0)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return cv2.convertScaleAbs(
             cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=KERNEL_EMBOSS)
         )
@@ -632,7 +586,7 @@ class Normalize(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 0)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return cv2.normalize(x[0], None, 0, 255, cv2.NORM_MINMAX)
 
 
@@ -641,7 +595,7 @@ class Denoize(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 1)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return cv2.fastNlMeansDenoising(x[0], None, h=int(args[0]))
 
 
@@ -650,10 +604,10 @@ class PyrUp(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 0)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         h, w = x[0].shape
         scaled_twice = cv2.pyrUp(x[0])
-        return cv2.resize(scaled_twice, (w, h))
+        return cv2.resize(scaled_twice, (w, h), interpolation=cv2.INTER_AREA)
 
 
 @register(Primitive)
@@ -661,10 +615,10 @@ class PyrDown(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 0)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         h, w = x[0].shape
         scaled_half = cv2.pyrDown(x[0])
-        return cv2.resize(scaled_half, (w, h))
+        return cv2.resize(scaled_half, (w, h), interpolation=cv2.INTER_CUBIC)
 
 
 @register(Primitive)
@@ -673,7 +627,7 @@ class Meijiring(Primitive):
         super().__init__([Matrix], Matrix, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return cv2.convertScaleAbs(meijering(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -683,7 +637,7 @@ class Sato(Primitive):
         super().__init__([Matrix], Matrix, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return cv2.convertScaleAbs(sato(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -693,7 +647,7 @@ class Frangi(Primitive):
         super().__init__([Matrix], Matrix, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return cv2.convertScaleAbs(frangi(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -703,7 +657,7 @@ class Hessian(Primitive):
         super().__init__([Matrix], Matrix, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return cv2.convertScaleAbs(hessian(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -767,7 +721,7 @@ class LocalBinaryPattern(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 1)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         return local_binary_pattern(
             x[0], 8, args[0] // 16, method="uniform"
         ).astype(np.uint8)
@@ -778,7 +732,7 @@ class LaplacianOfGaussian(Primitive):
     def __init__(self):
         super().__init__([Matrix], Matrix, 1)
 
-    def call(self, x, args=None):
+    def call(self, x, args: List[int] = None):
         image = x[0]
         sigma = 2.0
         size = correct_ksize(args[0])
@@ -797,7 +751,7 @@ class LaplacianOfGaussian(Primitive):
         return cv2.convertScaleAbs(cv2.filter2D(image, -1, kernel))
 
 
-def create_array_lib(use_scalars=False):
+def default_matrix_lib(use_scalars=False):
     library_opencv = Library(Matrix)
     library_opencv.add_primitive(Identity())
     library_opencv.add_primitive(Max())
@@ -837,8 +791,12 @@ def create_array_lib(use_scalars=False):
     library_opencv.add_primitive(Sharpen())
     library_opencv.add_primitive(GaussianDiff())
     library_opencv.add_primitive(AbsDiff())
-    library_opencv.add_primitive(Erode())
-    library_opencv.add_primitive(Dilate())
+    if use_scalars:
+        library_opencv.add_primitive(ErodeScalar())
+        library_opencv.add_primitive(DilateScalar())
+    else:
+        library_opencv.add_primitive(Erode())
+        library_opencv.add_primitive(Dilate())
     library_opencv.add_primitive(Open())
     library_opencv.add_primitive(Close())
     library_opencv.add_primitive(Gradient())
@@ -855,9 +813,9 @@ def create_array_lib(use_scalars=False):
     library_opencv.add_primitive(Kuwahara())
     library_opencv.add_primitive(DistanceTransform())
     library_opencv.add_primitive(Kirsch())
-    #library_opencv.add_primitive(Embossing())
+    library_opencv.add_primitive(Embossing())
     library_opencv.add_primitive(Normalize())
-    #library_opencv.add_primitive(Denoize())
+    library_opencv.add_primitive(Denoize())
     library_opencv.add_primitive(LocalBinaryPattern())
     library_opencv.add_primitive(Gabor3())
     library_opencv.add_primitive(Gabor5())

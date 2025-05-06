@@ -30,21 +30,33 @@ class PointMutation(Mutation):
                     sampling_indices
                 ):
                     if mutation_parameter_index == 0:
-                        self.mutate_function(genotype, chromosome,sequence, node)
+                        self.mutate_function(
+                            genotype, chromosome, sequence, node
+                        )
                     elif mutation_parameter_index <= sequence_infos.n_edges:
                         connection_idx = mutation_parameter_index - 1
                         self.mutate_edges(
-                            genotype, chromosome,sequence, node, only_one=connection_idx
+                            genotype,
+                            chromosome,
+                            sequence,
+                            node,
+                            only_one=connection_idx,
                         )
                     else:
                         parameter_idx = (
-                            mutation_parameter_index - sequence_infos.n_edges - 1
+                            mutation_parameter_index
+                            - sequence_infos.n_edges
+                            - 1
                         )
                         self.mutate_parameters(
-                            genotype, chromosome,sequence, node, only_one=parameter_idx
+                            genotype,
+                            chromosome,
+                            sequence,
+                            node,
+                            only_one=parameter_idx,
                         )
             random_matrix = np.random.random(size=self.adapter.n_outputs)
             sampling_indices = np.nonzero(random_matrix < self.out_rate)
             for output in sampling_indices:
-                self.mutate_output(genotype,chromosome, output)
+                self.mutate_output(genotype, chromosome, output)
         return genotype

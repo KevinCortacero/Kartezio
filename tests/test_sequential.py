@@ -5,12 +5,12 @@ from skimage.data import cell
 from kartezio.core.endpoints import EndpointThreshold
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
-from kartezio.primitives.matrix import create_array_lib
+from kartezio.primitives.matrix import default_matrix_lib
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        lib = create_array_lib()
+        lib = default_matrix_lib()
         self.model = KartezioTrainer(1, 30, lib, EndpointThreshold(128), IoU())
         self.model.set_mutation_rates(0.1, 0.1)
         image_x = cell().copy()

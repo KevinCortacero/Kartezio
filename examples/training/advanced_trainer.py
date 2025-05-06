@@ -1,13 +1,13 @@
-from kartezio.callback import CallbackVerbose ,CallbackSaveElite
-from kartezio.core.endpoints import EndpointThreshold, ThresholdWatershed
+from kartezio.callback import CallbackSaveElite, CallbackVerbose
+from kartezio.core.endpoints import EndpointThreshold
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
 from kartezio.mutation.behavioral import AccumulateBehavior
-from kartezio.mutation.decay import DegreeDecay, LinearDecay
+from kartezio.mutation.decay import DegreeDecay
 from kartezio.mutation.edges import MutationEdgesNormal
 from kartezio.mutation.effect import MutationNormal
-from kartezio.primitives.matrix import create_array_lib
-from kartezio.primitives.scalar import library_scalar
+from kartezio.primitives.matrix import default_matrix_lib
+from kartezio.primitives.scalar import default_scalar_lib
 from kartezio.utils.dataset import one_cell_dataset
 
 
@@ -20,7 +20,8 @@ def main():
     # Define the number of inputs and create required components
     n_inputs = 1
     libraries = [
-        create_array_lib(use_scalars=False),
+        default_matrix_lib(use_scalars=True),
+        default_scalar_lib(include_matrix=True),
     ]  # Create a library of array operations
     endpoint = EndpointThreshold(128)  # Define the endpoint for the model
     fitness = IoU()  # Define the fitness metric
@@ -43,7 +44,14 @@ def main():
 
     callbacks = []  # Define the callbacks for the model
     callbacks.append(CallbackVerbose(frequency=10))
-    callbacks.append(CallbackSaveElite("elite.json",{"name":"one_cell","indices":None},preprocessing=None,fitness=fitness))
+    callbacks.append(
+        CallbackSaveElite(
+            "elite.json",
+            {"name": "one_cell", "indices": None},
+            preprocessing=None,
+            fitness=fitness,
+        )
+    )
 
     # model = builder.compile(n_iterations=50, n_children=4, callbacks=callbacks)
     # model.summary()  # Display the model summary
@@ -63,7 +71,7 @@ def main():
     print(f"Model Evaluation Result: {evaluation_result}")
 
     # Export the model as a Python class
-    model.print_python_class("MyExampleClass")
+    model.print_python_class("YourExampleClass")
 
 
 if __name__ == "__main__":

@@ -31,10 +31,13 @@ class PythonClassWriter:
         map_of_nodes = {}
         list_of_outputs = []
         map_of_outputs = {}
-
+        graphs = self.decoder.parse_to_graphs(genotype)
+        print(graphs)
         for i in range(self.decoder.adapter.n_outputs):
-            active_nodes = self.decoder.parse_to_graphs(genotype)[i]
+            active_nodes = graphs[i][0]
+            print(active_nodes)
             for node_infos in active_nodes:
+                print(node_infos)
                 node, chromosome = node_infos
                 if node in list_of_inputs or node in list_of_nodes:
                     continue
@@ -46,6 +49,7 @@ class PythonClassWriter:
                 elif node < self.decoder.adapter.out_idx:
                     function_index = self.decoder.adapter.get_function(
                         genotype,
+                        "chromosome_0",
                         chromosome,
                         node - self.decoder.adapter.n_inputs,
                     )
@@ -54,12 +58,14 @@ class PythonClassWriter:
                     )
                     edges = self.decoder.adapter.get_active_edges(
                         genotype,
+                        "chromosome_0",
                         chromosome,
                         node - self.decoder.adapter.n_inputs,
                         active_edges,
                     )
                     parameters = self.decoder.adapter.get_parameters(
                         genotype,
+                        "chromosome_0",
                         chromosome,
                         node - self.decoder.adapter.n_inputs,
                     )

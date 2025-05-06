@@ -174,4 +174,7 @@ cython_debug/
 *.xlsx
 *.ipynb
 *.roi
+
 emissions.csv.bak
+
+Kartezio.code-workspace

@@ -72,9 +72,7 @@ class KartezioViewer(Decoder):
                 connections = self.read_active_connections(
                     genome, node - self.infos.inputs, active_connections
                 )
-                parameters = self.read_parameters(
-                    genome, node - self.infos.inputs
-                )
+                # parameters = self.read_parameters(genome, node - self.infos.inputs)
 
                 for c in connections:
                     G.add_edge(c, node)

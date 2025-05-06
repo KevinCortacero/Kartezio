@@ -1,11 +1,11 @@
-import cv2
 import numpy as np
+from skimage.morphology import disk
 
 SHARPEN_KERNEL = np.array(([0, -1, 0], [-1, 5, -1], [0, -1, 0]), dtype="int")
 KERNEL_ROBERTS_X = np.array(([0, 1], [-1, 0]), dtype="int")
 KERNEL_ROBERTS_Y = np.array(([1, 0], [0, -1]), dtype="int")
-OPENCV_MIN_KERNEL_SIZE = 3
-OPENCV_MAX_KERNEL_SIZE = 11
+OPENCV_MIN_KERNEL_SIZE = 0
+OPENCV_MAX_KERNEL_SIZE = 5
 OPENCV_KERNEL_RANGE = OPENCV_MAX_KERNEL_SIZE - OPENCV_MIN_KERNEL_SIZE
 OPENCV_MIN_INTENSITY = 0
 OPENCV_MAX_INTENSITY = 255
@@ -117,41 +117,10 @@ def correct_ksize(ksize):
     return ksize
 
 
-def ellipse_kernel(ksize):
-    ksize = correct_ksize(ksize)
-    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ksize, ksize))
-
-
-def cross_kernel(ksize):
-    ksize = correct_ksize(ksize)
-    return cv2.getStructuringElement(cv2.MORPH_CROSS, (ksize, ksize))
-
-
-def rect_kernel(ksize):
-    ksize = correct_ksize(ksize)
-    return cv2.getStructuringElement(cv2.MORPH_RECT, (ksize, ksize))
-
-
-def gabor_kernel(ksize, p1, p2):
+def ellipse_kernel(p):
+    ksize = remap_ksize(p)
     ksize = clamp_ksize(ksize)
-    ksize = unodd_ksize(ksize)
-    p1_bin = "{0:08b}".format(p1)
-    p2_bin = "{0:08b}".format(p2)
-
-    sigma = GABOR_SIGMAS[int(p1_bin[:4], 2)]
-    theta = GABOR_THETAS[int(p1_bin[4:], 2)]
-    lambd = GABOR_LAMBDS[int(p2_bin[:4], 2)]
-    gamma = GABOR_GAMMAS[int(p2_bin[4:], 2)]
-
-    return cv2.getGaborKernel((ksize, ksize), sigma, theta, lambd, gamma)
-
-
-def kernel_from_parameters(p):
-    # 50%
-    if p[1] < 128:
-        return ellipse_kernel(p[0])
-    # 25%
-    if p[1] < 192:
-        return ellipse_kernel(p[0])
-    # 25%
-    return ellipse_kernel(p[0])
+    if ksize == 0:
+        return None
+    k = disk(ksize)
+    return k

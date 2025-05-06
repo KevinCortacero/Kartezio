@@ -7,8 +7,8 @@ from uuid import uuid4
 import matplotlib.pyplot as plt
 import numpy as np
 from codecarbon import EmissionsTracker
-from kartezio.core.components import dump_component
 
+from kartezio.core.components import dump_component
 from kartezio.helpers import Observer
 from kartezio.utils.json_handler import json_write
 
@@ -56,7 +56,6 @@ class Callback(Observer, ABC):
     def update(self, event: Event):
         if event.iteration % self.frequency != 0 and not event.force:
             return
-
 
         if event.name == Event.Events.START_LOOP:
             self.on_evolution_start(event.iteration, event.content)
@@ -167,9 +166,15 @@ class CallbackSaveElite(Callback):
         super().__init__()
         self.filename = filename
 
-        self.dataset = (dataset.__to_dict__() if type(dataset) != dict else dataset )
+        self.dataset = (
+            dataset.__to_dict__() if not isinstance(dataset, dict) else dataset
+        )
         self.decoder = None
-        self.preprocessing = dump_component(preprocessing) if preprocessing != None else None
+        self.preprocessing = (
+            dump_component(preprocessing)
+            if preprocessing is not None
+            else None
+        )
         self.fitness = dump_component(fitness)
 
     def set_decoder(self, decoder):
@@ -180,7 +185,7 @@ class CallbackSaveElite(Callback):
         json_data = {
             "iteration": iteration,
             "dataset": self.dataset,
-            "elite":elite.__to_dict__(),
+            "elite": elite.__to_dict__(),
             #     {"genotype":
             #     elite.__to_dict__()
             # # "chromosomes": {

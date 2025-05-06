@@ -1,14 +1,7 @@
-from abc import ABC, abstractmethod
 from typing import Any, List
 
 from kartezio.callback import Callback, Event
-from kartezio.core.components import (
-    Endpoint,
-    Fitness,
-    Library,
-    Preprocessing,
-    UpdatableComponent,
-)
+from kartezio.core.components import Endpoint, Fitness, Library, Preprocessing
 from kartezio.evolution.decoder import Adapter, DecoderCGP
 from kartezio.evolution.strategy import OnePlusLambda
 from kartezio.export import PythonClassWriter
@@ -76,11 +69,12 @@ class KartezioCGP(ObservableModel):
         endpoint,
         fitness,
         preprocessing=None,
-
     ):
         super().__init__()
         self.preprocessing = preprocessing
-        self.decoder = DecoderCGP(n_inputs, n_nodes,nb_chromosomes,libraries,endpoint)
+        self.decoder = DecoderCGP(
+            n_inputs, n_nodes, nb_chromosomes, libraries, endpoint
+        )
         self.evolver = GeneticAlgorithm(self.decoder.adapter, fitness)
 
     def collect_updatables(self):
@@ -159,13 +153,19 @@ class KartezioTrainer:
         endpoint: Endpoint,
         fitness: Fitness,
         preprocessing: Preprocessing = None,
-        nb_chromosomes=1
+        nb_chromosomes=1,
     ):
         super().__init__()
         if not isinstance(libraries, list):
             libraries = [libraries]
         self.model = KartezioCGP(
-            n_inputs, n_nodes,nb_chromosomes,libraries, endpoint, fitness, preprocessing
+            n_inputs,
+            n_nodes,
+            nb_chromosomes,
+            libraries,
+            endpoint,
+            fitness,
+            preprocessing,
         )
         self.updatables = []
 

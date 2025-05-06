@@ -15,7 +15,7 @@ class Const(Primitive):
         super().__init__([], Scalar, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return float(args[0])
+        return args[0]
 
 
 @register(Primitive)
@@ -24,7 +24,7 @@ class MaxValue(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return float(np.max(x[0]))
+        return np.max(x[0])
 
 
 @register(Primitive)
@@ -33,7 +33,7 @@ class MinValue(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return float(np.min(x[0]))
+        return np.min(x[0])
 
 
 @register(Primitive)
@@ -42,7 +42,7 @@ class MeanValue(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return float(np.mean(x[0]))
+        return np.mean(x[0])
 
 
 @register(Primitive)
@@ -51,7 +51,7 @@ class MedianValue(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return float(np.median(x[0]))
+        return np.median(x[0])
 
 
 @register(Primitive)
@@ -60,7 +60,7 @@ class AddValues(Primitive):
         super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return min(x[0] + x[1], 255.0)
+        return min(x[0] + x[1], 255)
 
 
 @register(Primitive)
@@ -78,7 +78,7 @@ class MultiplyValues(Primitive):
         super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return min(x[0] * x[1], 255.0)
+        return min(x[0] * x[1], 255)
 
 
 @register(Primitive)
@@ -87,7 +87,7 @@ class PowValue(Primitive):
         super().__init__([Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return min(x[0] ** 2, 255.0)
+        return min(x[0] ** 2, 255)
 
 
 @register(Primitive)
@@ -105,7 +105,7 @@ class MultiplyBy2(Primitive):
         super().__init__([Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return min(x[0] * 2.0, 255.0)
+        return min(x[0] * 2, 255)
 
 
 @register(Primitive)
@@ -114,7 +114,7 @@ class DivideBy2(Primitive):
         super().__init__([Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return x[0] / 2.0
+        return x[0] // 2
 
 
 @register(Primitive)
@@ -141,7 +141,7 @@ class MeanScalars(Primitive):
         super().__init__([Scalar, Scalar], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return (x[0] + x[1]) / 2.0
+        return (x[0] + x[1]) // 2
 
 
 @register(Primitive)
@@ -151,8 +151,8 @@ class LessThan(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         if x[0] < x[1]:
-            return 1.0
-        return 0.0
+            return 1
+        return 0
 
 
 @register(Primitive)
@@ -162,8 +162,8 @@ class GreaterThan(Primitive):
 
     def call(self, x: List[np.ndarray], args: List[int]):
         if x[0] > x[1]:
-            return 1.0
-        return 0.0
+            return 1
+        return 0
 
 
 @register(Primitive)
@@ -172,7 +172,7 @@ class Skew(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return max(skew(x[0].reshape(-1)), 0.0)
+        return min(max(skew(x[0].reshape(-1)), 0), 255)
 
 
 @register(Primitive)
@@ -181,7 +181,7 @@ class Kurtosis(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return max(kurtosis(x[0].reshape(-1)), 0.0)
+        return min(max(kurtosis(x[0].reshape(-1)), 0), 255)
 
 
 @register(Primitive)
@@ -199,7 +199,7 @@ class Coverage(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return np.count_nonzero(x[0]) / (x[0].shape[0] * x[0].shape[0]) * 255.0
+        return np.count_nonzero(x[0]) / (x[0].shape[0] * x[0].shape[1]) * 255
 
 
 @register(Primitive)
@@ -208,29 +208,41 @@ class CountRegions(Primitive):
         super().__init__([Matrix], Scalar, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return len(np.unique(cv2.connectedComponents(x[0], connectivity=4)[1]))
+        return min(
+            len(np.unique(cv2.connectedComponents(x[0], connectivity=4)[1])),
+            255,
+        )
 
 
-library_scalar = Library(Scalar)
-library_scalar.add_primitive(Const())
-library_scalar.add_primitive(MaxValue())
-library_scalar.add_primitive(MinValue())
-library_scalar.add_primitive(MeanValue())
-library_scalar.add_primitive(MedianValue())
-library_scalar.add_primitive(AddValues())
-library_scalar.add_primitive(SubtractValues())
-library_scalar.add_primitive(MultiplyValues())
-library_scalar.add_primitive(PowValue())
-library_scalar.add_primitive(SqrtValue())
-library_scalar.add_primitive(MultiplyBy2())
-library_scalar.add_primitive(DivideBy2())
-library_scalar.add_primitive(MinScalars())
-library_scalar.add_primitive(MaxScalars())
-library_scalar.add_primitive(MeanScalars())
-library_scalar.add_primitive(LessThan())
-library_scalar.add_primitive(GreaterThan())
-library_scalar.add_primitive(Skew())
-library_scalar.add_primitive(Kurtosis())
-library_scalar.add_primitive(MeanAbsDiff())
-library_scalar.add_primitive(Coverage())
-library_scalar.add_primitive(CountRegions())
+def default_scalar_lib(include_matrix=False) -> Library:
+    """
+    Create a default library of scalar operations.
+
+    Returns:
+        Library: A library containing various scalar operations.
+    """
+    library_scalar = Library(Scalar)
+    library_scalar.add_primitive(Const())
+    if include_matrix:
+        library_scalar.add_primitive(MaxValue())
+        library_scalar.add_primitive(MinValue())
+        library_scalar.add_primitive(MeanValue())
+        library_scalar.add_primitive(MedianValue())
+        # library_scalar.add_primitive(Skew()) # TODO: fix and adapt for images
+        # library_scalar.add_primitive(Kurtosis()) # TODO: fix and adapt for images
+        library_scalar.add_primitive(MeanAbsDiff())
+        library_scalar.add_primitive(Coverage())
+        library_scalar.add_primitive(CountRegions())
+    library_scalar.add_primitive(AddValues())
+    library_scalar.add_primitive(SubtractValues())
+    library_scalar.add_primitive(MultiplyValues())
+    library_scalar.add_primitive(PowValue())
+    library_scalar.add_primitive(SqrtValue())
+    library_scalar.add_primitive(MultiplyBy2())
+    library_scalar.add_primitive(DivideBy2())
+    library_scalar.add_primitive(MinScalars())
+    library_scalar.add_primitive(MaxScalars())
+    library_scalar.add_primitive(MeanScalars())
+    library_scalar.add_primitive(LessThan())
+    library_scalar.add_primitive(GreaterThan())
+    return library_scalar

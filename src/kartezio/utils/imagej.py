@@ -22,7 +22,7 @@ def read_ellipse_from_row(row, scale=1.0, ellipse_scale=1.0):
 
 def read_polygons_from_roi(filename, scale=1.0):
     rois = ImagejRoi.fromfile(filename)
-    if type(rois) == ImagejRoi:
+    if isinstance(rois, ImagejRoi):
         return [rois.coordinates()]
     polygons = [roi.coordinates() for roi in rois]
     return polygons

@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from kartezio.core.components import Preprocessing, register
-from kartezio.vision.common import image_split
+from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
 
 
 @register(Preprocessing)
@@ -270,12 +270,14 @@ class Format3D(Preprocessing):
     def _to_json_kwargs(self) -> dict:
         pass
 
+
 @register(Preprocessing)
 class Format3DNoChannel(Preprocessing):
     """
     Preprocessing for tiff images shape ( z,h,w)
     """
-    def __init__(self, z_range=None,threshold=1,axis="z"):
+
+    def __init__(self, z_range=None, threshold=1, axis="z"):
         super().__init__()
         self.z_range = z_range
         self.threshold = threshold
@@ -285,38 +287,51 @@ class Format3DNoChannel(Preprocessing):
         new_x = []
         for i in range(len(x)):
             one_item = []
-            if self.axis =="z":
+            if self.axis == "z":
                 for z in range(len(x[i][0])):
-                    one_item.append([
-                        np.where(
-                            x[i][0][z,:,:] > self.threshold,
-                            x[i][0][z,:,:],
-                            0
-                        )])
+                    one_item.append(
+                        [
+                            np.where(
+                                x[i][0][z, :, :] > self.threshold,
+                                x[i][0][z, :, :],
+                                0,
+                            )
+                        ]
+                    )
             if self.axis == "h":
                 for h in range(np.shape(x[i][0])[1]):
-                    one_item.append([
-                        np.where(
-                            x[i][0][:,h,:] > self.threshold,
-                            x[i][0][:,h,:],
-                            0
-                        )])
+                    one_item.append(
+                        [
+                            np.where(
+                                x[i][0][:, h, :] > self.threshold,
+                                x[i][0][:, h, :],
+                                0,
+                            )
+                        ]
+                    )
             if self.axis == "w":
                 for w in range(np.shape(x[i][0])[2]):
-                    one_item.append([
-                        np.where(
-                            x[i][0][:, :, w] > self.threshold,
-                            x[i][0][:, :, w],
-                            0
-                        )])
+                    one_item.append(
+                        [
+                            np.where(
+                                x[i][0][:, :, w] > self.threshold,
+                                x[i][0][:, :, w],
+                                0,
+                            )
+                        ]
+                    )
             new_x.append(one_item)
         return new_x
 
-
     def __to_dict__(self) -> Dict:
         return {
-            "args": {"z_range": self.z_range,"threshold":self.threshold,"axis":self.axis}
+            "args": {
+                "z_range": self.z_range,
+                "threshold": self.threshold,
+                "axis": self.axis,
+            }
         }
+
 
 # @register(Preprocessing)
 # class Format3DNoChannel(Preprocessing):

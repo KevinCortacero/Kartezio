@@ -2,6 +2,7 @@ import numpy as np
 from numba import jit
 from scipy.optimize import linear_sum_assignment
 
+
 @jit(nopython=True)
 def _label_overlap(x, y):
     """fast function to get pixel overlaps between masks in x and y

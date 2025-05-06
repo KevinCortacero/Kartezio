@@ -20,7 +20,7 @@ def pack_one_directory(directory_path):
     packed_history["elite"] = elite["individual"]
     packed_history["generations"] = []
     generations = []
-    for g in directory.ls(f"G*.json", ordered=True):
+    for g in directory.ls("G*.json", ordered=True):
         generations.append(int(g.name.replace("G", "").split(".")[0]))
     generations.sort()
     for generation in generations:
@@ -61,6 +61,7 @@ class JsonLoader:
         fitness = load_component(Fitness, json_data["fitness"])
         return dataset, individual, decoder, preprocessing, fitness
 
+
 class JsonLoader3D:
     def read_individual(self, filepath):
         json_data = json_read(filepath=filepath)
@@ -81,6 +82,7 @@ class JsonLoader3D:
             )
         fitness = load_component(Fitness, json_data["fitness"])
         return dataset, individual, decoder, preprocessing, fitness
+
 
 """
 class JsonSaver:

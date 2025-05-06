@@ -3,7 +3,7 @@ import unittest
 from kartezio.core.endpoints import EndpointThreshold
 from kartezio.core.fitness import IoU
 from kartezio.evolution.base import KartezioTrainer
-from kartezio.primitives.matrix import create_array_lib
+from kartezio.primitives.matrix import default_matrix_lib
 
 
 class TestModel(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestModel(unittest.TestCase):
         self.model = KartezioTrainer(
             1,
             5,
-            create_array_lib(),
+            default_matrix_lib(),
             EndpointThreshold(128),
             IoU(),
         )

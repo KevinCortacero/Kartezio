@@ -9,11 +9,11 @@ from kartezio.core.components import (
     load_component,
     register,
 )
-from kartezio.types import Matrix
+from kartezio.types import Vector
 
 
 @register(Endpoint)
-class MyExampleEndpoint(Endpoint):
+class YourEndpoint(Endpoint):
     """
     A custom endpoint used as the final output node in a CGP graph.
 
@@ -22,12 +22,12 @@ class MyExampleEndpoint(Endpoint):
 
     def __init__(self, n_classes: int):
         """
-        Initialize the MyExampleEndpoint with the specified number of classes.
+        Initialize the YourEndpoint with the specified number of classes.
 
         Args:
             n_classes (int): The number of classes to handle as inputs.
         """
-        super().__init__(inputs=[Matrix] * n_classes)
+        super().__init__(inputs=[Vector] * n_classes)
         self.n_classes = n_classes
 
     def call(self, x, args=None) -> int:
@@ -60,7 +60,7 @@ def main():
     Demonstrate the use of the custom endpoint by processing a sample set of input arrays.
     """
     # Create an instance of the custom endpoint
-    my_endpoint = MyExampleEndpoint(n_classes=3)
+    your_endpoint = YourEndpoint(n_classes=3)
 
     # Define sample input arrays
     inputs = [
@@ -70,22 +70,22 @@ def main():
     ]
 
     # Apply the endpoint operation
-    output = my_endpoint.call(inputs)  # Expected Output: 0
-    print(f"Output from my_endpoint: {output}")
+    output = your_endpoint.call(inputs)  # Expected Output: 0
+    print(f"Output from your_endpoint: {output}")
 
     # Instantiate the endpoint from the component registry and apply it
-    my_endpoint_2 = Components.instantiate(
-        "Endpoint", "MyExampleEndpoint", n_classes=3
+    your_endpoint_2 = Components.instantiate(
+        "Endpoint", "YourEndpoint", n_classes=3
     )
-    output_2 = my_endpoint_2.call(inputs)  # Expected Output: 0
-    print(f"Output from my_endpoint_2: {output_2}")
+    output_2 = your_endpoint_2.call(inputs)  # Expected Output: 0
+    print(f"Output from your_endpoint_2: {output_2}")
 
     # Dump the component as a dictionary
-    print("Component Dump:", dump_component(my_endpoint))
+    print("Component Dump:", dump_component(your_endpoint))
 
-    my_endpoint_3 = load_component(Endpoint, dump_component(my_endpoint))
-    output_3 = my_endpoint_3.call(inputs)  # Expected Output: 0
-    print(f"Output from my_endpoint_3: {output_3}")
+    your_endpoint_3 = load_component(Endpoint, dump_component(your_endpoint))
+    output_3 = your_endpoint_3.call(inputs)  # Expected Output: 0
+    print(f"Output from your_endpoint_3: {output_3}")
 
 
 if __name__ == "__main__":

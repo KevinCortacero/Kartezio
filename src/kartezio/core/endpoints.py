@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Dict
 
 import cv2
-import numpy as np
+
 from kartezio.core.components import Endpoint, register
 from kartezio.preprocessing import Resize
 from kartezio.types import Matrix
@@ -17,8 +17,8 @@ from kartezio.vision.watershed import (
     threshold_local_max_watershed,
     threshold_watershed,
 )
-from kartezio.vision.watershed_3d import watershed_3d ,_extract_markers_dt
-from kartezio.vision.watershed import watershed_transform
+from kartezio.vision.watershed_3d import watershed_3d
+
 
 @register(Endpoint)
 class NoEndpoint(Endpoint):
@@ -435,24 +435,24 @@ class EndpointSimple(Endpoint):
 
 ### nouveauté a testé
 
+
 @register(Endpoint)
 class RawLocalMaxWatershed3D(EndpointWatershed):
     """Watershed based KartezioEndpoint, but only based on one single mask.
     Markers are computed as the local max of the mask
 
     """
-    def __init__(self,
-        arity = 5,
-        watershed_line: bool = True,
-        threshold: int = 192):
+
+    def __init__(
+        self, arity=5, watershed_line: bool = True, threshold: int = 192
+    ):
         super().__init__(arity, watershed_line=watershed_line)
         self.threshold = threshold
         self.watershed_line = watershed_line
         self.i = 0
-        #cv2.namedWindow("watershed-signal")
+        # cv2.namedWindow("watershed-signal")
 
     def call(self, x):
-
         return [
             watershed_3d(
                 cube=x[0],
@@ -475,8 +475,3 @@ test_endpoint = Endpoint.from_config(
         "args": {"watershed_line": True, "threshold": 128},
     }
 )
-# print(test_endpoint)
-# print(test_endpoint.__to_dict__())
-
-
-
