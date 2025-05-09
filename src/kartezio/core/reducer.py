@@ -7,7 +7,7 @@ from kartezio.vision.common import threshold_tozero
 
 
 @register(Reducer)
-class BasicReducton(Reducer):
+class BasicReduction(Reducer):
     def _to_json_kwargs(self) -> dict:
         return {
             "mode": self.mode,
