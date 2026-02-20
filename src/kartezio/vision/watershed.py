@@ -258,7 +258,9 @@ def local_max_watershed(image, min_distance, watershed_line, downsample):
     return marker_controlled_watershed(image, markers, watershed_line)
 
 
-def distance_watershed(image, min_distance, watershed_line, normalize, downsample=0):
+def distance_watershed(
+    image, min_distance, watershed_line: bool, normalize: bool, downsample=0
+):
     """
     Shortcut for running watershed using a distance transform + local maxima approach.
 

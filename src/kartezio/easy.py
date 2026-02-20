@@ -1,21 +1,10 @@
 import numpy as np
 
-# from kartezio.export import GenomeToPython
-# from kartezio.inference import SingleModel
 from kartezio.utils.io import JsonLoader
 
 
 def read_genome(filepath):
     return JsonLoader().read_individual(filepath)
-
-
-# def save_genome(filepath, genome, dataset, parser):
-#     JsonSaver(dataset, parser).save_individual(filepath, genome)
-
-
-# def load_model(filepath, series=False):
-#     dataset, elite, parser = read_genome(filepath)
-#     return SingleModel(elite, parser)
 
 
 def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False):
@@ -31,18 +20,6 @@ def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False
         only_active=only_active,
         jupyter=jupyter,
     )
-
-
-### old function ####
-# def generate_python_class(filepath, class_name):
-#     _, genome, parser = read_genome(filepath=filepath)
-#     python_writer = GenomeToPython(parser)
-#     python_writer.to_python_class(class_name, genome)
-#
-#
-# def python_class(model, class_name):
-#     python_writer = GenomeToPython(model._model.decoder)
-#     python_writer.to_python_class(class_name, model._model.genome)
 
 
 def print_stats(values, fitness, set_name):

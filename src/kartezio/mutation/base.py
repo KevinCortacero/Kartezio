@@ -1,5 +1,3 @@
-from typing import Dict
-
 import numpy as np
 
 from kartezio.core.components import Genotype, Mutation, register
@@ -9,7 +7,7 @@ from kartezio.evolution.decoder import Adapter
 @register(Mutation)
 class PointMutation(Mutation):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "PointMutation":
+    def __from_dict__(cls, dict_infos: dict) -> "PointMutation":
         pass
 
     def __init__(self, adapter: Adapter):
@@ -18,7 +16,7 @@ class PointMutation(Mutation):
         self.out_rate = None
 
     def mutate(self, genotype: Genotype) -> Genotype:
-        for c_nb in range(self.adapter.nb_chromosomes):
+        for c_nb in range(self.adapter.n_chromosomes):
             chromosome = f"chromosome_{c_nb}"
             for (
                 sequence,

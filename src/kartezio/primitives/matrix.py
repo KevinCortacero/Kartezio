@@ -1,5 +1,3 @@
-from typing import List
-
 import cv2
 import numpy as np
 from skimage.feature import local_binary_pattern
@@ -8,7 +6,15 @@ from skimage.morphology import remove_small_holes, remove_small_objects
 
 from kartezio.core.components import Library, Primitive, register
 from kartezio.thirdparty.kuwahara import kuwahara_filter
-from kartezio.types import Matrix, Scalar
+from kartezio.types import (
+    ArrayData,
+    DataList,
+    DataType,
+    Matrix1,
+    Matrix2,
+    MatrixScalar,
+    Parameters,
+)
 from kartezio.vision.common import (
     convolution,
     gradient_magnitude,
@@ -30,225 +36,225 @@ from kartezio.vision.kernel import (
 @register(Primitive)
 class Identity(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return x[0]
 
 
 @register(Primitive)
 class Max(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.max(x[0], x[1])
 
 
 @register(Primitive)
 class Min(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.min(x[0], x[1])
 
 
 @register(Primitive)
 class Mean(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.addWeighted(x[0], 0.5, x[1], 0.5, 0)
 
 
 @register(Primitive)
 class Add(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.add(x[0], x[1])
 
 
 @register(Primitive)
 class AddScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.add(x[0], float(x[1]))
 
 
 @register(Primitive)
 class Subtract(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.subtract(x[0], x[1])
 
 
 @register(Primitive)
 class SubtractScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.subtract(x[0], float(x[1]))
 
 
 @register(Primitive)
 class Multiply(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.multiply(x[0], x[1])
 
 
 @register(Primitive)
 class MultiplyScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.multiply(x[0], float(x[1]))
 
 
 @register(Primitive)
 class Divide(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.divide(x[0], x[1])
 
 
 @register(Primitive)
 class DivideScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.divide(x[0], float(x[1]))
 
 
 @register(Primitive)
 class BitwiseNot(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.bitwise_not(x[0])
 
 
 @register(Primitive)
 class BitwiseOr(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.bitwise_or(x[0], x[1])
 
 
 @register(Primitive)
 class BitwiseAnd(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.bitwise_and(x[0], x[1])
 
 
 @register(Primitive)
 class BitwiseAndMask(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.bitwise_and(x[0], x[0], mask=x[1])
 
 
 @register(Primitive)
 class BitwiseXor(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.bitwise_xor(x[0], x[1])
 
 
 @register(Primitive)
 class Sqrt(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(cv2.sqrt(x[0].astype(np.float32)))
 
 
 @register(Primitive)
 class Pow(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(cv2.pow(x[0], 2))
 
 
 @register(Primitive)
 class Pow2(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(cv2.pow(x[0], 2))
 
 
 @register(Primitive)
 class Exp(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return (cv2.exp((x[0] / 255.0).astype(np.float32)) * 255).astype(np.uint8)
 
 
 @register(Primitive)
 class Log(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(np.log1p(x[0].astype(np.float32)))
 
 
 @register(Primitive)
 class MedianBlur(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.medianBlur(x[0], correct_ksize(args[0]))
 
 
 @register(Primitive)
 class MedianBlurScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.medianBlur(x[0], correct_ksize(args[1]))
 
 
 @register(Primitive)
 class GaussianBlur(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         ksize = correct_ksize(args[0])
         return cv2.GaussianBlur(x[0], (ksize, ksize), 0)
 
@@ -256,9 +262,9 @@ class GaussianBlur(Primitive):
 @register(Primitive)
 class GaussianBlurScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         ksize = correct_ksize(args[1])
         return cv2.GaussianBlur(x[0], (ksize, ksize), 0)
 
@@ -266,18 +272,18 @@ class GaussianBlurScalar(Primitive):
 @register(Primitive)
 class Laplacian(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(cv2.Laplacian(x[0], cv2.CV_8U, ksize=3))
 
 
 @register(Primitive)
 class Sobel(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         gx, gy = cv2.spatialGradient(x[0])
         return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
 
@@ -285,9 +291,9 @@ class Sobel(Primitive):
 @register(Primitive)
 class Roberts(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         gx = convolution(x[0], KERNEL_ROBERTS_X)
         gy = convolution(x[0], KERNEL_ROBERTS_Y)
         return gradient_magnitude(gx.astype(np.float32), gy.astype(np.float32))
@@ -296,9 +302,9 @@ class Roberts(Primitive):
 @register(Primitive)
 class Canny(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         t1 = float(args[0])
         t2 = t1 * 3 if t1 * 3 < 255.0 else 255.0
         return cv2.Canny(x[0], t1, t2)
@@ -307,18 +313,18 @@ class Canny(Primitive):
 @register(Primitive)
 class Sharpen(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return convolution(x[0], SHARPEN_KERNEL)
 
 
 @register(Primitive)
 class GaussianDiff(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__(Matrix1, DataType.MATRIX, 2)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         ksize = correct_ksize(args[0])
         image = x[0].astype(np.int16)
         return cv2.convertScaleAbs(
@@ -329,168 +335,168 @@ class GaussianDiff(Primitive):
 @register(Primitive)
 class AbsDiff(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.absdiff(x[0], x[1])
 
 
 @register(Primitive)
 class AbsoluteDifference2(Primitive):
     def __init__(self):
-        super().__init__([Matrix] * 2, Matrix, 0)
+        super().__init__(Matrix2, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return 255 - cv2.absdiff(x[0], x[1])
 
 
 @register(Primitive)
 class Erode(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.erode(x[0], ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class ErodeScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.erode(x[0], ellipse_kernel(x[1]))
 
 
 @register(Primitive)
 class Dilate(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.dilate(x[0], ellipse_kernel(args[0]))
 
 
 class DilateScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.dilate(x[0], ellipse_kernel(x[1]))
 
 
 @register(Primitive)
 class Open(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_OPEN, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class Close(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_CLOSE, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class Gradient(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_GRADIENT, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class TopHat(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_TOPHAT, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class BlackHat(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_BLACKHAT, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
 class HitMiss(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_HITMISS, HITMISS_KERNEL)
 
 
 @register(Primitive)
 class Fill(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return morph_fill(x[0])
 
 
 @register(Primitive)
 class RmSmallObjects(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return remove_small_objects(x[0] > 0, args[0]).astype(np.uint8)
 
 
 @register(Primitive)
 class RmSmallHoles(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return remove_small_holes(x[0] > 0, args[0]).astype(np.uint8)
 
 
 @register(Primitive)
 class Threshold(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return threshold_tozero(x[0], args[0])
 
 
 @register(Primitive)
 class ThresholdScalar(Primitive):
     def __init__(self):
-        super().__init__([Matrix, Scalar], Matrix, 0)
+        super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return threshold_tozero(x[0], x[1])
 
 
 @register(Primitive)
 class Kuwahara(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return kuwahara_filter(x[0], correct_ksize(args[0]))
 
 
 @register(Primitive)
 class DistanceTransform(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
     def call(self, x, args=None):
         return cv2.normalize(
@@ -506,9 +512,9 @@ class DistanceTransform(Primitive):
 @register(Primitive)
 class BinaryInRange(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__(Matrix1, DataType.MATRIX, 2)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         lower = int(min(args[0], args[1]))
         upper = int(max(args[0], args[1]))
         return cv2.inRange(x[0], lower, upper)
@@ -517,9 +523,9 @@ class BinaryInRange(Primitive):
 @register(Primitive)
 class InRange(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__(Matrix1, DataType.MATRIX, 2)
 
-    def call(self, x: List[np.ndarray], args: List[int]):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         lower = int(min(args[0], args[1]))
         upper = int(max(args[0], args[1]))
         return cv2.bitwise_and(
@@ -532,18 +538,18 @@ class InRange(Primitive):
 @register(Primitive)
 class Inverse(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return 255 - x[0]
 
 
 @register(Primitive)
 class InverseNonZero(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x: List[np.ndarray], args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         inverse = 255 - x[0]
         inverse[inverse == 255] = 0
         return inverse
@@ -552,9 +558,9 @@ class InverseNonZero(Primitive):
 @register(Primitive)
 class Kirsch(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         compass_gradients = [
             cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=kernel)
             for kernel in KERNEL_KIRSCH_COMPASS
@@ -565,9 +571,9 @@ class Kirsch(Primitive):
 @register(Primitive)
 class Embossing(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(
             cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=KERNEL_EMBOSS)
         )
@@ -576,86 +582,86 @@ class Embossing(Primitive):
 @register(Primitive)
 class Normalize(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.normalize(x[0], None, 0, 255, cv2.NORM_MINMAX)
 
 
 @register(Primitive)
 class Denoize(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.fastNlMeansDenoising(x[0], None, h=int(args[0]))
 
 
 @register(Primitive)
 class PyrUp(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         h, w = x[0].shape
         scaled_twice = cv2.pyrUp(x[0])
-        return cv2.resize(scaled_twice, (w, h), interpolation=cv2.INTER_AREA)
+        return cv2.resize(scaled_twice, (w, h), interpolation=cv2.INTER_NEAREST)
 
 
 @register(Primitive)
 class PyrDown(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         h, w = x[0].shape
         scaled_half = cv2.pyrDown(x[0])
-        return cv2.resize(scaled_half, (w, h), interpolation=cv2.INTER_CUBIC)
+        return cv2.resize(scaled_half, (w, h), interpolation=cv2.INTER_NEAREST)
 
 
 @register(Primitive)
 class Meijiring(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(meijering(x[0], sigmas=self.sigmas) * 255)
 
 
 @register(Primitive)
 class Sato(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(sato(x[0], sigmas=self.sigmas) * 255)
 
 
 @register(Primitive)
 class Frangi(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(frangi(x[0], sigmas=self.sigmas) * 255)
 
 
 @register(Primitive)
 class Hessian(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 0)
+        super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.convertScaleAbs(hessian(x[0], sigmas=self.sigmas) * 255)
 
 
 class Gabor(Primitive):
     def __init__(self, ksize):
-        super().__init__([Matrix], Matrix, 2)
+        super().__init__(Matrix1, DataType.MATRIX, 2)
         self.ksize = ksize
         self.sigma = 1.0
         self.psi = 0.0
@@ -711,9 +717,9 @@ class Gabor11(Gabor):
 @register(Primitive)
 class LocalBinaryPattern(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         return local_binary_pattern(x[0], 8, args[0] // 16, method="uniform").astype(
             np.uint8
         )
@@ -722,9 +728,9 @@ class LocalBinaryPattern(Primitive):
 @register(Primitive)
 class LaplacianOfGaussian(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, 1)
+        super().__init__(Matrix1, DataType.MATRIX, 1)
 
-    def call(self, x, args: List[int] = None):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         image = x[0]
         sigma = 2.0
         size = correct_ksize(args[0])
@@ -744,7 +750,7 @@ class LaplacianOfGaussian(Primitive):
 
 
 def default_matrix_lib(use_scalars=False):
-    library_opencv = Library(Matrix)
+    library_opencv = Library(DataType.MATRIX)
     library_opencv.add_primitive(Identity())
     library_opencv.add_primitive(Max())
     library_opencv.add_primitive(Min())

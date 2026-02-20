@@ -3,17 +3,25 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from kartezio.core.initialization import RandomInit
-from kartezio.evolution.population import Population, PopulationWithElite
+from kartezio.evolution.population import (
+    Population,
+    PopulationHistory,
+    PopulationWithElite,
+)
 from kartezio.mutation.handler import MutationHandler
 
 
 class Strategy(ABC):
     @abstractmethod
-    def selection(self, population: Population):
+    def selection(self, population: Population) -> PopulationHistory:
         pass
 
     @abstractmethod
     def reproduction(self, population: Population):
+        pass
+
+    @abstractmethod
+    def compile(self, n_iterations: int) -> Population:
         pass
 
 
@@ -32,7 +40,7 @@ class OnePlusLambda(Strategy):
     def set_required_fps(self, required_fps):
         self.required_fps = 1.0 / required_fps
 
-    def compile(self, n_iterations: int):
+    def compile(self, n_iterations: int) -> PopulationWithElite:
         self.mutation_handler.compile(n_iterations)
         return self.create_population()
 
@@ -44,7 +52,7 @@ class OnePlusLambda(Strategy):
             population.individuals[i] = individual
         return population
 
-    def selection(self, population: PopulationWithElite):
+    def selection(self, population: PopulationWithElite) -> PopulationHistory:
         # apply random noise on raw fitness
         fitness = population.get_raw()
         if self.gamma is not None:

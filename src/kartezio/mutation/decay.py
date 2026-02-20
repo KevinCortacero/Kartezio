@@ -1,9 +1,8 @@
 from abc import ABC
-from typing import Dict
 
 import numpy as np
 
-from kartezio.callback import Event
+from kartezio.callback import Event, EventType
 from kartezio.core.components import UpdatableComponent, fundamental, register
 from kartezio.mutation.base import Mutation
 
@@ -19,7 +18,7 @@ class MutationDecay(UpdatableComponent, ABC):
         self._mutation = mutation
 
     def update(self, event: Event):
-        if event.name == Event.Events.END_STEP:
+        if event.name == EventType.END_STEP:
             self._mutation.node_rate = self.stored[event.iteration]
 
     def _discretize(self, values):
@@ -34,7 +33,7 @@ class MutationDecay(UpdatableComponent, ABC):
 @register(MutationDecay)
 class ConstantDecay(MutationDecay):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "ConstantDecay":
+    def __from_dict__(cls, dict_infos: dict) -> "ConstantDecay":
         pass
 
     def __init__(self, value: float):
@@ -48,7 +47,7 @@ class ConstantDecay(MutationDecay):
 @register(MutationDecay)
 class LinearDecay(MutationDecay):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "LinearDecay":
+    def __from_dict__(cls, dict_infos: dict) -> "LinearDecay":
         pass
 
     def __init__(self, start: float, end: float, discrete_bins: int = None):
@@ -64,7 +63,7 @@ class LinearDecay(MutationDecay):
 @register(MutationDecay)
 class DegreeDecay(MutationDecay):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "DegreeDecay":
+    def __from_dict__(cls, dict_infos: dict) -> "DegreeDecay":
         pass
 
     def __init__(
@@ -85,7 +84,7 @@ class DegreeDecay(MutationDecay):
 @register(MutationDecay)
 class InvDegreeDecay(MutationDecay):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "InvDegreeDecay":
+    def __from_dict__(cls, dict_infos: dict) -> "InvDegreeDecay":
         pass
 
     def __init__(

@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import Dict
 
 import numpy as np
 
@@ -61,7 +60,7 @@ class IndividualHistory:
 
 
 class PopulationHistory:
-    def __init__(self, n_individuals, changed: bool):
+    def __init__(self, n_individuals: int, changed: bool):
         self.individuals = {}
         for i in range(n_individuals):
             self.individuals[i] = IndividualHistory()
@@ -81,10 +80,10 @@ class PopulationHistory:
 @register(Population)
 class PopulationWithElite(Population):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "PopulationWithElite":
+    def __from_dict__(cls, dict_infos: dict) -> "PopulationWithElite":
         pass
 
-    def __init__(self, n_children):
+    def __init__(self, n_children: int):
         super().__init__(1 + n_children)
 
     def get_elite(self):

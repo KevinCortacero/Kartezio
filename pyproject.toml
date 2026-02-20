@@ -1,8 +1,8 @@
 [project]
 name = "kartezio"
-version = "1.0.0a2"
+version = "1.0.1"
 description = ""
-authors = [{ name = "Kevin Cortacero", email = "kevin.cortacero@protonmail.com" }]
+authors = [{ name = "Kevin Cortacero", email = "kevin@mantalys.fr" }]
 requires-python = ">=3.11"
 readme = "README.md"
 dependencies = [
@@ -15,7 +15,7 @@ dependencies = [
     "czifile",
     "tabulate",
     "roifile",
-    "codecarbon>=2.8.3",
+    "codecarbon"
 ]
 
 [project.urls]
@@ -35,24 +35,3 @@ include = ["src/kartezio"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.black]
-line-length = 79
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 79

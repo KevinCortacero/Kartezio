@@ -1,9 +1,8 @@
 from abc import ABC
-from typing import Dict
 
 import numpy as np
 
-from kartezio.callback import Event
+from kartezio.callback import Event, EventType
 from kartezio.core.components import UpdatableComponent, fundamental, register
 
 
@@ -14,7 +13,7 @@ class MutationEffect(UpdatableComponent, ABC):
         self.max_value = 256
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "MutationEffect":
+    def __from_dict__(cls, dict_infos: dict) -> "MutationEffect":
         pass
 
 
@@ -23,7 +22,7 @@ class MutationUniform(MutationEffect):
     def adjust(self, _, new_parameters):
         return new_parameters
 
-    def update(self, event: dict):
+    def update(self, event: Event):
         pass
 
     def _precompute(self):
@@ -49,7 +48,7 @@ class MutationWeighted(MutationEffect):
         ).astype(np.uint8)
 
     def update(self, event: Event):
-        if event.name == Event.Events.END_STEP:
+        if event.name == EventType.END_STEP:
             self.weight = self.stored[event.iteration]
 
 
@@ -70,5 +69,5 @@ class MutationNormal(MutationEffect):
         return np.clip(np.random.normal(old_parameters, self.sigma), 0, 255)
 
     def update(self, event: Event):
-        if event.name == Event.Events.END_STEP:
+        if event.name == EventType.END_STEP:
             self.sigma = self.stored[event.iteration]

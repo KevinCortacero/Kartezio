@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import Dict
 
 import numpy as np
 
@@ -12,7 +11,7 @@ class MutationEdges(KartezioComponent, ABC):
         super().__init__()
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "MutationEdges":
+    def __from_dict__(cls, dict_infos: dict) -> "MutationEdges":
         pass
 
     def random_output(self):
