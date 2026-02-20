@@ -1,7 +1,6 @@
 from abc import ABC
 from datetime import datetime
 from enum import Enum
-from typing import Dict
 from uuid import uuid4
 
 import matplotlib.pyplot as plt
@@ -9,6 +8,7 @@ import numpy as np
 from codecarbon import EmissionsTracker
 
 from kartezio.core.components import dump_component
+from kartezio.evolution.population import PopulationHistory
 from kartezio.helpers import Observer
 from kartezio.utils.json_handler import json_write
 
@@ -28,21 +28,26 @@ def eventid():
     return f"{timestamp()}-{uuid()}".replace(" ", "-")
 
 
+class EventType(Enum):
+    NEW_PARENT = "on_new_parent"
+    START_STEP = "on_step_start"
+    END_STEP = "on_step_end"
+    START_LOOP = "on_loop_start"
+    END_LOOP = "on_loop_end"
+
+
 class Event:
     def __init__(
-        self, iteration: int, name: str, content: Dict, force: bool = False
+        self,
+        iteration: int,
+        name: EventType,
+        state: PopulationHistory,
+        force: bool = False,
     ):
         self.iteration = iteration
         self.name = name
-        self.content = content
+        self.state = state
         self.force = force
-
-    class Events(Enum):
-        NEW_PARENT = "on_new_parent"
-        START_STEP = "on_step_start"
-        END_STEP = "on_step_end"
-        START_LOOP = "on_loop_start"
-        END_LOOP = "on_loop_end"
 
 
 class Callback(Observer, ABC):
@@ -57,30 +62,30 @@ class Callback(Observer, ABC):
         if event.iteration % self.frequency != 0 and not event.force:
             return
 
-        if event.name == Event.Events.START_LOOP:
-            self.on_evolution_start(event.iteration, event.content)
-        elif event.name == Event.Events.START_STEP:
-            self.on_generation_start(event.iteration, event.content)
-        elif event.name == Event.Events.END_STEP:
-            self.on_generation_end(event.iteration, event.content)
-        elif event.name == Event.Events.END_LOOP:
-            self.on_evolution_end(event.iteration, event.content)
-        elif event.name == Event.Events.NEW_PARENT:
-            self.on_new_parent(event.iteration, event.content)
+        if event.name == EventType.START_LOOP:
+            self.on_evolution_start(event.iteration, event.state)
+        elif event.name == EventType.START_STEP:
+            self.on_generation_start(event.iteration, event.state)
+        elif event.name == EventType.END_STEP:
+            self.on_generation_end(event.iteration, event.state)
+        elif event.name == EventType.END_LOOP:
+            self.on_evolution_end(event.iteration, event.state)
+        elif event.name == EventType.NEW_PARENT:
+            self.on_new_parent(event.iteration, event.state)
 
-    def on_new_parent(self, iteration: int, content):
+    def on_new_parent(self, iteration: int, state: PopulationHistory):
         pass
 
-    def on_evolution_start(self, iteration: int, event_content):
+    def on_evolution_start(self, iteration: int, state: PopulationHistory):
         pass
 
-    def on_generation_start(self, iteration: int, event_content):
+    def on_generation_start(self, iteration: int, state: PopulationHistory):
         pass
 
-    def on_generation_end(self, iteration: int, event_content):
+    def on_generation_end(self, iteration: int, state: PopulationHistory):
         pass
 
-    def on_evolution_end(self, iteration: int, event_content):
+    def on_evolution_end(self, iteration: int, state: PopulationHistory):
         pass
 
 
@@ -89,36 +94,36 @@ class CarbonCallback(Callback):
         super().__init__()
         self.tracker = EmissionsTracker()
 
-    def on_evolution_start(self, _, __):
+    def on_evolution_start(self, iteration: int, state: PopulationHistory):
         self.tracker.start()
 
-    def on_evolution_end(self, _, __):
+    def on_evolution_end(self, iteration: int, state: PopulationHistory):
         self.tracker.stop()
         print(self.tracker.final_emissions_data)
 
 
 class CallbackVerbose(Callback):
-    def _compute_metrics(self, e_content):
-        _, fitness, time = e_content.get_best_fitness()
+    def _compute_metrics(self, state: PopulationHistory):
+        _, fitness, time = state.get_best_fitness()
         if time == 0:
             fps = "'inf' "
         else:
             fps = int(round(1.0 / time))
         return fitness, time, fps
 
-    def on_generation_end(self, n, e_content):
-        fitness, time, fps = self._compute_metrics(e_content)
-        verbose = f"[G {n:06}] {fitness:.6f} {time:.6f}s {fps}fps"
+    def on_generation_end(self, iteration: int, state: PopulationHistory):
+        fitness, time, fps = self._compute_metrics(state)
+        verbose = f"[G {iteration:06}] {fitness:.6f} {time:.6f}s {fps}fps"
         print(verbose)
 
-    def on_evolution_end(self, n, e_content):
-        fitness, time, fps = self._compute_metrics(e_content)
-        verbose = f"[G {n:06}] {fitness:.6f} {time:.6f}s {fps}fps, loop done."
+    def on_evolution_end(self, iteration: int, state: PopulationHistory):
+        fitness, time, fps = self._compute_metrics(state)
+        verbose = f"[G {iteration:06}] {fitness:.6f} {time:.6f}s {fps}fps, loop done."
         print(verbose)
 
 
 class CallbackSaveScores(Callback):
-    def __init__(self, filename, dataset, preprocessing, fitness):
+    def __init__(self, filename: str, dataset, preprocessing, fitness):
         super().__init__()
         self.filename = filename
         self.data = []
@@ -131,8 +136,8 @@ class CallbackSaveScores(Callback):
             self.train_x = preprocessing.call(self.train_x)
             self.test_x = preprocessing.call(self.test_x)
 
-    def _add_new_line(self, iteration, event_content):
-        genotype = event_content.individuals[0].genotype
+    def _add_new_line(self, iteration: int, content):
+        genotype = content.individuals[0].genotype
         p_train = self.decoder.decode(genotype, self.train_x)[0]
         self.fitness.mode = "train"
         f_train = self.fitness.batch(self.train_y, [p_train])
@@ -145,15 +150,13 @@ class CallbackSaveScores(Callback):
             f_test = np.nan
         self.data.append([float(iteration), float(f_train), float(f_test)])
 
-    def on_new_parent(self, iteration, event_content):
-        self._add_new_line(iteration, event_content)
+    def on_new_parent(self, iteration: int, state: PopulationHistory):
+        self._add_new_line(iteration, state)
         np.save(self.filename, np.array(self.data))
 
-    def on_evolution_end(self, iteration, event_content):
-        self._add_new_line(iteration, event_content)
-        print(
-            f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}"
-        )
+    def on_evolution_end(self, iteration: int, state: PopulationHistory):
+        self._add_new_line(iteration, state)
+        print(f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}")
         data = np.array(self.data)
         plt.figure()
         plt.plot(data[:, 0], data[:, 1])
@@ -171,28 +174,19 @@ class CallbackSaveElite(Callback):
         )
         self.decoder = None
         self.preprocessing = (
-            dump_component(preprocessing)
-            if preprocessing is not None
-            else None
+            dump_component(preprocessing) if preprocessing is not None else None
         )
         self.fitness = dump_component(fitness)
 
     def set_decoder(self, decoder):
         self.decoder = dump_component(decoder)
 
-    def on_new_parent(self, iteration, event_content):
-        elite = event_content.individuals[0].genotype
+    def on_new_parent(self, iteration: int, state: PopulationHistory):
+        elite = state.individuals[0].genotype
         json_data = {
             "iteration": iteration,
             "dataset": self.dataset,
             "elite": elite.__to_dict__(),
-            #     {"genotype":
-            #     elite.__to_dict__()
-            # # "chromosomes": {
-            # #     chromo_key: {k: v.__to_dict__() for k, v in chromo_val.sequence.items()}
-            # #     for chromo_key, chromo_val in elite._chromosomes.items()
-            # #     }
-            # },
             "preprocessing": self.preprocessing,
             "decoder": self.decoder,
             "fitness": self.fitness,

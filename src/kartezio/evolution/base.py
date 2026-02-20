@@ -1,35 +1,36 @@
-from typing import Any, List
+from abc import abstractmethod
 
-from kartezio.callback import Callback, Event
+from kartezio.callback import Callback, Event, EventType
 from kartezio.core.components import Endpoint, Fitness, Library, Preprocessing
 from kartezio.evolution.decoder import Adapter, DecoderCGP
-from kartezio.evolution.strategy import OnePlusLambda
+from kartezio.evolution.population import Population, PopulationHistory
+from kartezio.evolution.strategy import OnePlusLambda, Strategy
 from kartezio.export import PythonClassWriter
 from kartezio.helpers import Observable
 from kartezio.mutation.behavioral import MutationBehavior
 from kartezio.mutation.decay import MutationDecay
 from kartezio.mutation.handler import MutationHandler
+from kartezio.types import DataBatch, DataPopulation
 
 
 class ObservableModel(Observable):
-    def send_event(self, name, state):
+    def send_event(self, name: EventType, state: PopulationHistory):
         self.notify(Event(self.get_current_iteration(), name, state))
 
-    def force_event(self, name, state):
-        self.notify(
-            Event(self.get_current_iteration(), name, state, force=True)
-        )
+    def force_event(self, name: EventType, state: PopulationHistory):
+        self.notify(Event(self.get_current_iteration(), name, state, force=True))
 
-    def get_current_iteration(self):
+    @abstractmethod
+    def get_current_iteration(self) -> int:
         pass
 
 
 class GeneticAlgorithm:
     def __init__(self, adapter: Adapter, fitness: Fitness):
         """Initialize the genetic algorithm."""
-        self.strategy = OnePlusLambda(adapter)
-        self.population = None
-        self.fitness = fitness
+        self.strategy: Strategy = OnePlusLambda(adapter)
+        self.population: Population | None = None
+        self.fitness: Fitness = fitness
         self.current_iteration = 0
         self.n_iterations = 0
 
@@ -45,13 +46,13 @@ class GeneticAlgorithm:
             or self.population.get_fitness()[0] == 0.0
         )
 
-    def selection(self):
+    def selection(self) -> PopulationHistory:
         return self.strategy.selection(self.population)
 
     def reproduction(self):
         self.strategy.reproduction(self.population)
 
-    def evaluation(self, y_true, y_pred):
+    def evaluation(self, y_true: DataBatch, y_pred: DataPopulation):
         fitness = self.fitness.batch(y_true, y_pred, reduction="raw")
         self.population.set_raw_fitness(fitness)
 
@@ -64,7 +65,7 @@ class KartezioCGP(ObservableModel):
         self,
         n_inputs,
         n_nodes,
-        nb_chromosomes,
+        n_chromosomes,
         libraries,
         endpoint,
         fitness,
@@ -72,16 +73,12 @@ class KartezioCGP(ObservableModel):
     ):
         super().__init__()
         self.preprocessing = preprocessing
-        self.decoder = DecoderCGP(
-            n_inputs, n_nodes, nb_chromosomes, libraries, endpoint
-        )
+        self.decoder = DecoderCGP(n_inputs, n_nodes, n_chromosomes, libraries, endpoint)
         self.evolver = GeneticAlgorithm(self.decoder.adapter, fitness)
 
     def collect_updatables(self):
         updatables = []
-        updatables.extend(
-            self.evolver.strategy.mutation_handler.collect_updatables()
-        )
+        updatables.extend(self.evolver.strategy.mutation_handler.collect_updatables())
         return updatables
 
     def initialize(self, n_iterations):
@@ -94,36 +91,36 @@ class KartezioCGP(ObservableModel):
         return self.evolver.current_iteration
 
     @property
-    def population(self):
+    def population(self) -> Population:
         return self.evolver.population
 
     @property
     def elite(self):
         return self.population.get_elite()
 
-    def evaluation(self, x: List[Any], y: List[Any]):
+    def evaluation(self, x: DataBatch, y: DataBatch):
         y_pred = self.decoder.decode_population(self.population, x)
         self.evolver.evaluation(y, y_pred)
 
-    def evolve(self, x: List[Any], y: List[Any]):
+    def evolve(self, x: DataBatch, y: DataBatch):
         history = []
         self.evaluation(x, y)
         state = self.evolver.selection()
         history.append(state)
         if state.changed:
-            self.force_event(Event.Events.NEW_PARENT, state)
-        self.force_event(Event.Events.START_LOOP, state)
+            self.force_event(EventType.NEW_PARENT, state)
+        self.force_event(EventType.START_LOOP, state)
         while not self.evolver.is_satisfying():
-            self.send_event(Event.Events.START_STEP, state)
+            self.send_event(EventType.START_STEP, state)
             self.evolver.reproduction()
             self.evaluation(x, y)
             state = self.evolver.selection()
             if state.changed:
-                self.force_event(Event.Events.NEW_PARENT, state)
+                self.force_event(EventType.NEW_PARENT, state)
             history.append(state)
-            self.send_event(Event.Events.END_STEP, state)
+            self.send_event(EventType.END_STEP, state)
             self.evolver.next()
-        self.force_event(Event.Events.END_LOOP, state)
+        self.force_event(EventType.END_LOOP, state)
         return self.elite, history
 
     def preprocess(self, x):
@@ -149,11 +146,11 @@ class KartezioTrainer:
         self,
         n_inputs: int,
         n_nodes: int,
-        libraries: List[Library],
+        libraries: list[Library] | Library,
         endpoint: Endpoint,
         fitness: Fitness,
-        preprocessing: Preprocessing = None,
-        nb_chromosomes=1,
+        preprocessing: Preprocessing | None = None,
+        n_chromosomes=1,
     ):
         super().__init__()
         if not isinstance(libraries, list):
@@ -161,7 +158,7 @@ class KartezioTrainer:
         self.model = KartezioCGP(
             n_inputs,
             n_nodes,
-            nb_chromosomes,
+            n_chromosomes,
             libraries,
             endpoint,
             fitness,
@@ -172,10 +169,10 @@ class KartezioTrainer:
     def fit(
         self,
         n_iterations: int,
-        x: List[Any],
-        y: List[Any],
-        callbacks: List[Callback] = [],
-    ) -> "KartezioTrainer":
+        x: DataBatch,
+        y: DataBatch,
+        callbacks: list[Callback] = [],
+    ):
         # compile the Kartezio model
         self.model.initialize(n_iterations)
 
@@ -197,11 +194,8 @@ class KartezioTrainer:
     def set_endpoint(self, endpoint: Endpoint):
         self.decoder.endpoint = endpoint
 
-    def set_library(self, library: Library):
-        self.decoder.library = library
-
     @property
-    def strategy(self) -> OnePlusLambda:
+    def strategy(self) -> Strategy:
         return self.model.evolver.strategy
 
     def set_n_children(self, n_children):
@@ -238,15 +232,9 @@ class KartezioTrainer:
 
     def print_python_class(self, class_name):
         python_writer = PythonClassWriter(self.decoder)
-        python_writer.to_python_class(
-            class_name, self.model.population.get_elite()
-        )
+        python_writer.to_python_class(class_name, self.model.population.get_elite())
 
     def display_elite(self):
         elite = self.model.elite
         print(elite[0])
         print(elite.outputs)
-
-    def summary(self):
-        # TODO: implement summary
-        pass

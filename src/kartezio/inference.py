@@ -3,68 +3,75 @@ from abc import ABC, abstractmethod
 import cv2
 import numpy as np
 
-from kartezio.core.components import Components
+from kartezio.core.components import Components, Endpoint, Fitness
+from kartezio.evolution.decoder import Decoder
+from kartezio.types import DataBatch, DataPopulation, Parameters
 from kartezio.utils.directory import Directory
 from kartezio.utils.io import JsonLoader
 
 
 class InferenceModel(ABC):
     @abstractmethod
-    def predict(self, x, reformat_x=None):
+    def predict(self, x: DataBatch, preprocessing=None) -> DataBatch:
         pass
 
 
 class CodeModel(InferenceModel, ABC):
-    def __init__(self, endpoint):
+    def __init__(self, endpoint: Endpoint):
         self.endpoint = endpoint
 
-    def call_node(self, node_name, x, args):
+    def call_node(self, node_name: str, x: DataBatch, args: Parameters):
         return Components.instantiate("Primitive", node_name).call(x, args)
 
     @abstractmethod
-    def _parse(self, X):
+    def _parse(self, x: DataBatch) -> DataBatch:
         pass
 
-    def _endpoint(self, x):
+    def _endpoint(self, x: DataBatch):
         if self.endpoint is None:
             return x
         return self.endpoint.call(x)
 
-    def predict(self, x, preprocessing=None):
+    def predict(self, x: DataBatch, preprocessing=None) -> DataBatch:
         if preprocessing:
             x = preprocessing.call(x)
         return [self._endpoint(self._parse(xi)) for xi in x]
 
 
 class EnsembleModel(InferenceModel):
-    def __init__(self, models):
+    def __init__(self, models: list[InferenceModel]):
         self.models = models
+        self.normalize = True
+        self.reduction = "mean"
+        self.erosion = None
 
-    def batch(self, x):
+    def batch(self, x: DataBatch) -> DataPopulation:
         return [model.predict(x) for model in self.models]
 
-    def predict(self, x, normalize=True, reduction="mean", erosion=None):
+    def predict(self, x: DataBatch, preprocessing=None) -> DataBatch:
         y_batch = self.batch(x)
         y_list = []
         for i in range(len(x)):
             mask_list = []
             for pi in y_batch:
                 one_image = pi[0][i][0]
-                if normalize:
+                if self.normalize:
                     one_image = cv2.normalize(
                         one_image, None, 0.0, 1.0, cv2.NORM_MINMAX
                     )
                 else:
                     one_image = one_image / 255.0
                 mask_list.append(one_image)
-            if reduction == "mean":
-                y = (np.array(mask_list).mean(axis=0) * 255).astype(np.uint8)
-            elif reduction == "max":
-                y = (np.array(mask_list).max(axis=0) * 255).astype(np.uint8)
-            elif reduction == "min":
-                y = (np.array(mask_list).min(axis=0) * 255).astype(np.uint8)
-            if erosion:
-                y = cv2.erode(y, np.ones((erosion, erosion)), iterations=1)
+            y = np.array(mask_list)
+            if self.reduction == "mean":
+                y = y.mean(axis=0)
+            elif self.reduction == "max":
+                y = y.max(axis=0)
+            elif self.reduction == "min":
+                y = y.min(axis=0)
+            y = (y * 255).astype(np.uint8)
+            if self.erosion:
+                y = cv2.erode(y, np.ones((self.erosion, self.erosion)), iterations=1)
             y_list.append(y)
         return y_list
 
@@ -110,9 +117,9 @@ class KartezioModel(InferenceModel):
             KartezioModel.json_loader.read_individual(filepath=filepath)
         )
         self.genotype = genotype
-        self.decoder = decoder
+        self.decoder: Decoder = decoder
         self.preprocessing = preprocessing
-        self.fitness = fitness
+        self.fitness: Fitness = fitness
         self.indices = dataset["indices"]
 
     def preprocess(self, x):
@@ -120,7 +127,7 @@ class KartezioModel(InferenceModel):
             return self.preprocessing.call(x)
         return x
 
-    def predict(self, x):
+    def predict(self, x: DataBatch) -> DataBatch:
         """
         Predict the output of the model given the input.
         Apply the preprocessing if it exists.
@@ -128,11 +135,6 @@ class KartezioModel(InferenceModel):
         x = self.preprocess(x)
         return self.decoder.decode(self.genotype, x)
 
-    def evaluate(self, x, y):
+    def evaluate(self, x: DataBatch, y_true: DataBatch):
         y_pred, _ = self.predict(x)
-        return self.fitness.batch(y, [y_pred])
-
-    """
-    def show_graph(self, inputs, outputs, jupyter=False):
-        return show_graph(self._model, inputs, outputs, jupyter=jupyter)
-    """
+        return self.fitness.batch(y_true, [y_pred])

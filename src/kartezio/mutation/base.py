@@ -1,5 +1,3 @@
-from typing import Dict
-
 import numpy as np
 
 from kartezio.core.components import Genotype, Mutation, register
@@ -9,7 +7,7 @@ from kartezio.evolution.decoder import Adapter
 @register(Mutation)
 class PointMutation(Mutation):
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "PointMutation":
+    def __from_dict__(cls, dict_infos: dict) -> "PointMutation":
         pass
 
     def __init__(self, adapter: Adapter):
@@ -18,7 +16,7 @@ class PointMutation(Mutation):
         self.out_rate = None
 
     def mutate(self, genotype: Genotype) -> Genotype:
-        for c_nb in range(self.adapter.nb_chromosomes):
+        for c_nb in range(self.adapter.n_chromosomes):
             chromosome = f"chromosome_{c_nb}"
             for (
                 sequence,
@@ -26,13 +24,9 @@ class PointMutation(Mutation):
             ) in self.adapter.chromosomes_infos.items():
                 random_matrix = np.random.random(size=sequence_infos.shape)
                 sampling_indices = np.nonzero(random_matrix < self.node_rate)
-                for node, mutation_parameter_index in np.transpose(
-                    sampling_indices
-                ):
+                for node, mutation_parameter_index in np.transpose(sampling_indices):
                     if mutation_parameter_index == 0:
-                        self.mutate_function(
-                            genotype, chromosome, sequence, node
-                        )
+                        self.mutate_function(genotype, chromosome, sequence, node)
                     elif mutation_parameter_index <= sequence_infos.n_edges:
                         connection_idx = mutation_parameter_index - 1
                         self.mutate_edges(
@@ -44,9 +38,7 @@ class PointMutation(Mutation):
                         )
                     else:
                         parameter_idx = (
-                            mutation_parameter_index
-                            - sequence_infos.n_edges
-                            - 1
+                            mutation_parameter_index - sequence_infos.n_edges - 1
                         )
                         self.mutate_parameters(
                             genotype,

@@ -18,19 +18,17 @@ from kartezio.vision.common import (
 
 
 class ImageMaskReader(DataReader):
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         if filepath == "":
             mask = image_new(shape)
             return DataItem([mask], shape, 0)
         image = imread_gray(filepath)
         _, labels = cv2.connectedComponents(image)
-        return DataItem(
-            [labels], image.shape[:2], len(np.unique(labels)) - 1, image
-        )
+        return DataItem([labels], image.shape[:2], len(np.unique(labels)) - 1, image)
 
 
 class ImageLabels(DataReader):
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         image = cv2.imread(filepath, cv2.IMREAD_ANYDEPTH)
         labels = np.zeros_like(image, dtype=np.uint16)
         for i, current_value in enumerate(np.unique(image)):
@@ -43,22 +41,20 @@ class ImageLabels(DataReader):
 
 
 class ImageRGBReader(DataReader):
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         image = imread_rgb(filepath)
-        return DataItem(
-            image_split(image), image.shape[:2], None, visual=image
-        )
+        return DataItem(image_split(image), image.shape[:2], None, visual=image)
 
 
 class ImageGrayscaleReader(DataReader):
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         image = imread_gray(filepath)
         visual = cv2.merge((image, image, image))
         return DataItem([image], image.shape, None, visual=visual)
 
 
 class RoiPolygonReader(DataReader):
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         label_mask = image_new(shape)
         if filepath == "":
             return DataItem([label_mask], shape, 0)
@@ -68,13 +64,13 @@ class RoiPolygonReader(DataReader):
 
 
 class OneHotVectorReader(DataReader):
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         label = np.array(ast.literal_eval(filepath.split("/")[-1]))
         return DataItem([label], shape, None)
 
 
 class ImageChannelsReader(DataReader):
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         image = imread_tiff(filepath)
         if image.dtype == np.uint16:
             raise ValueError(f"Image must be 8bits! ({filepath})")
@@ -101,9 +97,6 @@ class ImageChannelsReader(DataReader):
         return DataItem(channels, shape, None, visual=preview)
 
 
-### nouveauté a tester
-
-
 class RoiPolyhedronReader(DataReader):
     """
     3D datareader , label reader from ROI.
@@ -111,7 +104,7 @@ class RoiPolyhedronReader(DataReader):
     generate label polygon on each z slice
     """
 
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         label_mask = image_new(shape)
         if filepath == "":
             return DataItem([label_mask], shape, 0)
@@ -124,9 +117,7 @@ class RoiPolyhedronReader(DataReader):
         ]  # name in regex #label_Z#slice
         z_slice = [int(roi.name.split("Z")[-1]) - 1 for roi in rois]
         label_mask = image_new(shape)
-        label_mask = fill_polyhedron_as_labels(
-            label_mask, labels, z_slice, contours
-        )
+        label_mask = fill_polyhedron_as_labels(label_mask, labels, z_slice, contours)
         return DataItem([label_mask], shape, len(contours))
 
 
@@ -137,7 +128,7 @@ class TiffImageChannelsMask3dReader(DataReader):
     generate label polygon on each z slice
     """
 
-    def _read(self, filepath, shape=None):
+    def _read(self, filepath, shape=None) -> DataItem:
         image = imread_tiff(filepath)
         if image.dtype == np.uint16:
             raise ValueError(f"Image must be 8bits! ({filepath})")
@@ -165,7 +156,6 @@ class TiffImageChannelsMask3dReader(DataReader):
                 )
                 previews.append(preview)
             previews = np.asarray(previews).reshape(shape + (3,))
-            # cv2.imwrite("rgb_image.png", preview)
         return DataItem(channels, shape, None, visual=previews)
 
 
@@ -203,9 +193,7 @@ class TiffImageLabel3dReader(DataReader):
         # Get unique values
         unique_values = np.unique(image)
         # Generate the expected range
-        expected_values = np.arange(
-            unique_values.min(), unique_values.max() + 1
-        )
+        expected_values = np.arange(unique_values.min(), unique_values.max() + 1)
         # Check if unique values match the expected range, to avoid problem in fitness calcul, labels need to be
         # in continue series of int [ 0,1,2,3..n]
         is_continuous = np.array_equal(unique_values, expected_values)

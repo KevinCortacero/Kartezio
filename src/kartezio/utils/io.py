@@ -24,9 +24,7 @@ def pack_one_directory(directory_path):
         generations.append(int(g.name.replace("G", "").split(".")[0]))
     generations.sort()
     for generation in generations:
-        current_generation = json_read(
-            filepath=f"{directory_path}/G{generation}.json"
-        )
+        current_generation = json_read(filepath=f"{directory_path}/G{generation}.json")
         generation_json = {
             "generation": generation,
             "population": current_generation["population"],
@@ -55,9 +53,7 @@ class JsonLoader:
         if json_data["preprocessing"] is None:
             preprocessing = None
         else:
-            preprocessing = load_component(
-                Preprocessing, json_data["preprocessing"]
-            )
+            preprocessing = load_component(Preprocessing, json_data["preprocessing"])
         fitness = load_component(Fitness, json_data["fitness"])
         return dataset, individual, decoder, preprocessing, fitness
 
@@ -77,9 +73,7 @@ class JsonLoader3D:
         if json_data["preprocessing"] is None:
             preprocessing = None
         else:
-            preprocessing = load_component(
-                Preprocessing, json_data["preprocessing"]
-            )
+            preprocessing = load_component(Preprocessing, json_data["preprocessing"])
         fitness = load_component(Fitness, json_data["fitness"])
         return dataset, individual, decoder, preprocessing, fitness
 

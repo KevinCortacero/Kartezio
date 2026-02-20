@@ -1,9 +1,9 @@
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Tuple
 
 import numpy as np
 
+from kartezio.types import DataBatch, DataList
 from kartezio.utils.directory import Directory
 from kartezio.vision.common import draw_overlay
 
@@ -12,13 +12,12 @@ CSV_DATASET = "dataset.csv"
 
 class Dataset:
     class SubSet:
-        def __init__(self, dataframe):
-            self.x = []
-            self.y = []
-            self.v = []
-            self.dataframe = dataframe
+        def __init__(self):
+            self.x: DataBatch = []
+            self.y: DataBatch = []
+            self.v: DataBatch = []
 
-        def add_item(self, x, y):
+        def add_item(self, x: DataBatch, y: DataBatch):
             self.x.append(x)
             self.y.append(y)
 
@@ -33,51 +32,51 @@ class Dataset:
         def xyv(self):
             return self.x, self.y, self.v
 
-    def __init__(self, train_set, test_set, inputs, indices=None):
-        self.train_set = train_set
-        self.test_set = test_set
+    def __init__(self, training: SubSet, test: SubSet, inputs, indices=None):
+        self.training = training
+        self.test = test
         self.inputs = inputs
         self.indices = indices
 
     @property
     def train_x(self):
-        return self.train_set.x
+        return self.training.x
 
     @property
     def train_y(self):
-        return self.train_set.y
+        return self.training.y
 
     @property
     def train_v(self):
-        return self.train_set.v
+        return self.training.v
 
     @property
     def test_x(self):
-        return self.test_set.x
+        return self.test.x
 
     @property
     def test_y(self):
-        return self.test_set.y
+        return self.test.y
 
     @property
     def test_v(self):
-        return self.test_set.v
+        return self.test.v
 
     @property
     def train_xy(self):
-        return self.train_set.xy
+        return self.training.xy
 
     @property
     def test_xy(self):
-        return self.test_set.xy
+        return self.test.xy
 
     @property
     def train_xyv(self):
-        return self.train_set.xyv
+        return self.training.xyv
 
     @property
     def test_xyv(self):
-        return self.test_set.xyv
+        return self.test.xyv
 
     @property
     def split(self):
@@ -125,7 +124,7 @@ class DatasetReader(Directory):
         dataframe = self.read(dataset_filename)
         dataframe_training = dataframe[dataframe["set"] == "training"]
         training = self._read_dataset(dataframe_training, indices)
-        dataframe_testing = dataframe[dataframe["set"] == "testing"]
+        dataframe_testing = dataframe[dataframe["set"] == "test"]
         testing = self._read_dataset(dataframe_testing)
         input_sizes = []
         [input_sizes.append(len(xi)) for xi in training.x]
@@ -138,9 +137,7 @@ class DatasetReader(Directory):
                 f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
             )
             """
-            print(
-                f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
-            )
+            print(f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}")
 
         if self.preview:
             for i in range(len(training.x)):
@@ -171,7 +168,7 @@ class DatasetReader(Directory):
         pass
 
     def _read_dataset(self, dataframe, indices=None):
-        dataset = Dataset.SubSet(dataframe)
+        dataset = Dataset.SubSet()
         dataframe.reset_index(inplace=True)
         if indices:
             dataframe = dataframe.loc[indices]
@@ -192,20 +189,20 @@ class DatasetReader(Directory):
 
 @dataclass
 class DataItem:
-    datalist: List
-    shape: Tuple
+    datalist: DataList
+    shape: tuple
     count: int
-    visual: np.ndarray = None
+    visual: np.ndarray | None = None
 
     @property
-    def size(self):
+    def size(self) -> int:
         return len(self.datalist)
 
 
 def read_dataset(
     dataset_path,
-    x_reader,
-    y_reader,
+    x_reader: DataReader | str,
+    y_reader: DataReader | str,
     filename=CSV_DATASET,
     indices=None,
     preview=False,
@@ -243,9 +240,5 @@ def read_dataset(
         else:
             raise ValueError(f"unnknown y_reader: {y_reader}")
 
-    dataset_reader = DatasetReader(
-        dataset_path, x_reader, y_reader, preview=preview
-    )
-    return dataset_reader.read_dataset(
-        dataset_filename=filename, indices=indices
-    )
+    dataset_reader = DatasetReader(dataset_path, x_reader, y_reader, preview=preview)
+    return dataset_reader.read_dataset(dataset_filename=filename, indices=indices)

@@ -5,7 +5,7 @@ import cv2
 
 from kartezio.core.components import Endpoint, register
 from kartezio.preprocessing import Resize
-from kartezio.types import Matrix
+from kartezio.types import DataList, Matrix, Matrix1, Matrix2, Signature
 from kartezio.vision.common import threshold_tozero
 from kartezio.vision.hough import circles_to_labels, hough_circles
 from kartezio.vision.watershed import (
@@ -22,36 +22,32 @@ from kartezio.vision.watershed_3d import watershed_3d
 
 @register(Endpoint)
 class NoEndpoint(Endpoint):
-    def __init__(self, inputs):
+    def __init__(self, inputs: Signature):
         super().__init__(inputs)
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         return x
 
 
 @register(Endpoint)
 class ResizeUp(Endpoint):
     def __init__(self, method):
-        super().__init__([Matrix])
+        super().__init__(Matrix1)
         self.method = method
 
-    def call(self, x):
-        return [
-            cv2.resize(
-                x[0], None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4
-            )
-        ]
+    def call(self, x: DataList) -> DataList:
+        return [cv2.resize(x[0], None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4)]
 
 
 class EndpointWatershed(Endpoint, ABC):
-    def __init__(self, arity, watershed_line=True):
-        super().__init__([Matrix] * arity)
+    def __init__(self, inputs: Signature, watershed_line=True):
+        super().__init__(inputs)
         self.watershed_line = watershed_line
 
 
 class PeakedMarkersWatershed(EndpointWatershed, ABC):
     def __init__(self, watershed_line=True, min_distance=1, downsample=0):
-        super().__init__(1, watershed_line=watershed_line)
+        super().__init__(Matrix1, watershed_line=watershed_line)
         self.min_distance = min_distance
         self.downsample = downsample
 
@@ -86,9 +82,9 @@ class MarkerControlledWatershed(EndpointWatershed):
     """
 
     def __init__(self, watershed_line=True):
-        super().__init__(2, watershed_line=watershed_line)
+        super().__init__(Matrix2, watershed_line=watershed_line)
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         """
         Apply the marker-controlled watershed transform to the given input and marker arrays.
 
@@ -129,14 +125,10 @@ class LocalMaxWatershed(PeakedMarkersWatershed):
         Defaults to 0 (no downsampling).
     """
 
-    def __init__(
-        self, watershed_line: bool, min_distance: int, downsample: int = 0
-    ):
-        super().__init__(
-            watershed_line, min_distance, downsample
-        )  # Single input image
+    def __init__(self, watershed_line: bool, min_distance: int, downsample: int = 0):
+        super().__init__(watershed_line, min_distance, downsample)  # Single input image
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         """
         Perform local-maxima-based watershed on the input image.
 
@@ -181,13 +173,18 @@ class DistanceWatershed(PeakedMarkersWatershed):
     """
 
     def __init__(
-        self, watershed_line: bool, min_distance: int, downsample: int = 0
+        self,
+        watershed_line: bool,
+        min_distance: int,
+        normalize: bool,
+        downsample: int = 0,
     ):
         super().__init__(
             watershed_line, min_distance, downsample
         )  # Single input (binary mask recommended)
+        self.normalize = normalize
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         """
         Perform distance-based watershed on a binary mask or grayscale image.
 
@@ -206,6 +203,7 @@ class DistanceWatershed(PeakedMarkersWatershed):
                 image=x[0],
                 min_distance=self.min_distance,
                 watershed_line=self.watershed_line,
+                normalize=self.normalize,
                 downsample=self.downsample,
             )
         ]
@@ -239,15 +237,13 @@ class ThresholdLocalMaxWatershed(PeakedMarkersWatershed):
         downsample: int = 0,
         threshold: int = 128,
     ):
-        super().__init__(
-            watershed_line, min_distance, downsample
-        )  # Single input image
+        super().__init__(watershed_line, min_distance, downsample)  # Single input image
         self.threshold = threshold
         self.min_distance = min_distance
         self.watershed_line = watershed_line
         self.downsample = downsample
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         """
         Apply threshold + local maxima + watershed to the input image.
 
@@ -290,18 +286,18 @@ class ThresholdWatershed(EndpointWatershed):
     """
 
     def __init__(
-        self, watershed_line: bool, threshold: int = 128, threshold_2=None
+        self, watershed_line: bool, threshold: int = 128, threshold_2: int | None = None
     ):
-        super().__init__(1, watershed_line)  # Single input image
+        super().__init__(Matrix1, watershed_line)  # Single input image
         self.threshold = threshold
         self.threshold_2 = threshold_2
-        if threshold_2 is not None:
+        if self.threshold_2 is not None:
             if not (self.threshold < self.threshold_2):
                 raise ValueError(
                     f"threshold1 ({self.threshold}) must be < threshold2 ({self.threshold_2})"
                 )
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         """
         Apply threshold-based watershed to the input image.
 
@@ -336,28 +332,28 @@ class ThresholdWatershed(EndpointWatershed):
 @register(Endpoint)
 class ToLabels(Endpoint):
     def __init__(self):
-        super().__init__([Matrix])
+        super().__init__(Matrix1)
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         return [_connected_components(x[0])]
 
 
 @register(Endpoint)
 class EndpointSubtract(Endpoint):
     def __init__(self):
-        super().__init__([Matrix, Matrix])
+        super().__init__(Matrix2)
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         return [cv2.subtract(x[0], x[1])]
 
 
 @register(Endpoint)
 class EndpointThreshold(Endpoint):
-    def __init__(self, threshold):
-        super().__init__([Matrix])
+    def __init__(self, threshold: int):
+        super().__init__(Matrix1)
         self.threshold = threshold
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         return [threshold_tozero(x[0], self.threshold)]
 
     def __to_dict__(self) -> Dict:
@@ -387,7 +383,7 @@ class HoughCircle(Endpoint):
         max_radius=120,
         downscale=0,
     ):
-        super().__init__([Matrix])
+        super().__init__(Matrix1)
         self.min_dist = min_dist
         self.p1 = p1
         self.p2 = p2
@@ -395,12 +391,12 @@ class HoughCircle(Endpoint):
         self.max_radius = max_radius
         self.downscale = downscale
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         circles = hough_circles(
             x[0],
             min_dist=self.min_dist,
-            p1=self.p1,
-            p2=self.p2,
+            param1=self.p1,
+            param2=self.p2,
             min_radius=self.min_radius,
             max_radius=self.max_radius,
             downscale=self.downscale,
@@ -413,27 +409,24 @@ class HoughCircle(Endpoint):
 @register(Endpoint)
 class RescaleUp(Endpoint):
     def __init__(self, upscale, method):
-        super().__init__([Matrix])
+        super().__init__(Matrix1)
         self.rescaler = Resize(upscale, method)
 
-    def call(self, x):
-        return self.resize.call([x])[0]
+    def call(self, x: DataList) -> DataList:
+        return self.rescaler.call(x)
 
 
 @register(Endpoint)
 class EndpointSimple(Endpoint):
     def __init__(self):
-        super().__init__([Matrix])
+        super().__init__(Matrix1)
 
-    def call(self, x):
+    def call(self, x: DataList) -> DataList:
         labels = x[0]
         return [labels]
 
     def _to_json_kwargs(self) -> dict:
         return {}
-
-
-### nouveauté a testé
 
 
 @register(Endpoint)
@@ -443,10 +436,8 @@ class RawLocalMaxWatershed3D(EndpointWatershed):
 
     """
 
-    def __init__(
-        self, arity=5, watershed_line: bool = True, threshold: int = 192
-    ):
-        super().__init__(arity, watershed_line=watershed_line)
+    def __init__(self, arity=5, watershed_line: bool = True, threshold: int = 192):
+        super().__init__(Matrix(arity), watershed_line=watershed_line)
         self.threshold = threshold
         self.watershed_line = watershed_line
         self.i = 0

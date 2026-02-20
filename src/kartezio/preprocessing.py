@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 
 from kartezio.core.components import Preprocessing, register
+from kartezio.types import DataBatch
 from kartezio.vision.common import image_split, rgb2bgr, rgb2hed, rgb2hsv
 
 
@@ -15,7 +16,7 @@ class Normalizer(Preprocessing):
         self.pmax = pmax
         self.eps = 1e-5
 
-    def preprocess(self, x):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         mi = np.percentile(x, self.pmin, keepdims=True)
         ma = np.percentile(x, self.pmax, keepdims=True)
         x = (x - mi) / (ma - mi + self.eps)
@@ -36,13 +37,11 @@ class PyrMeanShift(Preprocessing):
         self.sp = sp
         self.sr = sr
 
-    def preprocess(self, x, args=None):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i][:3])
-            filtered = cv2.pyrMeanShiftFiltering(
-                original_image, sp=self.sp, sr=self.sr
-            )
+            filtered = cv2.pyrMeanShiftFiltering(original_image, sp=self.sp, sr=self.sr)
             new_x.append(image_split(filtered))
         return new_x
 
@@ -55,7 +54,7 @@ class PyrScale(Preprocessing):
         self.scale = scale
         self.preserve_values = preserve_values
 
-    def preprocess(self, x, args=None):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         new_x = []
         for i in range(len(x)):
             new_xi = []
@@ -66,9 +65,7 @@ class PyrScale(Preprocessing):
                 if dsize[1] % 2 != 0:
                     dsize = (dsize[0], dsize[1] + 1)
                 if self.level == 0:
-                    xij = cv2.resize(
-                        xij, dsize, interpolation=cv2.INTER_NEAREST
-                    )
+                    xij = cv2.resize(xij, dsize, interpolation=cv2.INTER_NEAREST)
                 else:
                     for _ in range(self.level):
                         if self.preserve_values:
@@ -94,11 +91,11 @@ class PyrScale(Preprocessing):
 
 @register(Preprocessing)
 class ToColorSpace(Preprocessing):
-    def __init__(self, color_space):
+    def __init__(self, color_space: str):
         super().__init__()
         self.color_space = color_space
 
-    def preprocess(self, x: List):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         if self.color_space == "rgb":
             return x
         new_x = []
@@ -120,11 +117,11 @@ class ToColorSpace(Preprocessing):
 
 @register(Preprocessing)
 class AddColorSpace(Preprocessing):
-    def __init__(self, color_space):
+    def __init__(self, color_space: str):
         super().__init__()
         self.color_space = color_space
 
-    def preprocess(self, x):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         new_x = []
         for i in range(len(x)):
             # assuming that the image (3 first elements) is in RGB
@@ -158,7 +155,7 @@ class Resize(Preprocessing):
         self.scale = scale
         self.method = method
 
-    def preprocess(self, x):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         new_x = []
         for i in range(len(x)):
             new_xi = []
@@ -197,21 +194,15 @@ class Resize(Preprocessing):
 class ApplyClahe(Preprocessing):
     def __init__(self, clip_limit=2.0, tile_grid_size=(8, 8)):
         super().__init__()
-        self.clahe = cv2.createCLAHE(
-            clipLimit=clip_limit, tileGridSize=tile_grid_size
-        )
+        self.clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
 
-    def preprocess(self, x):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i])
-            transformed = transformed = cv2.cvtColor(
-                original_image, cv2.COLOR_RGB2GRAY
-            )
+            transformed = transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
             transformed = self.clahe.apply(transformed)
-            new_x.append(
-                image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB))
-            )
+            new_x.append(image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB)))
         return new_x
 
 
@@ -221,7 +212,7 @@ class SelectChannels(Preprocessing):
         super().__init__()
         self.channels = channels
 
-    def preprocess(self, x):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         new_x = []
         for i in range(len(x)):
             one_item = [x[i][channel] for channel in self.channels]
@@ -242,21 +233,17 @@ class Format3D(Preprocessing):
         self.channels = channels
         self.z_range = z_range
 
-    def preprocess(self, x):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         new_x = []
         for i in range(len(x)):
             one_item = []
             if self.channels:
                 if self.z_range:
                     for z in self.z_range:
-                        one_item.append(
-                            [x[i][channel][z] for channel in self.channels]
-                        )
+                        one_item.append([x[i][channel][z] for channel in self.channels])
                 else:
                     for z in range(len(x[i][0])):
-                        one_item.append(
-                            [x[i][channel][z] for channel in self.channels]
-                        )
+                        one_item.append([x[i][channel][z] for channel in self.channels])
             else:
                 if self.z_range:
                     for z in self.z_range:
@@ -331,43 +318,3 @@ class Format3DNoChannel(Preprocessing):
                 "axis": self.axis,
             }
         }
-
-
-# @register(Preprocessing)
-# class Format3DNoChannel(Preprocessing):
-#     """
-#     Preprocessing for tiff images shape ( z,h,w)
-#     """
-#     def __init__(self, z_range=None,threshold=1):
-#         super().__init__()
-#         self.z_range = z_range
-#         self.threshold = threshold
-#
-#     def preprocess(self, x):
-#         new_x = []
-#         for i in range(len(x)):
-#             one_item = []
-#             if self.z_range:
-#                 for z in self.z_range:
-#                     one_item.append([
-#                         np.where(
-#                             x[i][:][z] > self.threshold,
-#                             x[i][:][z],
-#                             0
-#                         ) if self.threshold is not None else x[i][z]
-#                     ])
-#             else:
-#                 for z in range(len(x[i][0])):
-#                     one_item.append([
-#                         np.where(
-#                             x[i][0][z,:,:] > self.threshold,
-#                             x[i][0][z,:,:],
-#                             0
-#                         ) if self.threshold is not None else x[i][z]])
-#             new_x.append(one_item)
-#         return new_x
-#
-#     def __to_dict__(self) -> Dict:
-#         return {
-#             "args": {"z_range": self.z_range,"threshold":self.threshold}
-#         }

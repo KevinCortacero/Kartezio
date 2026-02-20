@@ -34,12 +34,12 @@ class MutationHandler:
         self.out_rate = out_rate
 
     def compile(self, n_iterations: int):
-        assert (
-            self.node_rate is not None
-        ), "Node rate must be set before compiling the mutation handler."
-        assert (
-            self.out_rate is not None
-        ), "Output rate must be set before compiling the mutation handler."
+        assert self.node_rate is not None, (
+            "Node rate must be set before compiling the mutation handler."
+        )
+        assert self.out_rate is not None, (
+            "Output rate must be set before compiling the mutation handler."
+        )
         self.mutation.node_rate = self.node_rate
         self.mutation.out_rate = self.out_rate
         self.mutation.edges_weights = self.edges_weights

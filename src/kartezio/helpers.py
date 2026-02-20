@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Dict, List, Type, TypeVar
+from typing import Callable, TypeVar
 
 T = TypeVar("T")
 
 
-def singleton(cls: Type[T]) -> Callable[..., T]:
+def singleton(cls: type[T]) -> Callable[..., T]:
     """
     Singleton decorator to ensure a class has only one instance.
 
@@ -17,7 +17,7 @@ def singleton(cls: Type[T]) -> Callable[..., T]:
     Returns:
         Callable[..., T]: A wrapper function that returns the single instance of the class.
     """
-    instances: Dict[Type[T], T] = {}
+    instances: dict[type[T], T] = {}
 
     def wrapper(*args, **kwargs) -> T:
         if cls not in instances:
@@ -91,12 +91,12 @@ class Observer(ABC):
     """
 
     @abstractmethod
-    def update(self, event: str) -> None:
+    def update(self, event) -> None:
         """
         Receive an update from the subject.
 
         Args:
-            event (str): The event or message being communicated to the observer.
+            event (Event): The event or message being communicated to the observer.
         """
         raise NotImplementedError()
 
@@ -112,7 +112,7 @@ class Observable(ABC):
         """
         Initialize an Observable instance with an empty list of observers.
         """
-        self._observers: List[Observer] = []
+        self._observers: list[Observer] = []
 
     def attach(self, observer: Observer) -> None:
         """
@@ -121,9 +121,9 @@ class Observable(ABC):
         Args:
             observer (Observer): The observer to attach.
         """
-        assert isinstance(
-            observer, Observer
-        ), "Observer must be an instance of the Observer class."
+        assert isinstance(observer, Observer), (
+            "Observer must be an instance of the Observer class."
+        )
         self._observers.append(observer)
 
     def detach(self, observer: Observer) -> None:
@@ -141,12 +141,12 @@ class Observable(ABC):
         """
         self._observers = []
 
-    def notify(self, event: str) -> None:
+    def notify(self, event) -> None:
         """
         Notify all attached observers about an event.
 
         Args:
-            event (str): The event or message to notify observers about.
+            event (Event): The event or message to notify observers about.
         """
         for observer in self._observers:
             observer.update(event)

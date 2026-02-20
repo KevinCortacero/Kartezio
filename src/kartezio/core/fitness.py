@@ -1,9 +1,8 @@
-from typing import Dict
-
 import numpy as np
 
 from kartezio.core.components import Fitness, register
 from kartezio.thirdparty.cellpose import cellpose_ap
+from kartezio.types import DataBatch, ScoreBatch
 from kartezio.vision.metrics import balanced_metric, iou
 
 
@@ -15,14 +14,14 @@ class AveragePrecision(Fitness):
         self.iou_factor = float(iou_factor)
         self.iou_fitness = IoU(reduction)
 
-    def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
+    def evaluate(self, y_true: DataBatch, y_pred: DataBatch):
         ap = 1.0 - cellpose_ap(y_true, y_pred, self.threshold)
         if self.iou_factor > 0.0:
             iou = self.iou_fitness.evaluate(y_true, y_pred) * self.iou_factor
             return ap + iou
         return ap
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "args": {
                 "reduction": self.reduction,
@@ -34,11 +33,11 @@ class AveragePrecision(Fitness):
 
 @register(Fitness)
 class IoU(Fitness):
-    def __init__(self, reduction="mean", balance=None):
+    def __init__(self, reduction="mean", balance: str | None = None):
         super().__init__(reduction)
         self.balance = balance
 
-    def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
+    def evaluate(self, y_true: DataBatch, y_pred: DataBatch) -> ScoreBatch:
         n_images = len(y_true)
         ious = np.zeros(n_images, np.float32)
         for n in range(n_images):
@@ -61,7 +60,7 @@ class IoU(Fitness):
                 )
         return ious
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "args": {"reduction": self.reduction, "balance": self.balance},
         }
@@ -69,7 +68,10 @@ class IoU(Fitness):
 
 @register(Fitness)
 class MSE(Fitness):
-    def evaluate(self, y_true: np.ndarray, y_pred: np.ndarray):
+    def __init__(self, reduction="mean"):
+        super().__init__(reduction)
+
+    def evaluate(self, y_true: DataBatch, y_pred: DataBatch) -> ScoreBatch:
         n_images = len(y_true)
         mse_values = np.zeros(n_images, np.float32)
 
@@ -81,6 +83,3 @@ class MSE(Fitness):
             mse_values[n] = np.mean((_y_true - _y_pred) ** 2)
 
         return mse_values
-
-    def __init__(self, reduction="mean", multiprocessing=False):
-        super().__init__(reduction, multiprocessing)
