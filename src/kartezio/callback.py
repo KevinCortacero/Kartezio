@@ -29,9 +29,7 @@ def eventid():
 
 
 class Event:
-    def __init__(
-        self, iteration: int, name: str, content: Dict, force: bool = False
-    ):
+    def __init__(self, iteration: int, name: str, content: Dict, force: bool = False):
         self.iteration = iteration
         self.name = name
         self.content = content
@@ -151,9 +149,7 @@ class CallbackSaveScores(Callback):
 
     def on_evolution_end(self, iteration, event_content):
         self._add_new_line(iteration, event_content)
-        print(
-            f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}"
-        )
+        print(f"{self.filename} saved. {len(self.data)} lines, last = {self.data[-1]}")
         data = np.array(self.data)
         plt.figure()
         plt.plot(data[:, 0], data[:, 1])
@@ -171,9 +167,7 @@ class CallbackSaveElite(Callback):
         )
         self.decoder = None
         self.preprocessing = (
-            dump_component(preprocessing)
-            if preprocessing is not None
-            else None
+            dump_component(preprocessing) if preprocessing is not None else None
         )
         self.fitness = dump_component(fitness)
 

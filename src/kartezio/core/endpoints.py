@@ -36,11 +36,7 @@ class ResizeUp(Endpoint):
         self.method = method
 
     def call(self, x):
-        return [
-            cv2.resize(
-                x[0], None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4
-            )
-        ]
+        return [cv2.resize(x[0], None, fx=2, fy=2, interpolation=cv2.INTER_LANCZOS4)]
 
 
 class EndpointWatershed(Endpoint, ABC):
@@ -129,12 +125,8 @@ class LocalMaxWatershed(PeakedMarkersWatershed):
         Defaults to 0 (no downsampling).
     """
 
-    def __init__(
-        self, watershed_line: bool, min_distance: int, downsample: int = 0
-    ):
-        super().__init__(
-            watershed_line, min_distance, downsample
-        )  # Single input image
+    def __init__(self, watershed_line: bool, min_distance: int, downsample: int = 0):
+        super().__init__(watershed_line, min_distance, downsample)  # Single input image
 
     def call(self, x):
         """
@@ -180,9 +172,7 @@ class DistanceWatershed(PeakedMarkersWatershed):
         Defaults to 0.
     """
 
-    def __init__(
-        self, watershed_line: bool, min_distance: int, downsample: int = 0
-    ):
+    def __init__(self, watershed_line: bool, min_distance: int, downsample: int = 0):
         super().__init__(
             watershed_line, min_distance, downsample
         )  # Single input (binary mask recommended)
@@ -239,9 +229,7 @@ class ThresholdLocalMaxWatershed(PeakedMarkersWatershed):
         downsample: int = 0,
         threshold: int = 128,
     ):
-        super().__init__(
-            watershed_line, min_distance, downsample
-        )  # Single input image
+        super().__init__(watershed_line, min_distance, downsample)  # Single input image
         self.threshold = threshold
         self.min_distance = min_distance
         self.watershed_line = watershed_line
@@ -289,9 +277,7 @@ class ThresholdWatershed(EndpointWatershed):
         If True, produce watershed lines. Defaults to True.
     """
 
-    def __init__(
-        self, watershed_line: bool, threshold: int = 128, threshold_2=None
-    ):
+    def __init__(self, watershed_line: bool, threshold: int = 128, threshold_2=None):
         super().__init__(1, watershed_line)  # Single input image
         self.threshold = threshold
         self.threshold_2 = threshold_2
@@ -443,9 +429,7 @@ class RawLocalMaxWatershed3D(EndpointWatershed):
 
     """
 
-    def __init__(
-        self, arity=5, watershed_line: bool = True, threshold: int = 192
-    ):
+    def __init__(self, arity=5, watershed_line: bool = True, threshold: int = 192):
         super().__init__(arity, watershed_line=watershed_line)
         self.threshold = threshold
         self.watershed_line = watershed_line

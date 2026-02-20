@@ -18,9 +18,7 @@ def read_genome(filepath):
 #     return SingleModel(elite, parser)
 
 
-def show_graph(
-    model, inputs=None, outputs=None, only_active=True, jupyter=False
-):
+def show_graph(model, inputs=None, outputs=None, only_active=True, jupyter=False):
     from kartezio.utils.viewer import KartezioViewer
 
     viewer = KartezioViewer(

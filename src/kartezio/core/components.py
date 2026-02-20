@@ -93,16 +93,14 @@ class Components:
         if component not in Components._registry.keys():
             Components._registry[component] = {}
         else:
-            print(
-                f"Fundamental Component '{component}'already found in the registry."
-            )
+            print(f"Fundamental Component '{component}'already found in the registry.")
 
     @staticmethod
     def add(fundamental: str, name: str, component: type):
         assert isinstance(component, type), f"{component} is not a Class!"
-        assert issubclass(
-            component, KartezioComponent
-        ), f"{component} is not a Component! Please inherit from 'Component' or make sure to call 'super().__init__()'."
+        assert issubclass(component, KartezioComponent), (
+            f"{component} is not a Component! Please inherit from 'Component' or make sure to call 'super().__init__()'."
+        )
 
         if fundamental not in Components._registry.keys():
             raise KeyError(
@@ -121,9 +119,7 @@ class Components:
             raise KeyError(
                 f"Component '{group_name}', called '{component_name}' not found in the registry!"
             )
-        component = Components._registry[group_name][component_name](
-            *args, **kwargs
-        )
+        component = Components._registry[group_name][component_name](*args, **kwargs)
         return component
 
     @staticmethod
@@ -260,9 +256,7 @@ class Primitive(Node, ABC):
     Primitive function called inside the CGP Graph.
     """
 
-    def __init__(
-        self, inputs: List[DataType], output: DataType, n_parameters: int
-    ):
+    def __init__(self, inputs: List[DataType], output: DataType, n_parameters: int):
         super().__init__()
         self.inputs = inputs
         self.output = output
@@ -280,7 +274,7 @@ class Primitive(Node, ABC):
 @fundamental()
 class Genotype(KartezioComponent):
     """
-    Represents the caryotype  for a Cartesian Genetic Programming (CGP).
+    Represents the genotype  for a Cartesian Genetic Programming (CGP).
 
     This class stores the "DNA" in the form of dict of chromosomes. No metadata is included in the DNA to
     prevent duplication, following the Flyweight design pattern.
@@ -345,9 +339,7 @@ class Genotype(KartezioComponent):
         Returns:
             Genotype: A new Genotype instance created from the given dictionary.
         """
-        assert (
-            "chromosomes" in dict_infos
-        ), "Expected 'chromosomes' key in dictionary."
+        assert "chromosomes" in dict_infos, "Expected 'chromosomes' key in dictionary."
         genotype = cls()
         for key, value in dict_infos["chromosomes"].items():
             genotype[key] = Chromosome.__from_dict__(value)
@@ -362,8 +354,7 @@ class Genotype(KartezioComponent):
         """
         return {
             "chromosomes": {
-                key: value.__to_dict__()
-                for key, value in self._chromosomes.items()
+                key: value.__to_dict__() for key, value in self._chromosomes.items()
             }
         }
 
@@ -468,9 +459,7 @@ class Chromosome(KartezioComponent):
             Dict: A dictionary containing the chromosome information.
         """
         return {
-            "sequence": {
-                key: value.tolist() for key, value in self.sequence.items()
-            }
+            "sequence": {key: value.tolist() for key, value in self.sequence.items()}
         }
 
     def clone(self) -> "Chromosome":
@@ -550,9 +539,7 @@ class Endpoint(Node, ABC):
 
     @classmethod
     def from_config(cls, config):
-        return Components.instantiate(
-            cls.__name__, config["name"], **config["args"]
-        )
+        return Components.instantiate(cls.__name__, config["name"], **config["args"])
 
 
 @fundamental()
@@ -563,9 +550,7 @@ class Fitness(KartezioComponent, ABC):
         self.mode = "train"
 
     def batch(self, y_true, y_pred, reduction=None):
-        population_fitness = np.zeros(
-            (len(y_pred), len(y_true)), dtype=np.float32
-        )
+        population_fitness = np.zeros((len(y_pred), len(y_true)), dtype=np.float32)
         for idx_individual in range(len(y_pred)):
             population_fitness[idx_individual] = self.evaluate(
                 y_true, y_pred[idx_individual]
@@ -729,9 +714,7 @@ class Mutation(KartezioComponent, ABC):
         )
 
     def random_function(self, sequence: str):
-        return np.random.randint(
-            self.adapter.chromosomes_infos[sequence].n_functions
-        )
+        return np.random.randint(self.adapter.chromosomes_infos[sequence].n_functions)
 
     def mutate_function(
         self, genotype: Genotype, chromosome: str, sequence: str, idx: int
@@ -764,9 +747,7 @@ class Mutation(KartezioComponent, ABC):
                 new_edges[edge] = new_edge - 1 + self.adapter.n_inputs
         if only_one is not None:
             new_value = new_edges[only_one]
-            new_edges = self.adapter.get_edges(
-                genotype, chromosome, sequence, idx
-            )
+            new_edges = self.adapter.get_edges(genotype, chromosome, sequence, idx)
             new_edges[only_one] = new_value
         self.adapter.set_edges(genotype, chromosome, sequence, idx, new_edges)
 
@@ -782,15 +763,11 @@ class Mutation(KartezioComponent, ABC):
         old_parameters = self.adapter.get_parameters(
             genotype, chromosome, sequence, idx
         )
-        new_parameters = self.parameters.adjust(
-            old_parameters, new_random_parameters
-        )
+        new_parameters = self.parameters.adjust(old_parameters, new_random_parameters)
         if only_one is not None:
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
-        self.adapter.set_parameters(
-            genotype, chromosome, sequence, idx, new_parameters
-        )
+        self.adapter.set_parameters(genotype, chromosome, sequence, idx, new_parameters)
 
     def mutate_output(self, genotype: Genotype, chromosome: str, idx: int):
         n_previous_nodes = 1 + self.adapter.n_nodes
@@ -818,9 +795,7 @@ class Initialization(KartezioComponent, ABC):
     pass
 
 
-def load_component(
-    component_class: type, json_data: Dict
-) -> KartezioComponent:
+def load_component(component_class: type, json_data: Dict) -> KartezioComponent:
     """
     Load a component from its dictionary representation.
 

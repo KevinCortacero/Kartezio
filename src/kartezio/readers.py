@@ -24,9 +24,7 @@ class ImageMaskReader(DataReader):
             return DataItem([mask], shape, 0)
         image = imread_gray(filepath)
         _, labels = cv2.connectedComponents(image)
-        return DataItem(
-            [labels], image.shape[:2], len(np.unique(labels)) - 1, image
-        )
+        return DataItem([labels], image.shape[:2], len(np.unique(labels)) - 1, image)
 
 
 class ImageLabels(DataReader):
@@ -45,9 +43,7 @@ class ImageLabels(DataReader):
 class ImageRGBReader(DataReader):
     def _read(self, filepath, shape=None):
         image = imread_rgb(filepath)
-        return DataItem(
-            image_split(image), image.shape[:2], None, visual=image
-        )
+        return DataItem(image_split(image), image.shape[:2], None, visual=image)
 
 
 class ImageGrayscaleReader(DataReader):
@@ -124,9 +120,7 @@ class RoiPolyhedronReader(DataReader):
         ]  # name in regex #label_Z#slice
         z_slice = [int(roi.name.split("Z")[-1]) - 1 for roi in rois]
         label_mask = image_new(shape)
-        label_mask = fill_polyhedron_as_labels(
-            label_mask, labels, z_slice, contours
-        )
+        label_mask = fill_polyhedron_as_labels(label_mask, labels, z_slice, contours)
         return DataItem([label_mask], shape, len(contours))
 
 
@@ -203,9 +197,7 @@ class TiffImageLabel3dReader(DataReader):
         # Get unique values
         unique_values = np.unique(image)
         # Generate the expected range
-        expected_values = np.arange(
-            unique_values.min(), unique_values.max() + 1
-        )
+        expected_values = np.arange(unique_values.min(), unique_values.max() + 1)
         # Check if unique values match the expected range, to avoid problem in fitness calcul, labels need to be
         # in continue series of int [ 0,1,2,3..n]
         is_continuous = np.array_equal(unique_values, expected_values)

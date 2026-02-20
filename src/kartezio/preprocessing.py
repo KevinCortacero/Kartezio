@@ -40,9 +40,7 @@ class PyrMeanShift(Preprocessing):
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i][:3])
-            filtered = cv2.pyrMeanShiftFiltering(
-                original_image, sp=self.sp, sr=self.sr
-            )
+            filtered = cv2.pyrMeanShiftFiltering(original_image, sp=self.sp, sr=self.sr)
             new_x.append(image_split(filtered))
         return new_x
 
@@ -66,9 +64,7 @@ class PyrScale(Preprocessing):
                 if dsize[1] % 2 != 0:
                     dsize = (dsize[0], dsize[1] + 1)
                 if self.level == 0:
-                    xij = cv2.resize(
-                        xij, dsize, interpolation=cv2.INTER_NEAREST
-                    )
+                    xij = cv2.resize(xij, dsize, interpolation=cv2.INTER_NEAREST)
                 else:
                     for _ in range(self.level):
                         if self.preserve_values:
@@ -197,21 +193,15 @@ class Resize(Preprocessing):
 class ApplyClahe(Preprocessing):
     def __init__(self, clip_limit=2.0, tile_grid_size=(8, 8)):
         super().__init__()
-        self.clahe = cv2.createCLAHE(
-            clipLimit=clip_limit, tileGridSize=tile_grid_size
-        )
+        self.clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
 
     def preprocess(self, x):
         new_x = []
         for i in range(len(x)):
             original_image = cv2.merge(x[i])
-            transformed = transformed = cv2.cvtColor(
-                original_image, cv2.COLOR_RGB2GRAY
-            )
+            transformed = transformed = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
             transformed = self.clahe.apply(transformed)
-            new_x.append(
-                image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB))
-            )
+            new_x.append(image_split(cv2.cvtColor(transformed, cv2.COLOR_GRAY2RGB)))
         return new_x
 
 
@@ -249,14 +239,10 @@ class Format3D(Preprocessing):
             if self.channels:
                 if self.z_range:
                     for z in self.z_range:
-                        one_item.append(
-                            [x[i][channel][z] for channel in self.channels]
-                        )
+                        one_item.append([x[i][channel][z] for channel in self.channels])
                 else:
                     for z in range(len(x[i][0])):
-                        one_item.append(
-                            [x[i][channel][z] for channel in self.channels]
-                        )
+                        one_item.append([x[i][channel][z] for channel in self.channels])
             else:
                 if self.z_range:
                     for z in self.z_range:

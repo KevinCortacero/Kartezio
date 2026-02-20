@@ -138,9 +138,7 @@ class DatasetReader(Directory):
                 f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
             )
             """
-            print(
-                f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}"
-            )
+            print(f"Inconsistent size of inputs for this dataset: sizes: {input_sizes}")
 
         if self.preview:
             for i in range(len(training.x)):
@@ -243,9 +241,5 @@ def read_dataset(
         else:
             raise ValueError(f"unnknown y_reader: {y_reader}")
 
-    dataset_reader = DatasetReader(
-        dataset_path, x_reader, y_reader, preview=preview
-    )
-    return dataset_reader.read_dataset(
-        dataset_filename=filename, indices=indices
-    )
+    dataset_reader = DatasetReader(dataset_path, x_reader, y_reader, preview=preview)
+    return dataset_reader.read_dataset(dataset_filename=filename, indices=indices)

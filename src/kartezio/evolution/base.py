@@ -16,9 +16,7 @@ class ObservableModel(Observable):
         self.notify(Event(self.get_current_iteration(), name, state))
 
     def force_event(self, name, state):
-        self.notify(
-            Event(self.get_current_iteration(), name, state, force=True)
-        )
+        self.notify(Event(self.get_current_iteration(), name, state, force=True))
 
     def get_current_iteration(self):
         pass
@@ -79,9 +77,7 @@ class KartezioCGP(ObservableModel):
 
     def collect_updatables(self):
         updatables = []
-        updatables.extend(
-            self.evolver.strategy.mutation_handler.collect_updatables()
-        )
+        updatables.extend(self.evolver.strategy.mutation_handler.collect_updatables())
         return updatables
 
     def initialize(self, n_iterations):
@@ -238,9 +234,7 @@ class KartezioTrainer:
 
     def print_python_class(self, class_name):
         python_writer = PythonClassWriter(self.decoder)
-        python_writer.to_python_class(
-            class_name, self.model.population.get_elite()
-        )
+        python_writer.to_python_class(class_name, self.model.population.get_elite())
 
     def display_elite(self):
         elite = self.model.elite

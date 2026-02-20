@@ -213,9 +213,7 @@ class Exp(Primitive):
         super().__init__([Matrix], Matrix, 0)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return (cv2.exp((x[0] / 255.0).astype(np.float32)) * 255).astype(
-            np.uint8
-        )
+        return (cv2.exp((x[0] / 255.0).astype(np.float32)) * 255).astype(np.uint8)
 
 
 @register(Primitive)
@@ -405,9 +403,7 @@ class Gradient(Primitive):
         super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_GRADIENT, ellipse_kernel(args[0])
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_GRADIENT, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
@@ -416,9 +412,7 @@ class TopHat(Primitive):
         super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_TOPHAT, ellipse_kernel(args[0])
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_TOPHAT, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
@@ -427,9 +421,7 @@ class BlackHat(Primitive):
         super().__init__([Matrix], Matrix, 1)
 
     def call(self, x: List[np.ndarray], args: List[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_BLACKHAT, ellipse_kernel(args[0])
-        )
+        return cv2.morphologyEx(x[0], cv2.MORPH_BLACKHAT, ellipse_kernel(args[0]))
 
 
 @register(Primitive)
@@ -722,9 +714,9 @@ class LocalBinaryPattern(Primitive):
         super().__init__([Matrix], Matrix, 1)
 
     def call(self, x, args: List[int] = None):
-        return local_binary_pattern(
-            x[0], 8, args[0] // 16, method="uniform"
-        ).astype(np.uint8)
+        return local_binary_pattern(x[0], 8, args[0] // 16, method="uniform").astype(
+            np.uint8
+        )
 
 
 @register(Primitive)

@@ -24,9 +24,7 @@ class MutationDecay(UpdatableComponent, ABC):
 
     def _discretize(self, values):
         if self.discrete_bins:
-            bin_indices = np.linspace(
-                0, len(values) - 1, self.discrete_bins, dtype=int
-            )
+            bin_indices = np.linspace(0, len(values) - 1, self.discrete_bins, dtype=int)
             bin_size = len(values) // self.discrete_bins
             for i, index in enumerate(bin_indices):
                 values[i * bin_size : (i + 1) * bin_size] = values[index]
