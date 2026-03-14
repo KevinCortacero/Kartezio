@@ -9,11 +9,14 @@ class PythonClassWriter:
         self.indent_1 = " " * 4
         self.indent_2 = self.indent_1 * 2
         self.imports = "from kartezio.inference import CodeModel\n"
-        # endpoint_kwargs = self.decoder.endpoint._to_json_kwargs()
-        # import_package = str(self.endpoint.__class__).split("'")[1]
-        # import_package = import_package.replace(f".{endpoint_class_name}", "")
-        # self.imports += f"from {import_package} import {endpoint_class_name}\n"
-        # self.endpoint_instantiation = f"{endpoint_class_name}(**{endpoint_kwargs})"
+        endpoint_kwargs = self.decoder.endpoint.__to_dict__()
+        import_path = str(self.decoder.endpoint.__class__).split("'")[1]
+        endpoint_class_name = import_path.split(".")[-1]
+        import_package = import_path.replace(f".{endpoint_class_name}", "")
+        self.imports += f"from {import_package} import {endpoint_class_name}\n"
+        self.endpoint_instantiation = (
+            f"{endpoint_class_name}(**{endpoint_kwargs['args']})"
+        )
 
     def to_python_class(self, class_name, genotype):
         python_code = ""
@@ -21,7 +24,7 @@ class PythonClassWriter:
         python_code += f"class {class_name}(CodeModel):\n"
         # init method
         python_code += f"{self.indent_1}def __init__(self):\n"
-        #  python_code += f"{self.indent_2}super().__init__(endpoint={self.endpoint_instantiation})\n\n"
+        python_code += f"{self.indent_2}super().__init__(endpoint={self.endpoint_instantiation})\n\n"
         python_code += "\n"
         # parse method
         python_code += f"{self.indent_1}def _parse(self, X):\n"
