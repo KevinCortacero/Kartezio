@@ -204,180 +204,9 @@ class AdvancedMorphology(Primitive):
             return cv2.morphologyEx(x[0], cv2.MORPH_CLOSE, kernel)
 ```
 
-### Multi-Objective Optimization
-
-Balance multiple criteria simultaneously:
-
-```python
-from kartezio.core.fitness import MultiObjective
-
-fitness = MultiObjective([
-    IoU(),           # Segmentation accuracy
-    Complexity(),    # Algorithm simplicity  
-    Speed()          # Execution time
-], weights=[0.7, 0.2, 0.1])
+## References and Citation
+If you use Kartezio in your research, please consider citing:
 ```
-
-### Visualization and Analysis
-
-Visualize evolved algorithms:
-
-```python
-from kartezio.easy import show_graph
-
-# Display the evolved processing graph
-graph = show_graph(model, only_active=True, jupyter=True)
-graph.view()  # Opens in browser or Jupyter notebook
-```
-
----
-
-## 🔧 Development & Contribution
-
-### Development Setup
-
-```bash
-git clone https://github.com/your-org/kartezio.git
-cd kartezio
-
-# Install with development dependencies
-pip install -e .[dev]
-
-# Or with uv (recommended)
-uv sync --extra dev
-
-# Run tests
-uv run python tests/test_runner.py --quick
-```
-
-### Running Tests
-
-Kartezio includes comprehensive test suites:
-
-```bash
-# Quick tests (recommended for development)
-uv run python tests/test_runner.py --quick
-
-# Security tests
-uv run python scripts/dev.py security
-
-# Core functionality tests
-uv run python -m unittest tests.test_core_components
-
-# All tests with our custom runner
-uv run python tests/test_runner.py
-
-# Using pytest (if preferred)
-uv run python -m pytest tests/
-```
-
-### Code Quality
-
-We maintain high code quality standards:
-
-```bash
-# Format code
-uv run ruff format src/ tests/
-
-# Lint code
-uv run ruff check src/ tests/
-
-# Development script (includes all quality checks)
-uv run python scripts/dev.py format
-uv run python scripts/dev.py lint
-```
-
----
-
-## 📖 Examples & Tutorials
-
-### Available Examples
-
-- **`examples/training/basic_trainer.py`**: Getting started with cell segmentation
-- **`examples/training/advanced_trainer.py`**: Multi-objective optimization
-- **`examples/components/create_primitive.py`**: Adding custom primitives
-- **`examples/components/create_endpoint.py`**: Custom output processing
-
-### Real-World Applications
-
-1. **Biomedical Image Segmentation**
-   - Cell counting and classification
-   - Tissue analysis and pathology  
-   - Microscopy image processing
-
-2. **Industrial Quality Control**  
-   - Defect detection in manufacturing
-   - Surface inspection and analysis
-   - Automated visual inspection
-
-3. **Remote Sensing Applications**
-   - Land use classification
-   - Environmental monitoring
-   - Agricultural analysis
-
----
-
-## 📊 API Reference
-
-### Core Classes
-
-#### `KartezioTrainer`
-Main evolutionary training interface.
-
-```python
-class KartezioTrainer:
-    def __init__(self, n_inputs, n_nodes, libraries, endpoint, fitness)
-    def fit(self, generations, train_x, train_y) -> Tuple[Genotype, List]
-    def evaluate(self, test_x, test_y) -> float  
-    def predict(self, x) -> List[np.ndarray]
-    def print_python_class(self, class_name: str) -> None
-```
-
-#### Component Base Classes
-
-- **`Primitive`**: Base class for image processing operations
-- **`Endpoint`**: Base class for output processing  
-- **`Fitness`**: Base class for evaluation metrics
-- **`Library`**: Container for organized primitive collections
-
-### Built-in Libraries
-
-- **Matrix Library**: 50+ image processing primitives
-- **Scalar Library**: Statistical and mathematical operations  
-- **Vector Library**: Multi-dimensional data processing
-
----
-
-## 🏥 Biomedical Applications
-
-Kartezio was originally developed for biomedical image analysis and has proven effectiveness in:
-
-### Cell Segmentation & Analysis
-- Automated cell counting and classification
-- Morphological analysis of cellular structures  
-- Time-lapse microscopy analysis
-- Multi-modal imaging integration
-
-### Pathology & Diagnostics  
-- Tissue segmentation for pathological analysis
-- Automated screening and diagnosis assistance
-- Quantitative pathology measurements
-- Multi-scale histological analysis
-
-### Medical Imaging
-- Organ segmentation in medical scans
-- Lesion detection and characterization  
-- Image enhancement for clinical workflows
-- Real-time surgical guidance
-
----
-
-## 🌟 Research & Publications
-
-### Primary Citation
-If you use Kartezio in your research, please cite:
-
-```bibtex
 @article{cortacero2023evolutionary,
   title={Evolutionary design of explainable algorithms for biomedical image segmentation},
   author={Cortacero, K{\'e}vin and McKenzie, Brienne and M{\"u}ller, Sabina and Khazen, Roxana and Lafouresse, Fanny and Corsaut, Ga{\"e}lle and Van Acker, Nathalie and Frenois, Fran{\c{c}}ois-Xavier and Lamant, Laurence and Meyer, Nicolas and others},
@@ -389,11 +218,8 @@ If you use Kartezio in your research, please cite:
   publisher={Nature Publishing Group UK London}
 }
 ```
-
-### Additional Publications
-For multimodal applications:
-
-```bibtex
+If you are using the multimodal version of Kartezio, please also cite:
+```
 @inproceedings{de2024multimodal,
   title={Multimodal adaptive graph evolution},
   author={De La Torre, Camilo and Cortacero, K{\'e}vin and Cussat-Blanc, Sylvain and Wilson, Dennis},
@@ -403,44 +229,8 @@ For multimodal applications:
 }
 ```
 
----
 
-## 🤝 Community & Support
-
-### Getting Help
-
-- **Discord Community**: [Join our Discord](https://discord.gg/KnJ4XWdQMK)
-- **GitHub Issues**: [Report bugs or request features](https://github.com/your-org/kartezio/issues)
-- **Email Support**: kevin.cortacero@protonmail.com
-
-
----
-
-## ⚖️ License
-
-Kartezio is available for **Non-Commercial and Academic use only** under a proprietary license. 
-
-- ✅ **Permitted**: Research, education, evaluation, personal projects
-- ❌ **Prohibited**: Commercial use, redistribution, modification for commercial purposes
-
-For commercial licensing options, please contact: kevin.cortacero@protonmail.com
-
-See the [LICENSE](LICENSE) file for complete terms and conditions.
-
----
-
-## 🙏 Acknowledgments
-
-Kartezio was developed with support from:
-
-- **Research Institutions**: INSERM, CNRS, Université Toulouse Capitole, Université Paul Sabatier, ISAE Supaero
-- **Funding Agencies**: INSERM, ERC  
-- **Open Source Community**: Contributors and maintainers
-- **Nature Communications**: For publishing our foundational research
-
----
-
-<div align="center">
-  <p><strong>Ready to evolve the future of explainable computer vision?</strong></p>
-  <p>⭐ Star us on GitHub | 💬 Join our Discord </p>
-</div>
+## Licensing
+The Software is freely available for Non-Commercial and Academic purposes only, under the terms and conditions set out in the License file, and You may not use the Software except in compliance with the License.
+The Software distributed under the License is distributed on an "as is" basis, without warranties or conditions of any kind, either express or implied.
+See the License file for the specific language governing permissions and limitations under the License.
