@@ -15,9 +15,7 @@ class ReaderTestCase(unittest.TestCase):
         """Custom assertion for comparing DataItem objects."""
         self.assertEqual(item1.shape, item2.shape, "Shapes do not match.")
         self.assertEqual(item1.count, item2.count, "Counts do not match.")
-        self.assertEqual(
-            item1.visual, item2.visual, "Visual attributes do not match."
-        )
+        self.assertEqual(item1.visual, item2.visual, "Visual attributes do not match.")
 
         # Compare datalist arrays
         self.assertEqual(
@@ -25,9 +23,7 @@ class ReaderTestCase(unittest.TestCase):
             len(item2.datalist),
             "Datalists lengths do not match.",
         )
-        for array1, array2 in zip(
-            item1.datalist, item2.datalist, strict=False
-        ):
+        for array1, array2 in zip(item1.datalist, item2.datalist, strict=False):
             np.testing.assert_array_equal(
                 array1, array2, "Datalist arrays do not match."
             )

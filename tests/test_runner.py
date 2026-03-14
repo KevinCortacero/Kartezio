@@ -3,11 +3,11 @@ Comprehensive test runner for Kartezio package.
 This script runs all tests with proper reporting and validation.
 """
 
-from io import StringIO
 import sys
 import time
-from typing import Any
 import unittest
+from io import StringIO
+from typing import Any
 
 
 class KartezioTestResult(unittest.TestResult):
@@ -124,10 +124,7 @@ class KartezioTestRunner:
                     f"  {status_symbol} {test_result['test']} ({test_result['duration']:.3f}s)"
                 )
 
-                if (
-                    test_result["status"] in ["FAIL", "ERROR"]
-                    and self.verbosity >= 3
-                ):
+                if test_result["status"] in ["FAIL", "ERROR"] and self.verbosity >= 3:
                     # Print error details
                     print(f"    {test_result['message'][:200]}...")
 
@@ -243,9 +240,7 @@ class KartezioTestRunner:
 
         if total_tests > 0:
             success_rate = (
-                (total_tests - total_failures - total_errors)
-                / total_tests
-                * 100
+                (total_tests - total_failures - total_errors) / total_tests * 100
             )
             print(f"Success rate: {success_rate:.1f}%")
 
@@ -329,9 +324,7 @@ def validate_package_integrity():
             failed_checks.append(check_name)
 
     if failed_checks:
-        print(
-            f"\n❌ Package integrity check failed: {len(failed_checks)} issues"
-        )
+        print(f"\n❌ Package integrity check failed: {len(failed_checks)} issues")
         return False
     else:
         print("\n✅ Package integrity check passed")

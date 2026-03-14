@@ -1,6 +1,6 @@
 [project]
 name = "kartezio"
-version = "1.0.1"
+version = "1.0.2"
 description = ""
 authors = [{ name = "Kevin Cortacero", email = "kevin@mantalys.fr" }]
 requires-python = ">=3.11"

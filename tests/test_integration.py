@@ -56,9 +56,7 @@ class TestBasicTrainingWorkflow(unittest.TestCase):
             self.skipTest("Training data not available")
 
         # Run short training
-        elite, history = self.model.fit(
-            5, train_x, train_y
-        )  # Just 5 generations
+        elite, history = self.model.fit(5, train_x, train_y)  # Just 5 generations
 
         # Verify training completed
         self.assertIsNotNone(elite)
@@ -68,9 +66,7 @@ class TestBasicTrainingWorkflow(unittest.TestCase):
         # Test evaluation
         evaluation_result = self.model.evaluate(train_x, train_y)
         self.assertIsNotNone(evaluation_result)
-        self.assertIsInstance(
-            evaluation_result, (float, np.float32, np.float64)
-        )
+        self.assertIsInstance(evaluation_result, (float, np.float32, np.float64))
 
     def test_model_configuration(self):
         """Test model configuration and parameter setting."""
@@ -103,9 +99,7 @@ class TestBasicTrainingWorkflow(unittest.TestCase):
 
         self.assertIsInstance(fitness_score, np.ndarray)
         self.assertEqual(len(fitness_score), 1)  # One individual
-        self.assertTrue(
-            0 <= fitness_score[0] <= 1
-        )  # IoU should be between 0 and 1
+        self.assertTrue(0 <= fitness_score[0] <= 1)  # IoU should be between 0 and 1
 
     def test_endpoint_integration(self):
         """Test endpoint integration with training pipeline."""
@@ -322,9 +316,7 @@ class TestErrorRecoveryIntegration(unittest.TestCase):
             # If it fails, it should fail with a clear error
         except Exception as e:
             # Acceptable - empty library should cause clear failure
-            self.assertIsInstance(
-                e, (ValueError, AssertionError, ZeroDivisionError)
-            )
+            self.assertIsInstance(e, (ValueError, AssertionError, ZeroDivisionError))
 
     def test_extreme_parameter_values(self):
         """Test handling of extreme parameter values."""
@@ -387,9 +379,7 @@ class TestPerformanceIntegration(unittest.TestCase):
         ]
 
         for y_true, y_pred in edge_cases:
-            with self.subTest(
-                y_true_sum=y_true.sum(), y_pred_sum=y_pred.sum()
-            ):
+            with self.subTest(y_true_sum=y_true.sum(), y_pred_sum=y_pred.sum()):
                 try:
                     result = fitness.evaluate([y_true], [y_pred])
 

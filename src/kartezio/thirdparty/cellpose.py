@@ -1,5 +1,5 @@
-from numba import jit
 import numpy as np
+from numba import jit
 from scipy.optimize import linear_sum_assignment
 
 

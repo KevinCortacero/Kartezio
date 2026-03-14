@@ -3,9 +3,9 @@ from datetime import datetime
 from enum import Enum
 from uuid import uuid4
 
-from codecarbon import EmissionsTracker
 import matplotlib.pyplot as plt
 import numpy as np
+from codecarbon import EmissionsTracker
 
 from kartezio.core.components import dump_component
 from kartezio.evolution.population import PopulationHistory

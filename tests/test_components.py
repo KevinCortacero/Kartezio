@@ -39,9 +39,7 @@ class TestComponents(unittest.TestCase):
         self.assertFalse(Components.contains(Geometry, "Line"))
         self.assertFalse(Components.contains(Geometry, "AnotherSquare"))
         self.assertTrue(Components.contains(Geometry, "Square"))
-        self.assertTrue(
-            AnotherSquare == Components._registry["Geometry"]["Square"]
-        )
+        self.assertTrue(AnotherSquare == Components._registry["Geometry"]["Square"])
         register(Geometry)(Line)
         self.assertTrue(Components.contains(Geometry, "Line"))
 

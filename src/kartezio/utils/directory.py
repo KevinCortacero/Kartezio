@@ -1,7 +1,7 @@
+import zipfile
 from abc import ABC
 from dataclasses import InitVar, dataclass, field
 from pathlib import Path
-import zipfile
 
 import pandas as pd
 

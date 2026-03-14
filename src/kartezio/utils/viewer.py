@@ -1,9 +1,9 @@
 from io import BytesIO
 
 import networkx as nx
+import pygraphviz as pgv
 from networkx.drawing.nx_agraph import from_agraph
 from PIL import Image
-import pygraphviz as pgv
 
 from kartezio.evolution.decoder import Decoder
 

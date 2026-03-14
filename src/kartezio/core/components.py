@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
 import copy
 import logging
+from abc import ABC, abstractmethod
 from pprint import pprint
 
 import numpy as np

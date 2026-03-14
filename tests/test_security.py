@@ -136,9 +136,7 @@ class TestInputValidation(unittest.TestCase):
         for shape in invalid_shapes:
             with self.subTest(shape=shape):
                 try:
-                    result = reader._read(
-                        "/fake/path_[1,2,3].txt", shape=shape
-                    )
+                    result = reader._read("/fake/path_[1,2,3].txt", shape=shape)
                     # If it doesn't crash, that's OK as long as it handles it
                 except (ValueError, TypeError):
                     # Expected - invalid inputs should be rejected
