@@ -158,19 +158,22 @@ Extend Kartezio with domain-specific operations:
 @register(Primitive)
 class AdvancedMorphology(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, n_parameters=2)
+        super().__init__(inputs=Matrix1, output=DataType.MATRIX, n_parameters=1)
     
-    def call(self, x, args):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         operation_type = args[0]  # 0: opening, 1: closing
         kernel_size = args[1]
         
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
                                          (kernel_size, kernel_size))
         
-        if operation_type == 0:
+        if operation_type < 128:
             return cv2.morphologyEx(x[0], cv2.MORPH_OPEN, kernel)
         else:
             return cv2.morphologyEx(x[0], cv2.MORPH_CLOSE, kernel)
+
+your_lib = Library(DataType.MATRIX)  # define the return type of the lib
+your_lib.add_primitive(AdvancedMorphology())
 ```
 
 ## References and Citation
