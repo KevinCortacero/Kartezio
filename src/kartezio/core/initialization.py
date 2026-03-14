@@ -1,5 +1,3 @@
-from typing import Dict
-
 from kartezio.core.components import Genotype, Initialization, register
 
 
@@ -10,7 +8,7 @@ class RandomInit(Initialization):
     """
 
     @classmethod
-    def __from_dict__(cls, dict_infos: Dict) -> "RandomInit":
+    def __from_dict__(cls, dict_infos: dict) -> "RandomInit":
         pass
 
     def __init__(self, mutation):

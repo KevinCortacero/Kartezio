@@ -32,12 +32,10 @@ class PythonClassWriter:
         list_of_outputs = []
         map_of_outputs = {}
         graphs = self.decoder.parse_to_graphs(genotype)
-        print(graphs)
+
         for i in range(self.decoder.adapter.n_outputs):
             active_nodes = graphs[i][0]
-            print(active_nodes)
             for node_infos in active_nodes:
-                print(node_infos)
                 node, chromosome = node_infos
                 if node in list_of_inputs or node in list_of_nodes:
                     continue

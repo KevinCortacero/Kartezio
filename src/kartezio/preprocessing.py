@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import cv2
 import numpy as np
 
@@ -24,7 +22,7 @@ class Normalizer(Preprocessing):
         x = (x * 255).astype(np.uint8)
         return x
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "args": {"pmin": self.pmin, "pmax": self.pmax},
         }
@@ -108,7 +106,7 @@ class ToColorSpace(Preprocessing):
             new_x.append(transformed)
         return new_x
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "name": "to_color_space",
             "args": {"color_space": self.color_space},
@@ -141,7 +139,7 @@ class AddColorSpace(Preprocessing):
             new_x.append(list(x[i]) + transformed)
         return new_x
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "name": "add_color_space",
             "args": {"color_space": self.color_space},
@@ -219,7 +217,7 @@ class SelectChannels(Preprocessing):
             new_x.append(one_item)
         return new_x
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "name": "select_channels",
             "args": {"channels": self.channels},
@@ -310,7 +308,7 @@ class Format3DNoChannel(Preprocessing):
             new_x.append(one_item)
         return new_x
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "args": {
                 "z_range": self.z_range,

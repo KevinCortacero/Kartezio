@@ -1,6 +1,5 @@
 from kartezio.core.components import Genotype, UpdatableComponent
-from kartezio.evolution.decoder import Adapter
-from kartezio.mutation.base import PointMutation
+from kartezio.mutation.base import Mutation
 from kartezio.mutation.behavioral import MutationBehavior
 from kartezio.mutation.decay import MutationDecay
 from kartezio.mutation.edges import MutationEdges, MutationEdgesUniform
@@ -8,8 +7,8 @@ from kartezio.mutation.effect import MutationEffect, MutationUniform
 
 
 class MutationHandler:
-    def __init__(self, adapter: Adapter):
-        self.mutation = PointMutation(adapter)
+    def __init__(self, mutation: Mutation):
+        self.mutation = mutation
         self.behavior = None
         self.decay = None
         self.effect = MutationUniform()

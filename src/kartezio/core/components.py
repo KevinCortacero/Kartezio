@@ -796,7 +796,7 @@ class Mutation(KartezioComponent, ABC):
                 new_edges[edge] = new_edge - 1 + self.adapter.n_inputs
 
     @abstractmethod
-    def mutate(self, genotype: Genotype):
+    def mutate(self, genotype: Genotype) -> Genotype:
         pass
 
     def __to_dict__(self) -> dict:

@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import Dict
 
 import cv2
 
@@ -356,7 +355,7 @@ class EndpointThreshold(Endpoint):
     def call(self, x: DataList) -> DataList:
         return [threshold_tozero(x[0], self.threshold)]
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "args": {
                 "threshold": self.threshold,
@@ -452,7 +451,7 @@ class RawLocalMaxWatershed3D(EndpointWatershed):
             )
         ]
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         return {
             "args": {
                 "threshold": self.threshold,
