@@ -40,7 +40,6 @@ Kartezio offers a straightforward, interpretable way to learn and play with trad
 2. **🚀 Quick Start**
 
 Here's a complete example that evolves a cell segmentation pipeline:
-
    ```python
    from kartezio.core.endpoints import EndpointThreshold
    from kartezio.core.fitness import IoU  
@@ -96,7 +95,6 @@ Kartezio uses a **component-based architecture** with four main types:
 ### Component Registration System
 
 Components are registered using decorators:
-
    ```python
    from kartezio.core.components import Primitive, register
    from kartezio.types import ArrayData, DataList, DataType, Matrix1, Parameters
@@ -126,7 +124,6 @@ Components are registered using decorators:
 ### Custom Fitness Functions
 
 Define domain-specific evaluation metrics:
-
    ```python
    from kartezio.core.components import Fitness, register
    from kartezio.types import DataBatch, ScoreBatch
@@ -152,7 +149,6 @@ Define domain-specific evaluation metrics:
 ### Adding New Primitives
 
 Extend Kartezio with domain-specific operations:
-
    ```python
    @register(Primitive)
    class AdvancedMorphology(Primitive):
