@@ -41,42 +41,42 @@ Kartezio offers a straightforward, interpretable way to learn and play with trad
 
 Here's a complete example that evolves a cell segmentation pipeline:
 
-```python
-from kartezio.core.endpoints import EndpointThreshold
-from kartezio.core.fitness import IoU  
-from kartezio.evolution.base import KartezioTrainer
-from kartezio.primitives.matrix import default_matrix_lib
-from kartezio.utils.dataset import one_cell_dataset
-
-# 1. Set up components
-n_inputs = 1
-libraries = default_matrix_lib()    # Library of image operations
-endpoint = EndpointThreshold(128)   # Binary output via thresholding
-fitness = IoU()                     # Intersection over Union metric
-
-# 2. Create and configure the evolutionary trainer  
-model = KartezioTrainer(
-    n_inputs=n_inputs,
-    n_nodes=n_inputs * 10,          # 10 processing nodes
-    libraries=libraries,
-    endpoint=endpoint,
-    fitness=fitness,
-)
-model.set_mutation_rates(node_rate=0.05, out_rate=0.1)
-
-# 3. Load your data (or use the included example dataset)
-train_x, train_y = one_cell_dataset()  # Example: cell images + masks
-
-# 4. Evolve the algorithm (100 generations)  
-elite, history = model.fit(100, train_x, train_y)
-
-# 5. Evaluate performance
-score = model.evaluate(train_x, train_y)
-print(f"Final IoU Score: {score:.3f}")
-
-# 6. Export as standalone Python code
-model.print_python_class("CellSegmenter")
-```
+   ```python
+   from kartezio.core.endpoints import EndpointThreshold
+   from kartezio.core.fitness import IoU  
+   from kartezio.evolution.base import KartezioTrainer
+   from kartezio.primitives.matrix import default_matrix_lib
+   from kartezio.utils.dataset import one_cell_dataset
+   
+   # 1. Set up components
+   n_inputs = 1
+   libraries = default_matrix_lib()    # Library of image operations
+   endpoint = EndpointThreshold(128)   # Binary output via thresholding
+   fitness = IoU()                     # Intersection over Union metric
+   
+   # 2. Create and configure the evolutionary trainer  
+   model = KartezioTrainer(
+       n_inputs=n_inputs,
+       n_nodes=n_inputs * 10,          # 10 processing nodes
+       libraries=libraries,
+       endpoint=endpoint,
+       fitness=fitness,
+   )
+   model.set_mutation_rates(node_rate=0.05, out_rate=0.1)
+   
+   # 3. Load your data (or use the included example dataset)
+   train_x, train_y = one_cell_dataset()  # Example: cell images + masks
+   
+   # 4. Evolve the algorithm (100 generations)  
+   elite, history = model.fit(100, train_x, train_y)
+   
+   # 5. Evaluate performance
+   score = model.evaluate(train_x, train_y)
+   print(f"Final IoU Score: {score:.3f}")
+   
+   # 6. Export as standalone Python code
+   model.print_python_class("CellSegmenter")
+   ```
 
 That's it! Kartezio has evolved a complete image processing pipeline tailored to your data.
 
@@ -97,19 +97,19 @@ Kartezio uses a **component-based architecture** with four main types:
 
 Components are registered using decorators:
 
-```python
-from kartezio.core.components import Primitive, register
-from kartezio.types import ArrayData, DataList, DataType, Matrix1, Parameters
-
-@register(Primitive)
-class CustomFilter(Primitive):
-    def __init__(self):
-        super().__init__(inputs=Matrix1, output=DataType.MATRIX, n_parameters=1) #  -> the function will take 1 image and 1 parameter
-    
-    def call(self, x: DataList, args: Parameters) -> ArrayData:
-        kernel_size = args[0]
-        return cv2.GaussianBlur(x[0], (kernel_size, kernel_size), 0)
-```
+   ```python
+   from kartezio.core.components import Primitive, register
+   from kartezio.types import ArrayData, DataList, DataType, Matrix1, Parameters
+   
+   @register(Primitive)
+   class CustomFilter(Primitive):
+       def __init__(self):
+           super().__init__(inputs=Matrix1, output=DataType.MATRIX, n_parameters=1) #  -> the function will take 1 image and 1 parameter
+       
+       def call(self, x: DataList, args: Parameters) -> ArrayData:
+           kernel_size = args[0]
+           return cv2.GaussianBlur(x[0], (kernel_size, kernel_size), 0)
+   ```
 
 ### Evolution Process
 
@@ -127,78 +127,78 @@ class CustomFilter(Primitive):
 
 Define domain-specific evaluation metrics:
 
-```python
-from kartezio.core.components import Fitness, register
-from kartezio.types import DataBatch, ScoreBatch
-import numpy as np
-
-@register(Fitness)  
-class CustomMetric(Fitness):
-   def __init__(self, reduction="mean"):
-        super().__init__(reduction)
-
-   def evaluate(self, y_true: DataBatch, y_pred: DataBatch) -> ScoreBatch:
-      n_images = len(y_true)
-      mse_values = np.zeros(n_images, np.float32)
-
-      for n in range(n_images):
-         _y_true = y_true[n][0]
-         _y_pred = y_pred[n][0]
-         # Compute Mean Squared Error
-         mse_values[n] = np.mean((_y_true - _y_pred) ** 2)
-      return mse_values
-```
+   ```python
+   from kartezio.core.components import Fitness, register
+   from kartezio.types import DataBatch, ScoreBatch
+   import numpy as np
+   
+   @register(Fitness)  
+   class CustomMetric(Fitness):
+      def __init__(self, reduction="mean"):
+           super().__init__(reduction)
+   
+      def evaluate(self, y_true: DataBatch, y_pred: DataBatch) -> ScoreBatch:
+         n_images = len(y_true)
+         mse_values = np.zeros(n_images, np.float32)
+   
+         for n in range(n_images):
+            _y_true = y_true[n][0]
+            _y_pred = y_pred[n][0]
+            # Compute Mean Squared Error
+            mse_values[n] = np.mean((_y_true - _y_pred) ** 2)
+         return mse_values
+   ```
 
 ### Adding New Primitives
 
 Extend Kartezio with domain-specific operations:
 
-```python
-@register(Primitive)
-class AdvancedMorphology(Primitive):
-    def __init__(self):
-        super().__init__(inputs=Matrix1, output=DataType.MATRIX, n_parameters=1)
-    
-    def call(self, x: DataList, args: Parameters) -> ArrayData:
-        operation_type = args[0]  # 0: opening, 1: closing
-        kernel_size = args[1]
-        
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
-                                         (kernel_size, kernel_size))
-        
-        if operation_type < 128:
-            return cv2.morphologyEx(x[0], cv2.MORPH_OPEN, kernel)
-        else:
-            return cv2.morphologyEx(x[0], cv2.MORPH_CLOSE, kernel)
-
-your_lib = Library(DataType.MATRIX)  # define the return type of the lib
-your_lib.add_primitive(AdvancedMorphology())
-```
+   ```python
+   @register(Primitive)
+   class AdvancedMorphology(Primitive):
+       def __init__(self):
+           super().__init__(inputs=Matrix1, output=DataType.MATRIX, n_parameters=1)
+       
+       def call(self, x: DataList, args: Parameters) -> ArrayData:
+           operation_type = args[0]  # 0: opening, 1: closing
+           kernel_size = args[1]
+           
+           kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
+                                            (kernel_size, kernel_size))
+           
+           if operation_type < 128:
+               return cv2.morphologyEx(x[0], cv2.MORPH_OPEN, kernel)
+           else:
+               return cv2.morphologyEx(x[0], cv2.MORPH_CLOSE, kernel)
+   
+   your_lib = Library(DataType.MATRIX)  # define the return type of the lib
+   your_lib.add_primitive(AdvancedMorphology())
+   ```
 
 ## References and Citation
 If you use Kartezio in your research, please consider citing:
-```
-@article{cortacero2023evolutionary,
-  title={Evolutionary design of explainable algorithms for biomedical image segmentation},
-  author={Cortacero, K{\'e}vin and McKenzie, Brienne and M{\"u}ller, Sabina and Khazen, Roxana and Lafouresse, Fanny and Corsaut, Ga{\"e}lle and Van Acker, Nathalie and Frenois, Fran{\c{c}}ois-Xavier and Lamant, Laurence and Meyer, Nicolas and others},
-  journal={Nature Communications},
-  volume={14},
-  number={1},
-  pages={7112},
-  year={2023},
-  publisher={Nature Publishing Group UK London}
-}
-```
+   ```
+   @article{cortacero2023evolutionary,
+     title={Evolutionary design of explainable algorithms for biomedical image segmentation},
+     author={Cortacero, K{\'e}vin and McKenzie, Brienne and M{\"u}ller, Sabina and Khazen, Roxana and Lafouresse, Fanny and Corsaut, Ga{\"e}lle and Van Acker, Nathalie and Frenois, Fran{\c{c}}ois-Xavier and Lamant, Laurence and Meyer, Nicolas and others},
+     journal={Nature Communications},
+     volume={14},
+     number={1},
+     pages={7112},
+     year={2023},
+     publisher={Nature Publishing Group UK London}
+   }
+   ```
 If you are using the multimodal version of Kartezio, please also cite:
-```
-@inproceedings{de2024multimodal,
-  title={Multimodal adaptive graph evolution},
-  author={De La Torre, Camilo and Cortacero, K{\'e}vin and Cussat-Blanc, Sylvain and Wilson, Dennis},
-  booktitle={Proceedings of the Genetic and Evolutionary Computation Conference Companion},
-  pages={499--502},
-  year={2024}
-}
-```
+   ```
+   @inproceedings{de2024multimodal,
+     title={Multimodal adaptive graph evolution},
+     author={De La Torre, Camilo and Cortacero, K{\'e}vin and Cussat-Blanc, Sylvain and Wilson, Dennis},
+     booktitle={Proceedings of the Genetic and Evolutionary Computation Conference Companion},
+     pages={499--502},
+     year={2024}
+   }
+   ```
 
 
 ## Licensing
