@@ -171,9 +171,7 @@ def morph_fill(image):
     return contours_fill(image, cnts)
 
 
-def draw_overlay(
-    image, mask, color=None, alpha=1.0, border_color="same", thickness=1
-):
+def draw_overlay(image, mask, color=None, alpha=1.0, border_color="same", thickness=1):
     if color is None:
         color = [255, 255, 255]
     out = image.copy()
@@ -213,8 +211,6 @@ def contours_as_labels_and_foreground(mask, contours):
     mask[-1, :] = 0
     mask[:, 0] = 0
     mask[:, -1] = 0
-    mask = cv2.dilate(
-        mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    )
+    mask = cv2.dilate(mask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
     # mask = cv2.GaussianBlur(mask,(3,3),0)
     return mask  # cv2.morphologyEx(mask,cv2.MORPH_DILATE,np.ones((31,31)))

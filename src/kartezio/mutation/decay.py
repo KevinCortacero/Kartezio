@@ -2,7 +2,7 @@ from abc import ABC
 
 import numpy as np
 
-from kartezio.callback import Event
+from kartezio.callback import Event, EventType
 from kartezio.core.components import UpdatableComponent, fundamental, register
 from kartezio.mutation.base import Mutation
 
@@ -18,14 +18,12 @@ class MutationDecay(UpdatableComponent, ABC):
         self._mutation = mutation
 
     def update(self, event: Event):
-        if event.name == Event.Events.END_STEP:
+        if event.name == EventType.END_STEP:
             self._mutation.node_rate = self.stored[event.iteration]
 
     def _discretize(self, values):
         if self.discrete_bins:
-            bin_indices = np.linspace(
-                0, len(values) - 1, self.discrete_bins, dtype=int
-            )
+            bin_indices = np.linspace(0, len(values) - 1, self.discrete_bins, dtype=int)
             bin_size = len(values) // self.discrete_bins
             for i, index in enumerate(bin_indices):
                 values[i * bin_size : (i + 1) * bin_size] = values[index]

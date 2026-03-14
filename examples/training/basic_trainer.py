@@ -28,9 +28,7 @@ def main():
     model.set_mutation_rates(node_rate=0.05, out_rate=0.1)
 
     # Load training data
-    train_x, train_y = (
-        one_cell_dataset()
-    )  # Use a simple one-cell dataset for training
+    train_x, train_y = one_cell_dataset()  # Use a simple one-cell dataset for training
 
     # Train the model
     elite, history = model.fit(100, train_x, train_y)

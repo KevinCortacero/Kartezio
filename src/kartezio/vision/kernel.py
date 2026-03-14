@@ -58,27 +58,19 @@ KERNEL_EMBOSS = np.array(([-2, -1, 0], [-1, 1, 1], [0, 1, 2]), dtype="int")
 
 KERNEL_KIRSCH_N = np.array(([5, 5, 5], [-3, 0, -3], [-3, -3, -3]), dtype="int")
 
-KERNEL_KIRSCH_NE = np.array(
-    ([-3, 5, 5], [-3, 0, 5], [-3, -3, -3]), dtype="int"
-)
+KERNEL_KIRSCH_NE = np.array(([-3, 5, 5], [-3, 0, 5], [-3, -3, -3]), dtype="int")
 
 KERNEL_KIRSCH_E = np.array(([-3, -3, 5], [-3, 0, 5], [-3, -3, 5]), dtype="int")
 
-KERNEL_KIRSCH_SE = np.array(
-    ([-3, -3, -3], [-3, 0, 5], [-3, 5, 5]), dtype="int"
-)
+KERNEL_KIRSCH_SE = np.array(([-3, -3, -3], [-3, 0, 5], [-3, 5, 5]), dtype="int")
 
 KERNEL_KIRSCH_S = np.array(([-3, -3, -3], [-3, 0, -3], [5, 5, 5]), dtype="int")
 
-KERNEL_KIRSCH_SW = np.array(
-    ([-3, -3, -3], [5, 0, -3], [5, 5, -3]), dtype="int"
-)
+KERNEL_KIRSCH_SW = np.array(([-3, -3, -3], [5, 0, -3], [5, 5, -3]), dtype="int")
 
 KERNEL_KIRSCH_W = np.array(([5, -3, -3], [5, 0, -3], [5, -3, -3]), dtype="int")
 
-KERNEL_KIRSCH_NW = np.array(
-    ([5, 5, -3], [5, 0, -3], [-3, -3, -3]), dtype="int"
-)
+KERNEL_KIRSCH_NW = np.array(([5, 5, -3], [5, 0, -3], [-3, -3, -3]), dtype="int")
 
 KERNEL_KIRSCH_COMPASS = [
     KERNEL_KIRSCH_N,

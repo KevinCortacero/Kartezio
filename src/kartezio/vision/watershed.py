@@ -259,7 +259,7 @@ def local_max_watershed(image, min_distance, watershed_line, downsample):
 
 
 def distance_watershed(
-    image, min_distance, watershed_line, normalize, downsample=0
+    image, min_distance, watershed_line: bool, normalize: bool, downsample=0
 ):
     """
     Shortcut for running watershed using a distance transform + local maxima approach.
@@ -281,9 +281,7 @@ def distance_watershed(
         Integer-labeled segmentation of the input image.
     """
     distance = _distance_transform(image, normalize=normalize)
-    return local_max_watershed(
-        distance, min_distance, watershed_line, downsample
-    )
+    return local_max_watershed(distance, min_distance, watershed_line, downsample)
 
 
 def threshold_local_max_watershed(

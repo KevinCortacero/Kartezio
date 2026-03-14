@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable
-from typing import TypeVar
+from typing import Callable, TypeVar
 
 T = TypeVar("T")
 
@@ -92,12 +91,12 @@ class Observer(ABC):
     """
 
     @abstractmethod
-    def update(self, event: str) -> None:
+    def update(self, event) -> None:
         """
         Receive an update from the subject.
 
         Args:
-            event (str): The event or message being communicated to the observer.
+            event (Event): The event or message being communicated to the observer.
         """
         raise NotImplementedError()
 
@@ -142,12 +141,12 @@ class Observable(ABC):
         """
         self._observers = []
 
-    def notify(self, event: str) -> None:
+    def notify(self, event) -> None:
         """
         Notify all attached observers about an event.
 
         Args:
-            event (str): The event or message to notify observers about.
+            event (Event): The event or message to notify observers about.
         """
         for observer in self._observers:
             observer.update(event)

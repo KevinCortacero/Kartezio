@@ -31,8 +31,7 @@ class Population(KartezioComponent, ABC):
     def set_raw_fitness(self, raw_fitness):
         if self.score.raw is None:
             self.score.raw = (
-                np.ones((self.size, len(raw_fitness[0])), dtype=np.float32)
-                * np.inf
+                np.ones((self.size, len(raw_fitness[0])), dtype=np.float32) * np.inf
             )
         self.score.raw[1:] = raw_fitness
 
@@ -49,12 +48,8 @@ class Population(KartezioComponent, ABC):
         return self.score.raw
 
     def get_score(self):
-        score_list = list(
-            zip(self.get_fitness(), self.get_time(), strict=False)
-        )
-        return np.array(
-            score_list, dtype=[("fitness", float), ("time", float)]
-        )
+        score_list = list(zip(self.get_fitness(), self.get_time()))
+        return np.array(score_list, dtype=[("fitness", float), ("time", float)])
 
 
 class IndividualHistory:
@@ -65,7 +60,7 @@ class IndividualHistory:
 
 
 class PopulationHistory:
-    def __init__(self, n_individuals, changed: bool):
+    def __init__(self, n_individuals: int, changed: bool):
         self.individuals = {}
         for i in range(n_individuals):
             self.individuals[i] = IndividualHistory()
@@ -88,7 +83,7 @@ class PopulationWithElite(Population):
     def __from_dict__(cls, dict_infos: dict) -> "PopulationWithElite":
         pass
 
-    def __init__(self, n_children):
+    def __init__(self, n_children: int):
         super().__init__(1 + n_children)
 
     def get_elite(self):

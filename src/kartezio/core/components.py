@@ -7,7 +7,15 @@ import numpy as np
 from tabulate import tabulate
 
 from kartezio.helpers import Observer
-from kartezio.types import DataType
+from kartezio.types import (
+    ArrayData,
+    DataBatch,
+    DataList,
+    DataPopulation,
+    DataType,
+    Parameters,
+    Signature,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +49,7 @@ class KartezioComponent(ABC):
         Abstract method to instantiate a component from a dictionary representation.
 
         Args:
-            dict_infos (Dict): A dictionary containing information to initialize the component.
+            dict_infos (dict): A dictionary containing information to initialize the component.
 
         Returns:
             Component: A new component instance.
@@ -75,11 +83,11 @@ class UpdatableComponent(KartezioComponent, Observer, ABC):
 
 
 class Components:
-    _registry = {}
+    _registry: dict[str, dict[str, type]] = {}
     _reverse = {}
 
     @staticmethod
-    def _contains(parent_name: str, name: str):
+    def _contains(parent_name: str, name: str) -> bool:
         if parent_name not in Components._registry.keys():
             return False
         if name not in Components._registry[parent_name].keys():
@@ -87,7 +95,7 @@ class Components:
         return True
 
     @staticmethod
-    def contains(parent: type, name: str):
+    def contains(parent: type, name: str) -> bool:
         return Components._contains(parent.__name__, name)
 
     @staticmethod
@@ -95,9 +103,13 @@ class Components:
         if component not in Components._registry.keys():
             Components._registry[component] = {}
         else:
+<<<<<<< HEAD
             logger.warning(
                 f"Fundamental Component '{component}' already found in the registry."
             )
+=======
+            print(f"Fundamental Component '{component}'already found in the registry.")
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
     @staticmethod
     def add(fundamental: str, name: str, component: type):
@@ -118,14 +130,14 @@ class Components:
         Components._reverse[component.__name__] = f"{fundamental}/{name}"
 
     @staticmethod
-    def instantiate(group_name: str, component_name: str, *args, **kwargs):
+    def instantiate(
+        group_name: str, component_name: str, *args, **kwargs
+    ) -> KartezioComponent:
         if not Components._contains(group_name, component_name):
             raise KeyError(
                 f"Component '{group_name}', called '{component_name}' not found in the registry!"
             )
-        component = Components._registry[group_name][component_name](
-            *args, **kwargs
-        )
+        component = Components._registry[group_name][component_name](*args, **kwargs)
         return component
 
     @staticmethod
@@ -147,7 +159,7 @@ class Components:
         pprint(Components._registry)
 
 
-def register(fundamental: type, replace: type = None):
+def register(fundamental: type, replace: type | None = None):
     """
     Register a component to the Components registry.
 
@@ -169,7 +181,7 @@ def register(fundamental: type, replace: type = None):
                     f"Registered {fundamental_name} components: {list(Components._registry[fundamental_name].keys())}. "
                     f"Use 'replace=True' in @register or choose another name."
                 )
-        if replace:
+        if replace is not None:
             replace_name = replace.__name__
             if Components._contains(fundamental_name, replace_name):
                 logger.info(
@@ -206,7 +218,7 @@ def dump_component(component: KartezioComponent) -> dict:
         component (Component): The component to save.
 
     Returns:
-        Dict: A dictionary representation of the component.
+        dict: A dictionary representation of the component.
     """
     base_dict = component.__to_dict__()
     base_dict["name"] = component.name
@@ -231,13 +243,13 @@ class Preprocessing(Node, ABC):
         super().__init__()
         self.__then = None
 
-    def call(self, x, args=None):
+    def call(self, x: DataBatch) -> DataBatch:
         if self.__then is not None:
-            return self.__then.call(self.preprocess(x), args)
+            return self.__then.call(self.preprocess(x))
         return self.preprocess(x)
 
     @abstractmethod
-    def preprocess(self, x):
+    def preprocess(self, x: DataBatch) -> DataBatch:
         raise NotImplementedError
 
     @classmethod
@@ -260,14 +272,22 @@ class Primitive(Node, ABC):
     Primitive function called inside the CGP Graph.
     """
 
+<<<<<<< HEAD
     def __init__(
         self, inputs: list[DataType], output: DataType, n_parameters: int
     ):
+=======
+    def __init__(self, inputs: Signature, output: DataType, n_parameters: int):
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         super().__init__()
         self.inputs = inputs
         self.output = output
         self.arity = len(inputs)
         self.n_parameters = n_parameters
+
+    @abstractmethod
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
+        pass
 
     @classmethod
     def __from_dict__(cls, dict_infos: dict) -> "Primitive":
@@ -280,7 +300,7 @@ class Primitive(Node, ABC):
 @fundamental()
 class Genotype(KartezioComponent):
     """
-    Represents the caryotype  for a Cartesian Genetic Programming (CGP).
+    Represents the genotype  for a Cartesian Genetic Programming (CGP).
 
     This class stores the "DNA" in the form of dict of chromosomes. No metadata is included in the DNA to
     prevent duplication, following the Flyweight design pattern.
@@ -345,9 +365,13 @@ class Genotype(KartezioComponent):
         Returns:
             Genotype: A new Genotype instance created from the given dictionary.
         """
+<<<<<<< HEAD
         assert "chromosomes" in dict_infos, (
             "Expected 'chromosomes' key in dictionary."
         )
+=======
+        assert "chromosomes" in dict_infos, "Expected 'chromosomes' key in dictionary."
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         genotype = cls()
         for key, value in dict_infos["chromosomes"].items():
             genotype[key] = Chromosome.__from_dict__(value)
@@ -362,8 +386,7 @@ class Genotype(KartezioComponent):
         """
         return {
             "chromosomes": {
-                key: value.__to_dict__()
-                for key, value in self._chromosomes.items()
+                key: value.__to_dict__() for key, value in self._chromosomes.items()
             }
         }
 
@@ -462,9 +485,7 @@ class Chromosome(KartezioComponent):
             Dict: A dictionary containing the chromosome information.
         """
         return {
-            "sequence": {
-                key: value.tolist() for key, value in self.sequence.items()
-            }
+            "sequence": {key: value.tolist() for key, value in self.sequence.items()}
         }
 
     def clone(self) -> "Chromosome":
@@ -479,14 +500,18 @@ class Chromosome(KartezioComponent):
 
 @fundamental()
 class Reducer(Node, ABC):
+<<<<<<< HEAD
     def batch(self, x: list):
+=======
+    def batch(self, x: DataBatch):
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         y = []
         for xi in x:
             y.append(self.reduce(xi))
         return y
 
     @abstractmethod
-    def reduce(self, x):
+    def reduce(self, x: DataList):
         pass
 
     @classmethod
@@ -495,7 +520,7 @@ class Reducer(Node, ABC):
         Create an Reducer instance from a dictionary representation.
 
         Args:
-            dict_infos (Dict): A dictionary containing the name and arguments for the Endpoint.
+            dict_infos (dict): A dictionary containing the name and arguments for the Endpoint.
 
         Returns:
             Reducer: A new Reducer instance created from the given dictionary.
@@ -515,15 +540,23 @@ class Endpoint(Node, ABC):
     The Endpoint is invoked in the training loop but is not involved in the evolutionary process.
     """
 
+<<<<<<< HEAD
     def __init__(self, inputs: list[DataType]):
+=======
+    def __init__(self, inputs: Signature):
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         """
         Initialize an Endpoint instance.
 
         Args:
-            inputs (List[KType]): The list of inputs for the endpoint node.
+            inputs (Signature): The list of inputs for the endpoint node.
         """
         super().__init__()
         self.inputs = inputs
+
+    @abstractmethod
+    def call(self, x: DataList) -> DataList:
+        pass
 
     @classmethod
     def __from_dict__(cls, dict_infos: dict) -> "Endpoint":
@@ -544,9 +577,7 @@ class Endpoint(Node, ABC):
 
     @classmethod
     def from_config(cls, config):
-        return Components.instantiate(
-            cls.__name__, config["name"], **config["args"]
-        )
+        return Components.instantiate(cls.__name__, config["name"], **config["args"])
 
 
 @fundamental()
@@ -556,10 +587,8 @@ class Fitness(KartezioComponent, ABC):
         self.reduction = reduction
         self.mode = "train"
 
-    def batch(self, y_true, y_pred, reduction=None):
-        population_fitness = np.zeros(
-            (len(y_pred), len(y_true)), dtype=np.float32
-        )
+    def batch(self, y_true: DataBatch, y_pred: DataPopulation, reduction=None):
+        population_fitness = np.zeros((len(y_pred), len(y_true)), dtype=np.float32)
         for idx_individual in range(len(y_pred)):
             population_fitness[idx_individual] = self.evaluate(
                 y_true, y_pred[idx_individual]
@@ -583,7 +612,7 @@ class Fitness(KartezioComponent, ABC):
             return population_fitness
 
     @abstractmethod
-    def evaluate(self, y_true, y_pred):
+    def evaluate(self, y_true: DataBatch, y_pred: DataBatch):
         pass
 
     @classmethod
@@ -597,10 +626,14 @@ class Fitness(KartezioComponent, ABC):
 
 @fundamental()
 class Library(KartezioComponent):
-    def __init__(self, rtype):
+    def __init__(self, rtype: DataType):
         super().__init__()
         self._primitives: list[Primitive] = []
+<<<<<<< HEAD
         self.rtype = rtype
+=======
+        self.rtype = rtype.value
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
     def __to_dict__(self) -> dict:
         return {
@@ -626,6 +659,7 @@ class Library(KartezioComponent):
 
     def add_primitive(self, primitive: Primitive):
         assert isinstance(primitive, Primitive)
+        assert primitive.output == self.rtype
         self._primitives.append(primitive)
 
     def add_library(self, library):
@@ -640,33 +674,37 @@ class Library(KartezioComponent):
         for i in sorted(indices_to_remove, reverse=True):
             del self._primitives[i]
 
-    def name_of(self, i):
-        return self._primitives[i].name
+    def name_of(self, f_index: int):
+        return self._primitives[f_index].name
 
-    def arity_of(self, i):
-        return self._primitives[i].arity
+    def arity_of(self, f_index: int):
+        return self._primitives[f_index].arity
 
-    def parameters_of(self, i):
-        return self._primitives[i].n_parameters
+    def parameters_of(self, f_index: int):
+        return self._primitives[f_index].n_parameters
 
-    def inputs_of(self, i):
-        return self._primitives[i].inputs
+    def inputs_of(self, f_index: int):
+        return self._primitives[f_index].inputs
 
+<<<<<<< HEAD
     def execute(self, f_index, x: list[np.ndarray], args: list[int]):
+=======
+    def execute(self, f_index, x: DataList, args: Parameters):
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         res = self._primitives[f_index].call(x, args)
         return res
 
     def display(self):
         headers = ["Id", "Name", "Inputs", "Outputs", "Arity", "Parameters"]
         full_list = []
-        for i, primitive in enumerate(self._primitives):
+        for f_index, primitive in enumerate(self._primitives):
             one_primitive_infos = [
-                i,
-                self.name_of(i),
-                self.inputs_of(i),
+                f_index,
+                self.name_of(f_index),
+                self.inputs_of(f_index),
                 primitive.output,
-                self.arity_of(i),
-                self.parameters_of(i),
+                self.arity_of(f_index),
+                self.parameters_of(f_index),
             ]
             full_list.append(one_primitive_infos)
         table_name = f"  {self.rtype} Library  "
@@ -718,9 +756,7 @@ class Mutation(KartezioComponent, ABC):
         )
 
     def random_function(self, sequence: str):
-        return np.random.randint(
-            self.adapter.chromosomes_infos[sequence].n_functions
-        )
+        return np.random.randint(self.adapter.chromosomes_infos[sequence].n_functions)
 
     def mutate_function(
         self, genotype: Genotype, chromosome: str, sequence: str, idx: int
@@ -735,7 +771,7 @@ class Mutation(KartezioComponent, ABC):
         chromosome: str,
         sequence: str,
         idx: int,
-        only_one: int = None,
+        only_one: int | None = None,
     ):
         n_previous_nodes = 1 + idx
         p = self.edges_weights.weights_edges(n_previous_nodes)
@@ -753,9 +789,7 @@ class Mutation(KartezioComponent, ABC):
                 new_edges[edge] = new_edge - 1 + self.adapter.n_inputs
         if only_one is not None:
             new_value = new_edges[only_one]
-            new_edges = self.adapter.get_edges(
-                genotype, chromosome, sequence, idx
-            )
+            new_edges = self.adapter.get_edges(genotype, chromosome, sequence, idx)
             new_edges[only_one] = new_value
         self.adapter.set_edges(genotype, chromosome, sequence, idx, new_edges)
 
@@ -771,15 +805,11 @@ class Mutation(KartezioComponent, ABC):
         old_parameters = self.adapter.get_parameters(
             genotype, chromosome, sequence, idx
         )
-        new_parameters = self.parameters.adjust(
-            old_parameters, new_random_parameters
-        )
+        new_parameters = self.parameters.adjust(old_parameters, new_random_parameters)
         if only_one is not None:
             old_parameters[only_one] = new_parameters[only_one]
             new_parameters = old_parameters.copy()
-        self.adapter.set_parameters(
-            genotype, chromosome, sequence, idx, new_parameters
-        )
+        self.adapter.set_parameters(genotype, chromosome, sequence, idx, new_parameters)
 
     def mutate_output(self, genotype: Genotype, chromosome: str, idx: int):
         n_previous_nodes = 1 + self.adapter.n_nodes
@@ -807,9 +837,13 @@ class Initialization(KartezioComponent, ABC):
     pass
 
 
+<<<<<<< HEAD
 def load_component(
     component_class: type, json_data: dict
 ) -> KartezioComponent:
+=======
+def load_component(component_class: type, json_data: dict) -> KartezioComponent:
+>>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
     """
     Load a component from its dictionary representation.
 

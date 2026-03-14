@@ -90,8 +90,7 @@ def accuracy(y_true, y_pred):
     accuracy = (
         (true_positive + true_negative)
         / (true_positive + false_positive + false_negative + true_negative)
-        if (true_positive + false_positive + false_negative + true_negative)
-        > 0
+        if (true_positive + false_positive + false_negative + true_negative) > 0
         else 0
     )
     return accuracy
