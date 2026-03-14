@@ -103,13 +103,9 @@ class Components:
         if component not in Components._registry.keys():
             Components._registry[component] = {}
         else:
-<<<<<<< HEAD
             logger.warning(
                 f"Fundamental Component '{component}' already found in the registry."
             )
-=======
-            print(f"Fundamental Component '{component}'already found in the registry.")
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
     @staticmethod
     def add(fundamental: str, name: str, component: type):
@@ -272,13 +268,7 @@ class Primitive(Node, ABC):
     Primitive function called inside the CGP Graph.
     """
 
-<<<<<<< HEAD
-    def __init__(
-        self, inputs: list[DataType], output: DataType, n_parameters: int
-    ):
-=======
     def __init__(self, inputs: Signature, output: DataType, n_parameters: int):
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         super().__init__()
         self.inputs = inputs
         self.output = output
@@ -365,13 +355,7 @@ class Genotype(KartezioComponent):
         Returns:
             Genotype: A new Genotype instance created from the given dictionary.
         """
-<<<<<<< HEAD
-        assert "chromosomes" in dict_infos, (
-            "Expected 'chromosomes' key in dictionary."
-        )
-=======
         assert "chromosomes" in dict_infos, "Expected 'chromosomes' key in dictionary."
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         genotype = cls()
         for key, value in dict_infos["chromosomes"].items():
             genotype[key] = Chromosome.__from_dict__(value)
@@ -500,11 +484,7 @@ class Chromosome(KartezioComponent):
 
 @fundamental()
 class Reducer(Node, ABC):
-<<<<<<< HEAD
-    def batch(self, x: list):
-=======
     def batch(self, x: DataBatch):
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         y = []
         for xi in x:
             y.append(self.reduce(xi))
@@ -540,11 +520,7 @@ class Endpoint(Node, ABC):
     The Endpoint is invoked in the training loop but is not involved in the evolutionary process.
     """
 
-<<<<<<< HEAD
-    def __init__(self, inputs: list[DataType]):
-=======
     def __init__(self, inputs: Signature):
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         """
         Initialize an Endpoint instance.
 
@@ -629,11 +605,7 @@ class Library(KartezioComponent):
     def __init__(self, rtype: DataType):
         super().__init__()
         self._primitives: list[Primitive] = []
-<<<<<<< HEAD
         self.rtype = rtype
-=======
-        self.rtype = rtype.value
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
     def __to_dict__(self) -> dict:
         return {
@@ -686,11 +658,7 @@ class Library(KartezioComponent):
     def inputs_of(self, f_index: int):
         return self._primitives[f_index].inputs
 
-<<<<<<< HEAD
-    def execute(self, f_index, x: list[np.ndarray], args: list[int]):
-=======
     def execute(self, f_index, x: DataList, args: Parameters):
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         res = self._primitives[f_index].call(x, args)
         return res
 
@@ -837,13 +805,7 @@ class Initialization(KartezioComponent, ABC):
     pass
 
 
-<<<<<<< HEAD
-def load_component(
-    component_class: type, json_data: dict
-) -> KartezioComponent:
-=======
 def load_component(component_class: type, json_data: dict) -> KartezioComponent:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
     """
     Load a component from its dictionary representation.
 
