@@ -1,86 +1,48 @@
 # Kartezio
-
-[![Discord Channel](https://dcbadge.limes.pink/api/server/uwFwHyRxub)](https://discord.gg/KnJ4XWdQMK)
 [![PyPI version](https://badge.fury.io/py/kartezio.svg)](https://badge.fury.io/py/kartezio)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
 
-<div align="center">
-  <h2>🧬 Evolutionary Design of Explainable Computer Vision Algorithms</h2>
-  <p><strong>Cartesian Genetic Programming framework for automated, interpretable image processing pipelines</strong></p>
-</div>
+<h1 align="center">Kartezio: Evolutionary design of explainable algorithms for biomedical image segmentation</h1>
 
----
 
-## 🎯 What is Kartezio?
+**Kartezio** is a modular Cartesian Genetic Programming (CGP) framework that enables the automated design of fully interpretable image-processing pipelines, without the need for GPUs or extensive training datasets.  
+Built on top of [OpenCV](https://opencv.org/), Kartezio empowers researchers, engineers, and practitioners to discover novel computer vision (CV) solutions using only a handful of annotated samples and a single CPU core.
 
-**Kartezio** is a revolutionary Cartesian Genetic Programming (CGP) framework that automatically evolves **transparent, interpretable computer vision algorithms** from just a few examples. Originally developed for biomedical image segmentation and [published in Nature Communications](https://www.nature.com/articles/s41467-023-42664-x), Kartezio represents a paradigm shift from black-box deep learning to explainable AI.
+Originally developed for biomedical image segmentation, Kartezio has been successfully showcased in [Nature Communications](https://www.nature.com/articles/s41467-023-42664-x). Although it shines in medical and life science applications, Kartezio’s underlying principles are domain-agnostic.   
+Whether you’re working with industrial quality control, satellite imagery, embedded vision, or robotics, Kartezio helps you craft custom CV pipelines that are **transparent, fast, frugal  and efficient**.
 
-Unlike traditional machine learning approaches that require massive datasets and GPU clusters, Kartezio evolves optimal image processing pipelines using evolutionary computation on a single CPU with minimal training data.
+## Why you should try Kartezio?
 
-### 🏆 Key Achievements
-- **Nature Communications Publication**: Proven effectiveness in biomedical applications
-- **Few-Shot Learning**: Works with as little as 5-10 annotated examples
-- **Zero GPU Requirement**: Runs efficiently on standard CPUs
-- **Full Interpretability**: Every operation in the evolved pipeline is transparent and auditable
+:nut_and_bolt:   **Modular and Customizable**  
+   Kartezio is built from interchangeable building blocks, called **Components**, that you can mix, match, or replace. Adapt the pipeline to your project’s unique requirements.
 
----
+:pencil2:   **Few-Shot Learning**  
+   Forget the need for massive, annotated datasets. Kartezio can evolve solutions from just a few annotated examples, saving both time and computational resources.
 
-## ✨ Why Choose Kartezio?
+:white_check_mark:   **Transparent and Certifiable**  
+   Every pipeline produced is fully transparent. Inspect the exact operations used, understand their sequence, and trust the decisions made by your model.
 
-### 🔬 **Explainable by Design**
-Every evolved algorithm is a transparent sequence of computer vision operations (filters, morphology, thresholding). No black boxes, no hidden layers—just clear, auditable image processing steps.
+:earth_africa:   **Frugal and Local**  
+   Run everything on a single CPU, without GPUs or massive compute clusters. This makes Kartezio ideal for edge devices, embedded systems, or scenarios with limited computational resources.
 
-### 🚀 **Few-Shot Learning**
-Forget massive datasets. Kartezio evolves effective solutions from just a handful of annotated examples, making it perfect for specialized applications where data is scarce.
+:microscope:   **Broad Applicability**  
+   While proven in biomedical image segmentation, Kartezio’s methods readily extend to other fields—like industrial machine vision, space imaging, drone footage analysis, or any custom image-based problem.
 
-### 💡 **CPU-Only Execution**
-No GPUs required. Kartezio runs efficiently on standard hardware, making it ideal for:
-- Edge devices and embedded systems
-- Resource-constrained environments  
-- Real-time applications
-- Educational settings
+:books:   **Traditional Computer Vision**  
+Kartezio offers a straightforward, interpretable way to learn and play with traditional CV filters. This makes it an excellent resource for teaching and learning about Image Processing fundamentals.
 
-### 🧩 **Modular & Extensible**
-Built with a component-based architecture that allows easy customization:
-- Add custom image processing primitives
-- Define domain-specific fitness functions
-- Extend endpoints for different output types
-- Integrate with existing computer vision workflows
+## Getting Started
 
-### 🌍 **Broad Applicability**
-While proven in biomedical imaging, Kartezio excels across domains:
-- **Medical & Life Sciences**: Cell segmentation, pathology analysis, microscopy
-- **Industrial Vision**: Quality control, defect detection, manufacturing
-- **Remote Sensing**: Satellite imagery, aerial photography, environmental monitoring
-- **Robotics**: Object detection, navigation, manipulation
-- **Security & Surveillance**: Anomaly detection, monitoring systems
+1. **Installation:**
+   ```bash
+   pip install kartezio
+
+2. **First steps**
 
 ---
 
 ## 🚀 Quick Start
-
-### Installation
-
-Install Kartezio with pip:
-
-```bash
-pip install kartezio
-```
-
-For development or advanced features:
-
-```bash
-# With all optional dependencies
-pip install kartezio[dev,viz]
-
-# From source
-git clone https://github.com/your-org/kartezio.git
-cd kartezio
-pip install -e .
-```
-
-### Your First Kartezio Model
 
 Here's a complete example that evolves a cell segmentation pipeline:
 
