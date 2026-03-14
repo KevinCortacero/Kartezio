@@ -417,15 +417,8 @@ class TopHat(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_TOPHAT, ellipse_kernel(args[0])
-        )
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_TOPHAT, ellipse_kernel(args[0]))
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
 
 @register(Primitive)
@@ -433,15 +426,8 @@ class BlackHat(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-        return cv2.morphologyEx(
-            x[0], cv2.MORPH_BLACKHAT, ellipse_kernel(args[0])
-        )
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
         return cv2.morphologyEx(x[0], cv2.MORPH_BLACKHAT, ellipse_kernel(args[0]))
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
 
 @register(Primitive)
@@ -449,11 +435,7 @@ class HitMiss(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.morphologyEx(x[0], cv2.MORPH_HITMISS, HITMISS_KERNEL)
 
 
@@ -462,11 +444,7 @@ class Fill(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return morph_fill(x[0])
 
 
@@ -475,11 +453,7 @@ class RmSmallObjects(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return remove_small_objects(x[0] > 0, args[0]).astype(np.uint8)
 
 
@@ -488,11 +462,7 @@ class RmSmallHoles(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return remove_small_holes(x[0] > 0, args[0]).astype(np.uint8)
 
 
@@ -501,11 +471,7 @@ class Threshold(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return threshold_tozero(x[0], args[0])
 
 
@@ -514,11 +480,7 @@ class ThresholdScalar(Primitive):
     def __init__(self):
         super().__init__(MatrixScalar, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return threshold_tozero(x[0], x[1])
 
 
@@ -527,11 +489,7 @@ class Kuwahara(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return kuwahara_filter(x[0], correct_ksize(args[0]))
 
 
@@ -556,11 +514,7 @@ class BinaryInRange(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 2)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         lower = int(min(args[0], args[1]))
         upper = int(max(args[0], args[1]))
         return cv2.inRange(x[0], lower, upper)
@@ -571,11 +525,7 @@ class InRange(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 2)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int]):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         lower = int(min(args[0], args[1]))
         upper = int(max(args[0], args[1]))
         return cv2.bitwise_and(
@@ -590,11 +540,7 @@ class Inverse(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return 255 - x[0]
 
 
@@ -603,11 +549,7 @@ class InverseNonZero(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x: list[np.ndarray], args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         inverse = 255 - x[0]
         inverse[inverse == 255] = 0
         return inverse
@@ -618,11 +560,7 @@ class Kirsch(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         compass_gradients = [
             cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=kernel)
             for kernel in KERNEL_KIRSCH_COMPASS
@@ -635,11 +573,7 @@ class Embossing(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.convertScaleAbs(
             cv2.filter2D(x[0], ddepth=cv2.CV_32F, kernel=KERNEL_EMBOSS)
         )
@@ -650,11 +584,7 @@ class Normalize(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.normalize(x[0], None, 0, 255, cv2.NORM_MINMAX)
 
 
@@ -663,11 +593,7 @@ class Denoize(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.fastNlMeansDenoising(x[0], None, h=int(args[0]))
 
 
@@ -676,11 +602,7 @@ class PyrUp(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         h, w = x[0].shape
         scaled_twice = cv2.pyrUp(x[0])
         return cv2.resize(scaled_twice, (w, h), interpolation=cv2.INTER_NEAREST)
@@ -691,11 +613,7 @@ class PyrDown(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 0)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         h, w = x[0].shape
         scaled_half = cv2.pyrDown(x[0])
         return cv2.resize(scaled_half, (w, h), interpolation=cv2.INTER_NEAREST)
@@ -707,11 +625,7 @@ class Meijiring(Primitive):
         super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.convertScaleAbs(meijering(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -721,11 +635,7 @@ class Sato(Primitive):
         super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.convertScaleAbs(sato(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -735,11 +645,7 @@ class Frangi(Primitive):
         super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.convertScaleAbs(frangi(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -749,11 +655,7 @@ class Hessian(Primitive):
         super().__init__(Matrix1, DataType.MATRIX, 0)
         self.sigmas = [1.0]
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         return cv2.convertScaleAbs(hessian(x[0], sigmas=self.sigmas) * 255)
 
 
@@ -817,17 +719,10 @@ class LocalBinaryPattern(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-        return local_binary_pattern(
-            x[0], 8, args[0] // 16, method="uniform"
-        ).astype(np.uint8)
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
         return local_binary_pattern(x[0], 8, args[0] // 16, method="uniform").astype(
             np.uint8
         )
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
 
 @register(Primitive)
@@ -835,11 +730,7 @@ class LaplacianOfGaussian(Primitive):
     def __init__(self):
         super().__init__(Matrix1, DataType.MATRIX, 1)
 
-<<<<<<< HEAD
-    def call(self, x, args: list[int] = None):
-=======
     def call(self, x: DataList, args: Parameters) -> ArrayData:
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
         image = x[0]
         sigma = 2.0
         size = correct_ksize(args[0])

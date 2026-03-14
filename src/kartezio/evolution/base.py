@@ -14,8 +14,6 @@ from kartezio.mutation.decay import MutationDecay
 from kartezio.mutation.handler import MutationHandler
 from kartezio.types import DataBatch, DataPopulation
 
-logger = logging.getLogger(__name__)
-
 
 class ObservableModel(Observable):
     def send_event(self, name: EventType, state: PopulationHistory):
@@ -242,8 +240,8 @@ class KartezioTrainer:
 
     def display_elite(self):
         elite = self.model.elite
-        logger.info(f"Elite chromosome: {elite[0]}")
-        logger.info(f"Elite outputs: {elite.outputs}")
+        print(f"Elite chromosome: {elite[0]}")
+        print(f"Elite outputs: {elite.outputs}")
 
     def summary(self):
         # TODO: implement summary

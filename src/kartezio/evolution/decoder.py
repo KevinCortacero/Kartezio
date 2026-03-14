@@ -1,3 +1,4 @@
+import time
 from abc import ABC
 
 import numpy as np
@@ -259,9 +260,7 @@ class DecoderCGP(Decoder):
                 )
                 function_input_types = self.inputs_of(type_index, function_index)
                 inputs = []
-                for c, t in zip(
-                    connections, function_input_types, strict=False
-                ):
+                for c, t in zip(connections, function_input_types, strict=False):
                     output_type = self.adapter.types_map[t]
                     if c < self.adapter.n_inputs:
                         if t == DataType.SCALAR:
@@ -282,9 +281,7 @@ class DecoderCGP(Decoder):
         for chromosome in genotype._chromosomes.keys():
             outputs = self.adapter.get_outputs(genotype, chromosome)
             graphs_list = []
-            for output, type_output in zip(
-                outputs, self.adapter.returns, strict=False
-            ):
+            for output, type_output in zip(outputs, self.adapter.returns, strict=False):
                 root = {(output, type_output)}
                 graphs_list.append(self._parse_one_graph(genotype, chromosome, root))
             phenotype.append(graphs_list)
@@ -322,9 +319,7 @@ class DecoderCGP(Decoder):
             next_connections = self.adapter.get_active_edges(
                 genotype, chromosome, next_type_index, node, arity
             )
-            next_connections_to_pop = set(
-                zip(next_connections, types, strict=False)
-            )
+            next_connections_to_pop = set(zip(next_connections, types, strict=False))
             next_indices = next_indices.union(next_connections_to_pop)
             output_tree = output_tree.union(next_connections_to_pop)
         return sorted(list(output_tree))
