@@ -116,7 +116,7 @@ class CustomFilter(Primitive):
 
 1. **Initialization**: Random population of image processing graphs
 2. **Evaluation**: Each individual processes training images  
-3. **Selection**: Best performers survive based on fitness scores
+3. **Selection**: The best performer survive based on fitness scores
 4. **Mutation**: Modify operations, connections, and parameters
 5. **Iteration**: Repeat until convergence or generation limit
 
@@ -130,13 +130,24 @@ Define domain-specific evaluation metrics:
 
 ```python
 from kartezio.core.components import Fitness, register
+from kartezio.types import DataBatch, ScoreBatch
 import numpy as np
 
 @register(Fitness)  
 class CustomMetric(Fitness):
-    def evaluate(self, y_true, y_pred):
-        # Your custom metric logic here
-        return np.mean((y_true - y_pred) ** 2)  # Example: MSE
+   def __init__(self, reduction="mean"):
+        super().__init__(reduction)
+
+   def evaluate(self, y_true: DataBatch, y_pred: DataBatch) -> ScoreBatch:
+      n_images = len(y_true)
+      mse_values = np.zeros(n_images, np.float32)
+
+      for n in range(n_images):
+         _y_true = y_true[n][0]
+         _y_pred = y_pred[n][0]
+         # Compute Mean Squared Error
+         mse_values[n] = np.mean((_y_true - _y_pred) ** 2)
+      return mse_values
 ```
 
 ### Adding New Primitives
