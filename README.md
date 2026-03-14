@@ -105,7 +105,7 @@ from kartezio.types import ArrayData, DataList, DataType, Matrix1, Parameters
 @register(Primitive)
 class CustomFilter(Primitive):
     def __init__(self):
-        super().__init__(Matrix1, DataType.MATRIX, 1) #  -> the function will take 1 image and 1 parameter
+        super().__init__(inputs=Matrix1, output=DataType.MATRIX, n_parameters=1) #  -> the function will take 1 image and 1 parameter
     
     def call(self, x: DataList, args: Parameters) -> ArrayData:
         kernel_size = args[0]
