@@ -1,7 +1,7 @@
 import numpy as np
 
 from kartezio.core.components import Reducer, register
-from kartezio.types import DataSequence
+from kartezio.types import DataList
 
 
 @register(Reducer)
@@ -13,7 +13,7 @@ class BasicReduction(Reducer):
         super().__init__()
         self.mode = mode
 
-    def reduce(self, x: DataSequence):
+    def reduce(self, x: DataList):
         if self.mode == "mean":
             return np.mean(np.array(x), axis=0).astype(np.uint8)
         elif self.mode == "sum":

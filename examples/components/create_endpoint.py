@@ -1,5 +1,3 @@
-from typing import Dict
-
 import numpy as np
 
 from kartezio.core.components import (
@@ -9,7 +7,7 @@ from kartezio.core.components import (
     load_component,
     register,
 )
-from kartezio.types import Vector
+from kartezio.types import DataList, Vector
 
 
 @register(Endpoint)
@@ -27,10 +25,10 @@ class YourEndpoint(Endpoint):
         Args:
             n_classes (int): The number of classes to handle as inputs.
         """
-        super().__init__(inputs=[Vector] * n_classes)
+        super().__init__(inputs=Vector(n_classes))
         self.n_classes = n_classes
 
-    def call(self, x, args=None) -> int:
+    def call(self, x: DataList) -> DataList:
         """
         Compute the index of the class with the highest mean value from the input arrays.
 
@@ -41,9 +39,9 @@ class YourEndpoint(Endpoint):
         Returns:
             int: The index of the class with the highest mean value.
         """
-        return np.argmax(np.mean(np.array(x), axis=1))
+        return [int(np.argmax(np.mean(np.array(x), axis=1)))]
 
-    def __to_dict__(self) -> Dict:
+    def __to_dict__(self) -> dict:
         """
         Convert the endpoint instance to a dictionary representation.
 
@@ -64,8 +62,8 @@ def main():
 
     # Define sample input arrays
     inputs = [
-        np.array([0, 0, 42, 44]),
-        np.array([0, 43, 42, 0]),
+        np.array([3, 0, 42, 44]),
+        np.array([0, 43, 42, 2]),
         np.array([1, 2, 3, 44]),
     ]
 
@@ -74,9 +72,7 @@ def main():
     print(f"Output from your_endpoint: {output}")
 
     # Instantiate the endpoint from the component registry and apply it
-    your_endpoint_2 = Components.instantiate(
-        "Endpoint", "YourEndpoint", n_classes=3
-    )
+    your_endpoint_2 = Components.instantiate("Endpoint", "YourEndpoint", n_classes=3)
     output_2 = your_endpoint_2.call(inputs)  # Expected Output: 0
     print(f"Output from your_endpoint_2: {output_2}")
 

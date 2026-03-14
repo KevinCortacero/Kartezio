@@ -2,11 +2,13 @@ from abc import abstractmethod
 
 from kartezio.callback import Callback, Event, EventType
 from kartezio.core.components import Endpoint, Fitness, Library, Preprocessing
-from kartezio.evolution.decoder import Adapter, DecoderCGP
+from kartezio.core.initialization import RandomInit
+from kartezio.evolution.decoder import DecoderCGP
 from kartezio.evolution.population import Population, PopulationHistory
 from kartezio.evolution.strategy import OnePlusLambda, Strategy
 from kartezio.export import PythonClassWriter
 from kartezio.helpers import Observable
+from kartezio.mutation.base import PointMutation
 from kartezio.mutation.behavioral import MutationBehavior
 from kartezio.mutation.decay import MutationDecay
 from kartezio.mutation.handler import MutationHandler
@@ -28,9 +30,9 @@ class ObservableModel(Observable):
 
 
 class GeneticAlgorithm:
-    def __init__(self, adapter: Adapter, fitness: Fitness):
+    def __init__(self, initializer, mutation_handler, fitness: Fitness):
         """Initialize the genetic algorithm."""
-        self.strategy: Strategy = OnePlusLambda(adapter)
+        self.strategy: Strategy = OnePlusLambda(initializer, mutation_handler)
         self.population: Population | None = None
         self.fitness: Fitness = fitness
         self.current_iteration = 0
@@ -76,7 +78,9 @@ class KartezioCGP(ObservableModel):
         super().__init__()
         self.preprocessing = preprocessing
         self.decoder = DecoderCGP(n_inputs, n_nodes, n_chromosomes, libraries, endpoint)
-        self.evolver = GeneticAlgorithm(self.decoder.adapter, fitness)
+        mutation = PointMutation(self.decoder.adapter)
+        initializer = RandomInit(mutation)
+        self.evolver = GeneticAlgorithm(initializer, MutationHandler(mutation), fitness)
 
     def collect_updatables(self):
         updatables = []

@@ -26,11 +26,11 @@ class Strategy(ABC):
 
 
 class OnePlusLambda(Strategy):
-    def __init__(self, adapter):
+    def __init__(self, initializer, mutation_handler: MutationHandler):
         self.n_parents = 1
         self.n_children = 4
-        self.initializer = None
-        self.mutation_handler = MutationHandler(adapter)
+        self.initializer = initializer
+        self.mutation_handler = mutation_handler
         self.gamma = None
         self.required_fps = None
 
@@ -46,7 +46,7 @@ class OnePlusLambda(Strategy):
 
     def create_population(self):
         population = PopulationWithElite(self.n_children)
-        self.initializer = RandomInit(self.mutation_handler.mutation)
+        # self.initializer = RandomInit(self.mutation_handler.mutation)
         for i in range(population.size):
             individual = self.initializer.random()
             population.individuals[i] = individual

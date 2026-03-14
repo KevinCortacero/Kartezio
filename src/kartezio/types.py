@@ -28,19 +28,29 @@ def Matrix(n: int) -> Signature:
     return [DataType.MATRIX] * n
 
 
+def Vector(n: int) -> Signature:
+    return [DataType.VECTOR] * n
+
+
 def Scalar(n: int) -> Signature:
     return [DataType.SCALAR] * n
 
 
 Matrix1: Signature = Matrix(1)
 Matrix2: Signature = Matrix(2)
+
 Scalar1: Signature = Scalar(1)
 Scalar2: Signature = Scalar(2)
+
+Vector1: Signature = Vector(1)
+Vector2: Signature = Vector(2)
+
+
 MatrixScalar: Signature = [DataType.MATRIX, DataType.SCALAR]
 
 
 # --- Containers ---
-DataList: TypeAlias = list[ArrayData]
+DataList: TypeAlias = list[ArrayData] | list[int]
 DataBatch: TypeAlias = list[DataList]
 DataPopulation: TypeAlias = list[DataBatch]
 
