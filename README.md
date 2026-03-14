@@ -38,11 +38,7 @@ Kartezio offers a straightforward, interpretable way to learn and play with trad
    ```bash
    pip install kartezio
 
-2. **First steps**
-
----
-
-## 🚀 Quick Start
+2. **🚀 Quick Start**
 
 Here's a complete example that evolves a cell segmentation pipeline:
 
@@ -104,14 +100,14 @@ Components are registered using decorators:
 
 ```python
 from kartezio.core.components import Primitive, register
-from kartezio.types import Matrix
+from kartezio.types import ArrayData, DataList, DataType, Matrix1, Parameters
 
 @register(Primitive)
 class CustomFilter(Primitive):
     def __init__(self):
-        super().__init__([Matrix], Matrix, n_parameters=1)
+        super().__init__(Matrix1, DataType.MATRIX, 1) #  -> the function will take 1 image and 1 parameter
     
-    def call(self, x, args):
+    def call(self, x: DataList, args: Parameters) -> ArrayData:
         kernel_size = args[0]
         return cv2.GaussianBlur(x[0], (kernel_size, kernel_size), 0)
 ```
