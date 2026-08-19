@@ -44,9 +44,7 @@ def _parse_numeric_list_from_filename(filename):
     match = re.search(pattern, filename)
 
     if not match:
-        raise ValueError(
-            f"No numeric list pattern found in filename: {filename}"
-        )
+        raise ValueError(f"No numeric list pattern found in filename: {filename}")
 
     list_content = match.group(1).strip()
 
@@ -72,13 +70,9 @@ def _parse_numeric_list_from_filename(filename):
         return numbers
 
     except ValueError as e:
-        raise ValueError(
-            f"Failed to parse numeric values from '{list_content}': {e}"
-        )
+        raise ValueError(f"Failed to parse numeric values from '{list_content}': {e}")
     except Exception as e:
-        raise ValueError(
-            f"Unexpected error parsing filename '{filename}': {e}"
-        )
+        raise ValueError(f"Unexpected error parsing filename '{filename}': {e}")
 
 
 class ImageMaskReader(DataReader):
@@ -125,29 +119,6 @@ class RoiPolygonReader(DataReader):
         polygons = read_polygons_from_roi(filepath)
         fill_polygons_as_labels(label_mask, polygons)
         return DataItem([label_mask], shape, len(polygons))
-
-
-class OneHotVectorReader(DataReader):
-<<<<<<< HEAD
-    def _read(self, filepath, shape=None):
-        # Extract filename from path
-        filename = filepath.split("/")[-1]
-
-        # Safely parse the numeric list from filename
-        try:
-            numbers = _parse_numeric_list_from_filename(filename)
-            label = np.array(numbers)
-            return DataItem([label], shape, None)
-        except ValueError as e:
-            # Provide helpful error message for debugging
-            raise ValueError(
-                f"Failed to parse label from filename '{filename}': {e}"
-            )
-=======
-    def _read(self, filepath, shape=None) -> DataItem:
-        label = np.array(ast.literal_eval(filepath.split("/")[-1]))
-        return DataItem([label], shape, None)
->>>>>>> 6fd21b8887f9ca4a3b5c5ae52987ead3a297233f
 
 
 class ImageChannelsReader(DataReader):

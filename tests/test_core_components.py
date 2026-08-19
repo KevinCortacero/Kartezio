@@ -93,10 +93,7 @@ class TestFitness(Fitness):
     ) -> np.ndarray:
         # Simple mean squared error
         return np.array(
-            [
-                np.mean((yt - yp) ** 2)
-                for yt, yp in zip(y_true, y_pred, strict=False)
-            ]
+            [np.mean((yt - yp) ** 2) for yt, yp in zip(y_true, y_pred, strict=False)]
         )
 
 
@@ -123,15 +120,11 @@ class TestComponentRegistry(unittest.TestCase):
 
     def test_component_instantiation(self):
         """Test component instantiation through registry."""
-        component1 = Components.instantiate(
-            "TestFundamental", "TestComponent1", 42
-        )
+        component1 = Components.instantiate("TestFundamental", "TestComponent1", 42)
         self.assertIsInstance(component1, TestComponent1)
         self.assertEqual(component1.value, 42)
 
-        component2 = Components.instantiate(
-            "TestFundamental", "TestComponent2", 100
-        )
+        component2 = Components.instantiate("TestFundamental", "TestComponent2", 100)
         self.assertIsInstance(component2, TestComponent2)
         self.assertEqual(component2.value, 100)
 
@@ -344,9 +337,7 @@ class TestLibraryComponent(unittest.TestCase):
         # (This is a bug in the original code - integer keys in __to_dict__ vs string keys in __from_dict__)
         fixed_dict = {
             "rtype": lib_dict["rtype"],
-            "primitives": {
-                str(k): v for k, v in lib_dict["primitives"].items()
-            },
+            "primitives": {str(k): v for k, v in lib_dict["primitives"].items()},
         }
 
         # Test deserialization with fixed format
@@ -384,9 +375,7 @@ class TestGenotypeChromosome(unittest.TestCase):
         cloned = chromosome.clone()
 
         # Verify deep copy
-        self.assertTrue(
-            np.array_equal(cloned["functions"], chromosome["functions"])
-        )
+        self.assertTrue(np.array_equal(cloned["functions"], chromosome["functions"]))
         cloned["functions"][0] = 99
         self.assertNotEqual(chromosome["functions"][0], cloned["functions"][0])
 
@@ -401,9 +390,7 @@ class TestGenotypeChromosome(unittest.TestCase):
 
         # Test deserialization
         loaded_chromosome = Chromosome.__from_dict__(chrom_dict)
-        self.assertTrue(
-            np.array_equal(loaded_chromosome["functions"], [1, 2, 3])
-        )
+        self.assertTrue(np.array_equal(loaded_chromosome["functions"], [1, 2, 3]))
 
     def test_genotype_initialization(self):
         """Test genotype initialization."""
@@ -477,9 +464,7 @@ class TestErrorHandling(unittest.TestCase):
     def test_missing_fundamental_error(self):
         """Test error when registering to non-existent fundamental."""
         with self.assertRaises(KeyError):
-            Components.add(
-                "NonExistentFundamental", "TestName", TestComponent1
-            )
+            Components.add("NonExistentFundamental", "TestName", TestComponent1)
 
     def test_invalid_component_lookup(self):
         """Test error handling for invalid component lookups."""

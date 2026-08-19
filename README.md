@@ -48,7 +48,7 @@ Here's a complete example that evolves a cell segmentation pipeline:
    from kartezio.utils.dataset import one_cell_dataset
    
    # 1. Set up components
-   n_inputs = 1
+   n_inputs = 1                        # One channel (grayscale)
    libraries = default_matrix_lib()    # Library of image operations
    endpoint = EndpointThreshold(128)   # Binary output via thresholding
    fitness = IoU()                     # Intersection over Union metric

@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from kartezio.core.initialization import RandomInit
 from kartezio.evolution.population import (
     Population,
     PopulationHistory,

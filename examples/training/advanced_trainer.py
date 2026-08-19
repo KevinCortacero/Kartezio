@@ -57,9 +57,7 @@ def main():
     # model.summary()  # Display the model summary
 
     # Load training data
-    train_x, train_y = (
-        one_cell_dataset()
-    )  # Use a simple one-cell dataset for training
+    train_x, train_y = one_cell_dataset()  # Use a simple one-cell dataset for training
 
     # trainer = KartezioTrainer(model)
 
