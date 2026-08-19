@@ -1,6 +1,6 @@
 from kartezio.core.endpoints import EndpointThreshold
 from kartezio.core.fitness import IoU
-from kartezio.evolution.base import KartezioTrainer
+from kartezio.evolution import KartezioTrainer
 from kartezio.primitives.matrix import default_matrix_lib
 from kartezio.utils.dataset import one_cell_dataset
 

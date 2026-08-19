@@ -1,11 +1,13 @@
 from kartezio.callback import CallbackSaveElite, CallbackVerbose
 from kartezio.core.endpoints import EndpointThreshold
 from kartezio.core.fitness import IoU
-from kartezio.evolution.base import KartezioTrainer
-from kartezio.mutation.behavioral import AccumulateBehavior
-from kartezio.mutation.decay import DegreeDecay
-from kartezio.mutation.edges import MutationEdgesNormal
-from kartezio.mutation.effect import MutationNormal
+from kartezio.evolution import KartezioTrainer
+from kartezio.mutation import (
+    AccumulateBehavior,
+    DegreeDecay,
+    MutationEdgesNormal,
+    MutationNormal,
+)
 from kartezio.primitives.matrix import default_matrix_lib
 from kartezio.primitives.scalar import default_scalar_lib
 from kartezio.utils.dataset import one_cell_dataset

@@ -6,7 +6,7 @@ import zipfile
 import numpy as np
 from roifile import ImagejRoi
 
-from kartezio.data.dataset import DataItem
+from kartezio.data import DataItem
 from kartezio.readers import RoiPolygonReader, RoiPolyhedronReader
 
 
@@ -78,7 +78,6 @@ class ReaderTestCase(unittest.TestCase):
         input_reader = RoiPolyhedronReader(".")
         path = "tmp_test/rois.zip"
         labels = input_reader.read(path, (5, 20, 20))
-        print(labels)
         gt = DataItem([raw_image], (5, 20, 20), 3)
         self.assertDataItemEqual(labels, gt)
 

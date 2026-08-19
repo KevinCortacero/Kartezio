@@ -41,3 +41,7 @@ dev = [
     "coverage>=7.15.4",
     "pytest>=9.1.1",
 ]
+
+[tool.coverage.run]
+source = ["src"]  # Remplacez par le nom de votre dossier source si besoin (ex: "src")
+omit = ["tests/*"]  # Évite de mesurer la couverture des fichiers de tests eux-mêmes
