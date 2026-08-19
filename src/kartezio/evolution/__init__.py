@@ -2,6 +2,7 @@ from .base import KartezioCGP, GeneticAlgorithm, KartezioTrainer, ObservableMode
 from .decoder import Adapter, Decoder, DecoderCGP
 from .population import Population, PopulationWithElite, PopulationHistory
 from .strategy import Strategy, OnePlusLambda
+from .mcts import MCTS, MCTSConfig
 
 __all__ = [
     "KartezioCGP",
@@ -16,4 +17,6 @@ __all__ = [
     "PopulationHistory",
     "Strategy",
     "OnePlusLambda",
+    "MCTS",
+    "MCTSConfig",
 ]

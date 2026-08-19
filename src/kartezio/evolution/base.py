@@ -4,14 +4,17 @@ from kartezio.callback import Callback, Event, EventType
 from kartezio.core.components import Endpoint, Fitness, Library, Preprocessing
 from kartezio.core.initialization import RandomInit
 from kartezio.evolution.decoder import DecoderCGP
+from kartezio.evolution.mcts import MCTS, MCTSConfig
 from kartezio.evolution.population import Population, PopulationHistory
 from kartezio.evolution.strategy import OnePlusLambda, Strategy
 from kartezio.export import PythonClassWriter
 from kartezio.helpers import Observable
-from kartezio.mutation.base import PointMutation
-from kartezio.mutation.behavioral import MutationBehavior
-from kartezio.mutation.decay import MutationDecay
-from kartezio.mutation.handler import MutationHandler
+from kartezio.mutation import (
+    PointMutation,
+    MutationBehavior,
+    MutationHandler,
+    MutationDecay,
+)
 from kartezio.types import DataBatch, DataPopulation
 
 
@@ -116,9 +119,15 @@ class KartezioCGP(ObservableModel):
         self.force_event(EventType.START_LOOP, state)
         while not self.evolver.is_satisfying():
             self.send_event(EventType.START_STEP, state)
-            self.evolver.reproduction()
-            self.evaluation(x, y)
-            state = self.evolver.selection()
+            strategy = self.evolver.strategy
+            if hasattr(strategy, "step"):
+                state = strategy.step(
+                    self.evolver.population, x, y, self.decoder, self.evolver.fitness
+                )
+            else:
+                self.evolver.reproduction()
+                self.evaluation(x, y)
+                state = self.evolver.selection()
             if state.changed:
                 self.force_event(EventType.NEW_PARENT, state)
             history.append(state)
@@ -201,6 +210,11 @@ class KartezioTrainer:
     @property
     def strategy(self) -> Strategy:
         return self.model.evolver.strategy
+
+    def use_MCTS(self, config: MCTSConfig | None = None):
+        if config is None:
+            config = MCTSConfig()
+        self.model.evolver.strategy = MCTS.from_strategy(self.strategy, config)
 
     def set_n_children(self, n_children):
         self.strategy.n_children = n_children
